@@ -1,15 +1,15 @@
 {
-  "name": "ormpipe-bin",
+  "name": "ormpipe",
   "version": "0.0.1",
-  "description": "ormpipe bin",
-  "author": "fewensa @fewensa",
-  "license": "MIT",
+  "description": "ormp relay cli",
+  "author": "Darwinia Netowrk",
   "bin": {
     "ormpipe": "./bin/run"
   },
   "homepage": "https://github.com/darwinia-network/ormpipe",
+  "license": "MIT",
   "main": "dist/index.js",
-  "repository": "fewensa/ormpipe-bin",
+  "repository": "darwinia-network/ormpipe",
   "files": [
     "/bin",
     "/dist",
@@ -22,16 +22,16 @@
     "@oclif/plugin-plugins": "^3.2.0"
   },
   "devDependencies": {
-    "@oclif/test": "^2.4.2",
+    "@oclif/test": "^2.4.4",
     "@types/chai": "^4",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.18.39",
+    "@types/node": "^16.18.40",
     "chai": "^4",
     "eslint": "^7.32.0",
     "eslint-config-oclif": "^4",
     "eslint-config-oclif-typescript": "^1.0.3",
     "mocha": "^9",
-    "oclif": "^3.11.2",
+    "oclif": "^3.11.3",
     "shx": "^0.3.3",
     "ts-node": "^10.9.1",
     "tslib": "^2.6.1",
@@ -50,6 +50,9 @@
       "hello": {
         "description": "Say hello to the world and others"
       }
+    },
+    "hooks": {
+      "init": "./dist/hooks/init/prepare"
     }
   },
   "scripts": {
@@ -64,7 +67,7 @@
   "engines": {
     "node": ">=12.0.0"
   },
-  "bugs": "https://github.com/fewensa/ormpipe-bin/issues",
+  "bugs": "https://github.com/darwinia-network/ormpipe/issues",
   "keywords": [
     "oclif"
   ],

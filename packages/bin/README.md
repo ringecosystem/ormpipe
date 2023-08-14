@@ -14,11 +14,11 @@ oclif example Hello World CLI
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g ormpipe-bin
+$ npm install -g ormpipe
 $ ormpipe COMMAND
 running command...
 $ ormpipe (--version)
-ormpipe-bin/0.0.0 linux-x64 node-v18.14.2
+ormpipe/0.0.0 linux-x64 node-v18.14.2
 $ ormpipe --help [COMMAND]
 USAGE
   $ ormpipe COMMAND
@@ -62,7 +62,7 @@ EXAMPLES
   hello friend from oclif! (./src/commands/hello/index.ts)
 ```
 
-_See code: [dist/commands/hello/index.ts](https://github.com/fewensa/ormpipe-bin/blob/v0.0.0/dist/commands/hello/index.ts)_
+_See code: [dist/commands/hello/index.ts](https://github.com/fewensa/ormpipe/blob/v0.0.0/dist/commands/hello/index.ts)_
 
 ## `ormpipe hello world`
 
@@ -80,7 +80,7 @@ EXAMPLES
   hello world! (./src/commands/hello/world.ts)
 ```
 
-_See code: [dist/commands/hello/world.ts](https://github.com/fewensa/ormpipe-bin/blob/v0.0.0/dist/commands/hello/world.ts)_
+_See code: [dist/commands/hello/world.ts](https://github.com/fewensa/ormpipe/blob/v0.0.0/dist/commands/hello/world.ts)_
 
 ## `ormpipe help [COMMANDS]`
 
@@ -100,7 +100,7 @@ DESCRIPTION
   Display help for ormpipe.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.15/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.17/src/commands/help.ts)_
 
 ## `ormpipe plugins`
 
@@ -123,7 +123,7 @@ EXAMPLES
   $ ormpipe plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.0/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.6/src/commands/plugins/index.ts)_
 
 ## `ormpipe plugins:install PLUGIN...`
 
@@ -188,7 +188,7 @@ EXAMPLES
   $ ormpipe plugins:inspect myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.0/src/commands/plugins/inspect.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.6/src/commands/plugins/inspect.ts)_
 
 ## `ormpipe plugins:install PLUGIN...`
 
@@ -228,7 +228,7 @@ EXAMPLES
   $ ormpipe plugins:install someuser/someplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.0/src/commands/plugins/install.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.6/src/commands/plugins/install.ts)_
 
 ## `ormpipe plugins:link PLUGIN`
 
@@ -257,7 +257,7 @@ EXAMPLES
   $ ormpipe plugins:link myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.0/src/commands/plugins/link.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.6/src/commands/plugins/link.ts)_
 
 ## `ormpipe plugins:uninstall PLUGIN...`
 
@@ -305,7 +305,7 @@ ALIASES
   $ ormpipe plugins remove
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.0/src/commands/plugins/uninstall.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.6/src/commands/plugins/uninstall.ts)_
 
 ## `ormpipe plugins:uninstall PLUGIN...`
 
@@ -346,5 +346,5 @@ DESCRIPTION
   Update installed plugins.
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.0/src/commands/plugins/update.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.6/src/commands/plugins/update.ts)_
 <!-- commandsstop -->
