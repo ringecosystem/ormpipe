@@ -14,8 +14,6 @@
     "url": "git+https://github.com/darwinia-network/ormpipe.git"
   },
   "scripts": {
-    "start": "lerna run start --scope alarmmgr-bin --",
-    "package": "lerna run package --scope alarmmgr-bin",
     "build:all": "lerna run build",
     "test:all": "lerna run test"
   },
