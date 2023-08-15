@@ -1,5 +1,5 @@
 {
-  "name": "ormpipe",
+  "name": "@darwinia/ormpipe-cli",
   "version": "0.0.1",
   "description": "ormp relay cli",
   "author": "Darwinia Netowrk",
@@ -19,12 +19,13 @@
   "dependencies": {
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
-    "@oclif/plugin-plugins": "^3.2.0"
+    "@oclif/plugin-plugins": "^3.2.0",
+    "@darwinia/ormpipe-relay": "^0.0.1"
   },
   "devDependencies": {
     "@oclif/test": "^2.4.4",
     "@types/chai": "^4",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^16.18.40",
     "chai": "^4",
     "eslint": "^7.32.0",

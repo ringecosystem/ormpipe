@@ -1,0 +1,29 @@
+{
+  "name": "@darwinia/ormpipe-relay",
+  "version": "0.0.1",
+  "description": "ormpipe relay",
+  "main": "index.js",
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint . --ext .ts --config .eslintrc",
+    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
+    "posttest": "yarn lint"
+  },
+  "author": "Darwinia Netowrk",
+  "license": "MIT",
+  "dependencies": {
+    "@darwinia/ormpipe-indexer": "^0.0.1"
+  },
+  "devDependencies": {
+    "@oclif/test": "^2.4.4",
+    "@types/chai": "^4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.5.0",
+    "chai": "^4",
+    "eslint": "^7.32.0",
+    "mocha": "^10",
+    "shx": "^0.3.4",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.6.1"
+  }
+}
