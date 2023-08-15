@@ -1,0 +1,27 @@
+name: Check Code
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+
+jobs:
+  check-code:
+    name: Check Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install deps
+        run: yarn install
+
+      - name: Lint
+        run: yarn lint:all
+
+      - name: Test
+        run: yarn test:all
+
+      - name: Build
+        run: yarn build:all
