@@ -1,6 +1,7 @@
 {
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
   "extends": [
-    "oclif",
-    "oclif-typescript"
+    "plugin:@typescript-eslint/recommended"
   ]
 }

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
-    "lint": "eslint . --ext .ts --config .eslintrc",
+    "lint": "eslint . --ext .ts --fix",
     "posttest": "yarn lint",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -18,7 +18,11 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8",
+    "eslint-config-prettier": "^8",
+    "eslint-plugin-prettier": "^4",
     "shx": "^0.3",
     "ts-node": "^10",
     "tslib": "^2",
