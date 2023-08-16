@@ -1,7 +1,7 @@
 {
-  "name": "@darwinia/ormpipe-indexer",
+  "name": "@darwinia/ormpipe-logger",
   "version": "0.0.1",
-  "description": "ormpipe indexer",
+  "description": "ormpipe relay",
   "main": "dist/index.js",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
@@ -14,8 +14,7 @@
   "author": "Darwinia Netowrk",
   "license": "MIT",
   "dependencies": {
-    "@darwinia/ormpipe-logger":  "^0.0.1",
-    "axios": "^1"
+    "winston": "^3"
   },
   "devDependencies": {
     "@types/jest": "^29",

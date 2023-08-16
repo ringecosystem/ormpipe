@@ -2,7 +2,7 @@
   "name": "@darwinia/ormpipe-relay",
   "version": "0.0.1",
   "description": "ormpipe relay",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts --fix",
