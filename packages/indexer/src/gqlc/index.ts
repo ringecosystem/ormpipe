@@ -1,12 +1,15 @@
 import {IndexerHttpConfig} from "../types/indexer";
 import axios, {AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from "axios";
 import {logger} from "@darwinia/ormpipe-logger";
+import {QueryGraph} from "../types/graph";
 
-export class IndexerHttp {
-  private config: IndexerHttpConfig;
+export class Gqlc {
+  private readonly config: IndexerHttpConfig;
+  private readonly axios: AxiosInstance;
 
   constructor(config: IndexerHttpConfig) {
     this.config = config;
+    this.axios = this._axios();
   }
 
   private _axios(): AxiosInstance {
@@ -18,7 +21,6 @@ export class IndexerHttp {
     this._interceptors(service);
     return service;
   }
-
 
   private _interceptors(service: AxiosInstance) {
     service.interceptors.request.use(
@@ -50,8 +52,48 @@ export class IndexerHttp {
         return response.data;
       },
       (error: AxiosError) => {
+        logger.error(error);
+        Promise.reject(error)
       },
     );
+  }
+
+  private request(option: any) {
+    const {url, method, params, data, headersType, responseType} = option
+    return this.axios({
+      url: url,
+      method,
+      params,
+      data,
+      responseType: responseType,
+      headers: {
+        'Content-Type': headersType || 'application/json'
+      }
+    })
+  }
+
+//  public get<T = any>(option: any) {
+//    return this.request({method: 'get', ...option}) as unknown as T
+//  };
+//
+//  public post<T = any>(option: any) {
+//    return this.request({method: 'post', ...option}) as unknown as T
+//  };
+//
+//  public delete<T = any>(option: any) {
+//    return this.request({method: 'delete', ...option}) as unknown as T
+//  };
+//
+//  public put<T = any>(option: any) {
+//    return this.request({method: 'put', ...option}) as unknown as T
+//  };
+
+
+  public query<T = any>(query: QueryGraph) {
+    return this.request({
+      method: 'post',
+      data: query,
+    }) as unknown as T
   }
 
 }

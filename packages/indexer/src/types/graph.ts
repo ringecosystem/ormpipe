@@ -1,9 +1,14 @@
 
+
 export interface _QueryWithBlockNumber {
   blockNumber: number
 }
 
-export interface QueryNextOracleAssigned extends _QueryWithBlockNumber {
-
+export interface QueryGraph {
+  query: string
+  variables?: Record<string, any>
 }
+
+export type QueryNextOracleAssigned = _QueryWithBlockNumber
+
 
