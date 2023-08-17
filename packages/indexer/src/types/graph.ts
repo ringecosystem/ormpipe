@@ -10,7 +10,7 @@ export interface QueryGraph {
 }
 
 export type QueryNextOracleAssigned = _QueryWithBlockNumber
-
+export type QueryNextRelayerAssigned = _QueryWithBlockNumber
 
 export interface IGraphResponse<T> {
   data: T
@@ -24,4 +24,9 @@ export interface OrmpOracleAssigned {
   blockTimestamp: number
   transactionHash: string
 }
+
+export interface OrmpRelayerAssigned extends OrmpOracleAssigned {
+  parmas: string
+}
+
 
