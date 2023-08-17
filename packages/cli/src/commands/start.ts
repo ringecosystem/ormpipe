@@ -1,4 +1,6 @@
 import {Args, Command, Flags} from '@oclif/core'
+import {OracleRealy} from "@darwinia/ormpipe-relay";
+import {logger} from "@darwinia/ormpipe-logger";
 
 export default class Start extends Command {
   static description = 'describe the command here'
@@ -19,12 +21,15 @@ export default class Start extends Command {
   }
 
   public async run(): Promise<void> {
-    const {args, flags} = await this.parse(Start)
+//    const {args, flags} = await this.parse(Start)
 
-    const name = flags.name ?? 'world'
-    this.log(`hello ${name} from /data/dev/darwinia-network/ormpipe/packages/bin/src/commands/start.ts`)
-    if (args.file && flags.force) {
-      this.log(`you input --force and --file: ${args.file}`)
-    }
+//    const name = flags.name ?? 'world'
+//    this.log(`hello ${name} from /data/dev/darwinia-network/ormpipe/packages/bin/src/commands/start.ts`)
+//    if (args.file && flags.force) {
+//      this.log(`you input --force and --file: ${args.file}`)
+//    }
+
+    const relayer = new OracleRealy();
+    await relayer.start();
   }
 }

@@ -1,5 +1,5 @@
 import {IndexerInput} from "../types/indexer";
-import {QueryNextOracleAssigned} from "../types/graph";
+import {IGraphResponse, OrmpOracleAssigned, QueryNextOracleAssigned} from "../types/graph";
 import {Gqlc} from "../gqlc";
 import {logger} from "@darwinia/ormpipe-logger";
 
@@ -13,11 +13,11 @@ export class GraphOracle {
     this.gqlc = gqlc;
   }
 
-  public async nextAssigned(options: QueryNextOracleAssigned): Promise<void> {
+  public async nextAssigned(options: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
     const graphql = `
     query NextOracleAssigned($blockNumber: BigInt!) {
       ormpOracleAssigneds(
-        first: 5
+        first: 1
         orderBy: blockNumber
         orderDirection: asc
         where: {
@@ -33,8 +33,10 @@ export class GraphOracle {
       }
     }
     `;
-    const data = await this.gqlc.query({query: graphql, variables: options});
-    logger.info(data);
+    const resp: IGraphResponse<Record<string, OrmpOracleAssigned[]>> = await this.gqlc.query({query: graphql, variables: options});
+    const {data} = resp;
+    const assigneds = data['ormpOracleAssigneds'];
+    return assigneds ? assigneds[0] : undefined;
   }
 
 }

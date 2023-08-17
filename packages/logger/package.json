@@ -14,7 +14,8 @@
   "author": "Darwinia Netowrk",
   "license": "MIT",
   "dependencies": {
-    "winston": "^3"
+    "winston": "^3",
+    "@stdlib/string-pad": "^0"
   },
   "devDependencies": {
     "@types/jest": "^29",

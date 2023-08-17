@@ -12,3 +12,16 @@ export interface QueryGraph {
 export type QueryNextOracleAssigned = _QueryWithBlockNumber
 
 
+export interface IGraphResponse<T> {
+  data: T
+}
+
+export interface OrmpOracleAssigned {
+  id: string
+  msgHash: string
+  fee: number
+  blockNumber: number
+  blockTimestamp: number
+  transactionHash: string
+}
+

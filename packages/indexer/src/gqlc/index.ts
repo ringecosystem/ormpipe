@@ -41,9 +41,11 @@ export class Gqlc {
         return config
       },
       (error: AxiosError) => {
-        // Do something with request error
-        logger.error(error);
-        Promise.reject(error)
+        const {message, config} = error;
+        error.message = config
+          ? `(indexer, request) ${config.method} -> ${config.baseURL}/${config.url} ${message}`
+          : message;
+        return Promise.reject(error);
       },
     );
 
@@ -52,8 +54,11 @@ export class Gqlc {
         return response.data;
       },
       (error: AxiosError) => {
-        logger.error(error);
-        Promise.reject(error)
+        const {message, config} = error;
+        error.message = config
+          ? `(indexer, response) ${config.method} -> ${config.baseURL}${config.url ? '/' + config.url : ''} ${message}`
+          : message;
+        return Promise.reject(error);
       },
     );
   }
@@ -87,7 +92,6 @@ export class Gqlc {
 //  public put<T = any>(option: any) {
 //    return this.request({method: 'put', ...option}) as unknown as T
 //  };
-
 
   public query<T = any>(query: QueryGraph) {
     return this.request({
