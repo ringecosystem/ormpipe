@@ -9,7 +9,7 @@ const padOpts = {
 };
 
 function _refactorMessage(info: winston.Logform.TransformableInfo) {
-  const {target, message, breads} = info;
+  const {target, message, breads, timestamp} = info;
 
   const albs = [];
   if (target) {
@@ -30,7 +30,7 @@ function _refactorMessage(info: winston.Logform.TransformableInfo) {
   }
 
   const breadString = parts.join('] [');
-  return (breadString ? `[${breadString}] ` : '') + message;
+  return `${timestamp} | ` + (breadString ? `[${breadString}] ` : '') + message;
 }
 
 const customFormat = winston.format((info, opt) => {
@@ -45,8 +45,9 @@ export const logger: Logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
-        customFormat(),
         winston.format.splat(),
+        winston.format.timestamp({format: 'YYYY-MM-DD[T]hh:mm:ss[Z]'}),
+        customFormat(),
         winston.format.cli(),
       ),
     }),
