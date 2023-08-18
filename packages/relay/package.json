@@ -14,7 +14,8 @@
   "author": "Darwinia Netowrk",
   "license": "MIT",
   "dependencies": {
-    "@darwinia/ormpipe-indexer": "^0.0.1"
+    "@darwinia/ormpipe-indexer": "^0.0.1",
+    "ethers": "^6"
   },
   "devDependencies": {
     "@types/jest": "^29",

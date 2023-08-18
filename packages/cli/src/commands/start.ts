@@ -1,6 +1,7 @@
 import {Args, Command, Flags} from '@oclif/core'
-import {OracleRealy} from "@darwinia/ormpipe-relay";
-import {logger} from "@darwinia/ormpipe-logger";
+import {OracleRealy, RelayConfig} from "@darwinia/ormpipe-relay"
+// @ts-ignore
+const camelize = require('camelize')
 
 export default class Start extends Command {
   static description = 'describe the command here'
@@ -10,10 +11,33 @@ export default class Start extends Command {
   ]
 
   static flags = {
-    // flag with a value (-n, --name=VALUE)
-    name: Flags.string({char: 'n', description: 'name to print'}),
-    // flag with no value (-f, --force)
-    force: Flags.boolean({char: 'f'}),
+    'source-chain-name': Flags.string({
+      required: true,
+      description: '[source-chain] name',
+      default: 'source',
+    }),
+    'source-chain-endpoint': Flags.string({required: true, description: '[source-chain] endpoint'}),
+    'target-chain-name': Flags.string({
+      required: true,
+      description: '[target-chain] name',
+      default: 'target'
+    }),
+    'target-chain-endpoint': Flags.string({required: true, description: '[target-chain] endpoint'}),
+
+    'indexer-endpoint': Flags.string({
+      required: true,
+      description: 'indexer endpoint',
+      default: 'https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest'
+    }),
+    'indexer-oracle-endpoint': Flags.string({
+      required: false,
+      description: 'indexer for oracle endpoint, default use --indexer-endpoint'
+    }),
+    'indexer-relayer-endpoint': Flags.string({
+      required: false,
+      description: 'indexer for relayer endpoint, default use --indexer-endpoint'
+    }),
+
   }
 
   static args = {
@@ -21,13 +45,16 @@ export default class Start extends Command {
   }
 
   public async run(): Promise<void> {
-//    const {args, flags} = await this.parse(Start)
+    const {args, flags} = await this.parse(Start)
 
 //    const name = flags.name ?? 'world'
 //    this.log(`hello ${name} from /data/dev/darwinia-network/ormpipe/packages/bin/src/commands/start.ts`)
 //    if (args.file && flags.force) {
 //      this.log(`you input --force and --file: ${args.file}`)
 //    }
+
+    const res = camelize(flags) as unknown as RelayConfig;
+    console.log(res);
 
     const relayer = new OracleRealy();
     await relayer.start();
