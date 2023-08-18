@@ -33,7 +33,10 @@ export class GraphOracle {
       }
     }
     `;
-    const resp: IGraphResponse<Record<string, OrmpOracleAssigned[]>> = await this.gqlc.query({query: graphql, variables: options});
+    const resp: IGraphResponse<Record<string, OrmpOracleAssigned[]>> = await this.gqlc.query({
+      query: graphql,
+      variables: options
+    });
     const {data} = resp;
     const assigneds = data['ormpOracleAssigneds'];
     return assigneds ? assigneds[0] : undefined;
