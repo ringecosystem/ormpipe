@@ -1,6 +1,5 @@
 import {Args, Command, Flags} from '@oclif/core'
 import {OracleRealy, RelayConfig} from "@darwinia/ormpipe-relay"
-// @ts-ignore
 const camelize = require('camelize')
 
 export default class Start extends Command {
@@ -45,7 +44,8 @@ export default class Start extends Command {
   }
 
   public async run(): Promise<void> {
-    const {args, flags} = await this.parse(Start)
+    // args,
+    const {flags} = await this.parse(Start)
 
 //    const name = flags.name ?? 'world'
 //    this.log(`hello ${name} from /data/dev/darwinia-network/ormpipe/packages/bin/src/commands/start.ts`)
