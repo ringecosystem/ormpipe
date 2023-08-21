@@ -1,15 +1,11 @@
-import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
 import {logger} from "@darwinia/ormpipe-logger";
+import {OracleLifecycle} from "../types/lifecycle";
 
 export class OracleRealy {
 
-  private indexer: OrmpipeIndexer;
-
-  constructor() {
-    this.indexer = new OrmpipeIndexer({
-      endpoint: 'https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest',
-//      endpoint: 'https://httpbin.org/post',
-    });
+  constructor(
+    private readonly lifecycle: OracleLifecycle,
+  ) {
   }
 
 
@@ -23,7 +19,9 @@ export class OracleRealy {
   }
 
   private async run() {
-    const nextOracleAssigned = await this.indexer.thegraph().oracle().nextAssigned({blockNumber: 0});
+    const nextOracleAssigned = await this.lifecycle.sourceIndexerOracle
+      .thegraph().oracle()
+      .nextAssigned({blockNumber: 0});
     console.log(JSON.stringify(nextOracleAssigned));
   }
 
