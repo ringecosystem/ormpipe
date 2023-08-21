@@ -1,7 +1,12 @@
-import {OrmpChannelMessageAccepted, QueryChannelMessageAccepted, QueryNextChannelMessagAccepted} from "../types/graph";
+import {
+  OrmpChannelMessageAccepted,
+  OrmpChannelMessageDispatched,
+  QueryChannelMessageAccepted,
+  QueryNextChannelMessagAccepted
+} from "../types/graph";
 import {GraphCommon} from "./_common";
 
-export class GraphChannel extends GraphCommon {
+export class ThegraphIndexChannel extends GraphCommon {
 
   public async inspectMessageAccepted(variables: QueryChannelMessageAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
     const query = `
@@ -15,6 +20,9 @@ export class GraphChannel extends GraphCommon {
         }
       ) {
         id
+        blockNumber
+        blockTimestamp
+        transactionHash
 
         msgHash
         root
@@ -25,9 +33,6 @@ export class GraphChannel extends GraphCommon {
         message_toChainId
         message_to
         message_encoded
-        blockNumber
-        blockTimestamp
-        transactionHash
       }
     }
     `;
@@ -36,7 +41,7 @@ export class GraphChannel extends GraphCommon {
 
   public async nextMessageAccepted(variables: QueryNextChannelMessagAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
     const query = `
-    query NextMessageAccepted {
+    query QueryNextMessageAccepted {
       messageAccepteds(
         first: 1
         orderBy: blockNumber
@@ -46,6 +51,9 @@ export class GraphChannel extends GraphCommon {
         }
       ) {
         id
+        blockNumber
+        blockTimestamp
+        transactionHash
 
         msgHash
         root
@@ -56,13 +64,31 @@ export class GraphChannel extends GraphCommon {
         message_toChainId
         message_to
         message_encoded
-        blockNumber
-        blockTimestamp
-        transactionHash
       }
     }
     `;
     return await super.single({query, variables, schema: 'messageAccepteds'});
+  }
+
+  public async lastMessageDispatched(): Promise<OrmpChannelMessageDispatched | undefined> {
+    const query = `
+    query QueryLastMessageDispatched {
+      messageDispatcheds(
+        first: 1
+        orderBy: blockNumber
+        orderDirection: desc
+      ) {
+        id
+        blockNumber
+        blockTimestamp
+        transactionHash
+
+        msgHash
+        dispatchResult
+      }
+    }
+    `;
+    return await super.single({query, variables: {}, schema: 'messageDispatcheds'});
   }
 
 }

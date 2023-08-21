@@ -1,7 +1,7 @@
 import {OrmpRelayerAssigned, QueryNextRelayerAssigned} from "../types/graph";
 import {GraphCommon} from "./_common";
 
-export class GraphRelayer extends GraphCommon {
+export class ThegraphIndexerRelayer extends GraphCommon {
 
   public async nextAssigned(variables: QueryNextRelayerAssigned): Promise<OrmpRelayerAssigned | undefined> {
     const query = `

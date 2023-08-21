@@ -1,41 +1,50 @@
 import {IndexerInput} from "../types/indexer";
-import {GraphOracle} from "./oracle";
-import {GraphRelayer} from "./relayer";
-import {GraphChannel} from "./channel";
-import {GraphAirnode} from "./airnode";
+import {ThegraphIndexerOracle} from "./oracle";
+import {ThegraphIndexerRelayer} from "./relayer";
+import {ThegraphIndexChannel} from "./channel";
+import {ThegraphIndexerAirnode} from "./airnode";
 import {Gqlc} from "../gqlc";
 
 
 export class ThegraphIndexer {
-  private readonly input: IndexerInput;
-  private readonly gqlc: Gqlc;
-  private readonly graphOracle: GraphOracle;
-  private readonly graphRelayer: GraphRelayer;
-  private readonly graphChannel: GraphChannel;
-  private readonly graphAirnode: GraphAirnode;
+  private readonly graphOracle: ThegraphIndexerOracle;
+  private readonly graphRelayer: ThegraphIndexerRelayer;
+  private readonly graphChannel: ThegraphIndexChannel;
+  private readonly graphAirnode: ThegraphIndexerAirnode;
 
   constructor(input: IndexerInput) {
-    this.input = input;
-    this.gqlc = new Gqlc(input);
-    this.graphOracle = new GraphOracle(input, this.gqlc);
-    this.graphRelayer = new GraphRelayer(input, this.gqlc);
-    this.graphChannel = new GraphChannel(input, this.gqlc);
-    this.graphAirnode = new GraphAirnode(input, this.gqlc);
+    const {endpoint, oracleEndpoint, relayerEndpoint, channelEndpoint, airnodeEndpoint} = input;
+    this.graphOracle = new ThegraphIndexerOracle(input, new Gqlc({
+      timeout: input.timeout,
+      endpoint: oracleEndpoint ?? endpoint
+    }));
+    this.graphRelayer = new ThegraphIndexerRelayer(input, new Gqlc({
+      timeout: input.timeout,
+      endpoint: relayerEndpoint ?? endpoint,
+    }));
+    this.graphChannel = new ThegraphIndexChannel(input, new Gqlc({
+      timeout: input.timeout,
+      endpoint: channelEndpoint ?? endpoint,
+    }));
+    this.graphAirnode = new ThegraphIndexerAirnode(input, new Gqlc({
+      timeout: input.timeout,
+      endpoint: airnodeEndpoint ?? endpoint,
+    }));
   }
 
-  public oracle(): GraphOracle {
+  public oracle(): ThegraphIndexerOracle {
     return this.graphOracle;
   }
 
-  public relayer(): GraphRelayer {
+  public relayer(): ThegraphIndexerRelayer {
     return this.graphRelayer
   }
 
-  public channel(): GraphChannel {
+  public channel(): ThegraphIndexChannel {
     return this.graphChannel;
   }
 
-  public airnode(): GraphAirnode {
+  public airnode(): ThegraphIndexerAirnode {
     return this.graphAirnode;
   }
 

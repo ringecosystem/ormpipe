@@ -1,8 +1,13 @@
 import {Vendor} from "./marks";
 
 export interface IndexerHttpConfig {
-  endpoint: string;
   timeout?: number;
 }
 
-export type IndexerInput = IndexerHttpConfig
+export interface IndexerInput extends IndexerHttpConfig {
+  endpoint: string;
+  oracleEndpoint?: string
+  relayerEndpoint?: string
+  channelEndpoint?: string
+  airnodeEndpoint?: string
+}

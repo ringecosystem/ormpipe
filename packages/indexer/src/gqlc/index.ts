@@ -1,20 +1,25 @@
-import {IndexerHttpConfig} from "../types/indexer";
 import axios, {AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from "axios";
-import {logger} from "@darwinia/ormpipe-logger";
 import {QueryGraph} from "../types/graph";
 
+export interface GqlcConfig {
+  endpoint: string
+  timeout?: number
+}
+
 export class Gqlc {
-  private readonly config: IndexerHttpConfig;
+  private readonly config: GqlcConfig;
   private readonly axios: AxiosInstance;
 
-  constructor(config: IndexerHttpConfig) {
+  constructor(config: GqlcConfig) {
     this.config = config;
-    this.axios = this._axios();
+    this.axios = this._axios(config.endpoint);
   }
 
-  private _axios(): AxiosInstance {
+  private _axios(endpoint: string): AxiosInstance {
     const service = axios.create({
-      baseURL: this.config.endpoint,
+      // baseURL: 'https://httpbin.org/post',
+      // baseURL: 'https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest',
+      baseURL: endpoint,
       timeout: this.config.timeout,
     });
     this._interceptors(service);

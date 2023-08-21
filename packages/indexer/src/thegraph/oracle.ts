@@ -2,7 +2,7 @@ import {OrmpOracleAssigned, QueryNextOracleAssigned} from "../types/graph";
 import {GraphCommon} from "./_common";
 
 
-export class GraphOracle extends GraphCommon {
+export class ThegraphIndexerOracle extends GraphCommon {
 
   public async nextAssigned(variables: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
     const query = `

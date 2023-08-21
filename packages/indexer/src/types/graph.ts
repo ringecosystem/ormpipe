@@ -49,3 +49,7 @@ export interface OrmpChannelMessageAccepted extends BaseGraphEntity {
   message_encoded: string
 }
 
+export interface OrmpChannelMessageDispatched extends BaseGraphEntity {
+  msgHash: string
+  dispatchResult: string
+}
