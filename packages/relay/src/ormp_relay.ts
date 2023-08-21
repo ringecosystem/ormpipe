@@ -1,7 +1,7 @@
 import {OracleRealy} from "./relay/oracle";
 import {RelayConfig, StartInput, StartTask} from "./types/config";
 import {ethers} from "ethers";
-import {OracleLifecycle, RelayerLifecycle} from "./types/lifecycle";
+import {BaseLifecycle, OracleLifecycle, RelayerLifecycle} from "./types/lifecycle";
 import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
 import {RelayerRelay} from "./relay/relayer";
 
@@ -30,44 +30,43 @@ export class OrmpRelay {
   }
 
   private async initOracleLifecycle(): Promise<OracleLifecycle> {
-    // init state
-    // == source chain
-    const sourceClient = new ethers.JsonRpcProvider(this.config.sourceEndpoint);
-
     const sourceIndexerOracleEndpoint = this.config.sourceIndexerOracleEndpoint;
     if (!sourceIndexerOracleEndpoint) {
-      throw new Error('missing --source-indexer-oracle-endpoint');
+      throw new Error('missing --source-indexer-oracle-endpoint or --source-indexer-endpoint');
     }
     const sourceIndexerOracle = new OrmpipeIndexer({
       endpoint: sourceIndexerOracleEndpoint,
     });
-    // == target chain
-    const targetClient = new ethers.JsonRpcProvider(this.config.targetEndpoint);
+
+    const baseLifecycle = await this.initBaseLifecycle();
     return {
-      sourceClient,
-      targetClient,
+      ...baseLifecycle,
       sourceIndexerOracle,
     };
   }
 
   private async initRelayerLifecycle(): Promise<RelayerLifecycle> {
-    // init state
-    // == source chain
-    const sourceClient = new ethers.JsonRpcProvider(this.config.sourceEndpoint);
-
     const sourceIndexerRelayerEndpoint = this.config.sourceIndexerOracleEndpoint;
     if (!sourceIndexerRelayerEndpoint) {
-      throw new Error('missing --source-indexer-relayer-endpoint');
+      throw new Error('missing --source-indexer-relayer-endpoint or --target-indexer-endpoint');
     }
     const sourceIndexerRelayer = new OrmpipeIndexer({
       endpoint: sourceIndexerRelayerEndpoint,
     });
-    // == target chain
+
+    const baseLifecycle = await this.initBaseLifecycle();
+    return {
+      ...baseLifecycle,
+      sourceIndexerRelayer,
+    };
+  }
+
+  private async initBaseLifecycle(): Promise<BaseLifecycle> {
+    const sourceClient = new ethers.JsonRpcProvider(this.config.sourceEndpoint);
     const targetClient = new ethers.JsonRpcProvider(this.config.targetEndpoint);
     return {
       sourceClient,
       targetClient,
-      sourceIndexerRelayer,
     };
   }
 }

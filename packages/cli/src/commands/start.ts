@@ -17,6 +17,7 @@ export default class Start extends Command {
       default: 'source',
     }),
     'source-endpoint': Flags.string({required: true, description: '[source-chain] endpoint'}),
+
     'target-name': Flags.string({
       required: true,
       description: '[target-chain] name',
@@ -24,18 +25,46 @@ export default class Start extends Command {
     }),
     'target-endpoint': Flags.string({required: true, description: '[target-chain] endpoint'}),
 
-    // 'indexer-endpoint': Flags.string({
-    //   required: true,
-    //   description: 'indexer endpoint',
-    //   default: 'https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest'
-    // }),
+    'source-indexer-endpoint': Flags.string({
+      required: false,
+      description: '[source-chain] indexer endpoint'
+    }),
     'source-indexer-oracle-endpoint': Flags.string({
       required: false,
-      description: 'indexer for oracle endpoint'
+      description: '[source-chain] indexer for oracle endpoint, default use --source-indexer-endpoint'
     }),
     'source-indexer-relayer-endpoint': Flags.string({
       required: false,
-      description: 'indexer for relayer endpoint'
+      description: '[source-chain] indexer for relayer endpoint, default use --source-indexer-endpoint'
+    }),
+    'source-indexer-channel-endpoint': Flags.string({
+      required: false,
+      description: '[source-chain] indexer for channel endpoint, default use --source-indexer-endpoint'
+    }),
+    'source-indexer-airnode-endpoint': Flags.string({
+      required: false,
+      description: '[source-chain] indexer for airnode endpoint, default use --source-indexer-endpoint'
+    }),
+
+    'target-indexer-endpoint': Flags.string({
+      required: false,
+      description: '[target-chain] indexer endpoint'
+    }),
+    'target-indexer-oracle-endpoint': Flags.string({
+      required: false,
+      description: '[target-chain] indexer for oracle endpoint, default use --target-indexer-endpoint'
+    }),
+    'target-indexer-relayer-endpoint': Flags.string({
+      required: false,
+      description: '[target-chain] indexer for relayer endpoint, default use --target-indexer-endpoint'
+    }),
+    'target-indexer-channel-endpoint': Flags.string({
+      required: false,
+      description: '[target-chain] indexer for channel endpoint, default use --target-indexer-endpoint'
+    }),
+    'target-indexer-airnode-endpoint': Flags.string({
+      required: false,
+      description: '[target-chain] indexer for airnode endpoint, default use --target-indexer-endpoint'
     }),
 
   }
@@ -53,7 +82,21 @@ export default class Start extends Command {
 
     const {task} = args;
 
-    const relayConfig = camelize(flags) as unknown as RelayConfig;
+    const relayFlags = camelize(flags) as unknown as RelayConfig;
+
+    const relayConfig: RelayConfig = {
+      ...relayFlags,
+
+      sourceIndexerOracleEndpoint: relayFlags.sourceIndexerOracleEndpoint ?? relayFlags.sourceIndexerEndpoint,
+      sourceIndexerRelayerEndpoint: relayFlags.sourceIndexerRelayerEndpoint ?? relayFlags.sourceIndexerEndpoint,
+      sourceIndexerChannelEndpoint: relayFlags.sourceIndexerChannelEndpoint ?? relayFlags.sourceIndexerEndpoint,
+      sourceIndexerAirnodeEndpoint: relayFlags.sourceIndexerAirnodeEndpoint ?? relayFlags.sourceIndexerEndpoint,
+
+      targetIndexerOracleEndpoint: relayFlags.targetIndexerOracleEndpoint ?? relayFlags.targetIndexerEndpoint,
+      targetIndexerRelayerEndpoint: relayFlags.targetIndexerRelayerEndpoint ?? relayFlags.targetIndexerEndpoint,
+      targetIndexerChannelEndpoint: relayFlags.targetIndexerChannelEndpoint ?? relayFlags.targetIndexerEndpoint,
+      targetIndexerAirnodeEndpoint: relayFlags.targetIndexerAirnodeEndpoint ?? relayFlags.targetIndexerEndpoint,
+    };
 
     const ormpRelay = new OrmpRelay(relayConfig);
     const input: StartInput = {

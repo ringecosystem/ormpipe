@@ -7,8 +7,8 @@ interface QueryGenericGraphql extends QueryGraph {
 }
 
 export class GraphCommon {
-  protected readonly _input: IndexerInput;
-  protected readonly _gqlc: Gqlc;
+  private readonly _input: IndexerInput;
+  private readonly _gqlc: Gqlc;
 
   constructor(
     input: IndexerInput,
