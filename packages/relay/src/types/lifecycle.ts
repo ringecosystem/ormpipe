@@ -1,15 +1,15 @@
 import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
 import {ethers} from "ethers";
 
-
-export interface OracleLifecycle {
-  sourceIndexerOracle: OrmpipeIndexer,
+export interface BaseLifecycle {
   sourceClient: ethers.JsonRpcProvider,
   targetClient: ethers.JsonRpcProvider,
 }
 
-export interface RelayerLifecycle {
+export interface OracleLifecycle extends BaseLifecycle {
+  sourceIndexerOracle: OrmpipeIndexer,
+}
+
+export interface RelayerLifecycle extends BaseLifecycle {
   sourceIndexerRelayer: OrmpipeIndexer,
-  sourceClient: ethers.JsonRpcProvider,
-  targetClient: ethers.JsonRpcProvider,
 }

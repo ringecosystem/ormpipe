@@ -9,11 +9,8 @@ export interface RelayConfig {
   sourceEndpoint: string
   targetName: string
   targetEndpoint: string
-  sourceIndexerOracleEndpoint: string,
-  sourceIndexerRelayerEndpoint: string,
-  // indexerEndpoint: string
-  // indexerOracleEndpoint: string
-  // indexerRelayerEndpoint: string
+  sourceIndexerOracleEndpoint: string
+  sourceIndexerRelayerEndpoint: string
 }
 
 export interface StartInput {

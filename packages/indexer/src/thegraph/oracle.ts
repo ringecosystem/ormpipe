@@ -1,20 +1,11 @@
-import {IndexerInput} from "../types/indexer";
-import {IGraphResponse, OrmpOracleAssigned, QueryNextOracleAssigned} from "../types/graph";
-import {Gqlc} from "../gqlc";
-import {logger} from "@darwinia/ormpipe-logger";
+import {OrmpOracleAssigned, QueryNextOracleAssigned} from "../types/graph";
+import {GraphCommon} from "./_common";
 
 
-export class GraphOracle {
-  private readonly input: IndexerInput;
-  private readonly gqlc: Gqlc;
+export class GraphOracle extends GraphCommon {
 
-  constructor(input: IndexerInput, gqlc: Gqlc) {
-    this.input = input;
-    this.gqlc = gqlc;
-  }
-
-  public async nextAssigned(options: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
-    const graphql = `
+  public async nextAssigned(variables: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
+    const query = `
     query NextOracleAssigned($blockNumber: BigInt!) {
       ormpOracleAssigneds(
         first: 1
@@ -33,13 +24,7 @@ export class GraphOracle {
       }
     }
     `;
-    const resp: IGraphResponse<Record<string, OrmpOracleAssigned[]>> = await this.gqlc.query({
-      query: graphql,
-      variables: options
-    });
-    const {data} = resp;
-    const assigneds = data['ormpOracleAssigneds'];
-    return assigneds ? assigneds[0] : undefined;
+    return await super.single({query, variables, schema: 'ormpOracleAssigneds'})
   }
 
 }

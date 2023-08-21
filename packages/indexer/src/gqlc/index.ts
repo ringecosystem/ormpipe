@@ -16,7 +16,6 @@ export class Gqlc {
     const service = axios.create({
       baseURL: this.config.endpoint,
       timeout: this.config.timeout,
-      withCredentials: true,
     });
     this._interceptors(service);
     return service;

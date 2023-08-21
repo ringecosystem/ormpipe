@@ -13,6 +13,10 @@ export type QueryNextOracleAssigned = _QueryWithBlockNumber
 export type QueryNextRelayerAssigned = _QueryWithBlockNumber
 export type QueryNextChannelMessagAccepted = _QueryWithBlockNumber
 
+export interface QueryChannelMessageAccepted {
+  msgHash: string
+}
+
 export interface IGraphResponse<T> {
   data: T
 }

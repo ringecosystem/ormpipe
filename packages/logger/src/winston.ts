@@ -37,6 +37,9 @@ const customFormat = winston.format((info, opt) => {
 //  console.log(info);
 //  info.message = info.message + ' | ' + info.message;
   info.message = _refactorMessage(info);
+  if (info.stack) {
+    info.message += `\n${info.stack}`;
+  }
   return info
 });
 
@@ -45,6 +48,8 @@ export const logger: Logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
+        winston.format.errors({stack: true}),
+        winston.format.colorize(),
         winston.format.splat(),
         winston.format.timestamp({format: 'YYYY-MM-DD[T]hh:mm:ss[Z]'}),
         customFormat(),

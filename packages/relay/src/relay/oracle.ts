@@ -8,19 +8,22 @@ export class OracleRealy {
   ) {
   }
 
-
   public async start() {
     try {
       await this.run();
     } catch (e: any) {
-      const message = e.message;
-      logger.error(message, {target: 'oracle', breads: ['source>target']});
+      logger.error(e, {target: 'oracle', breads: ['source>target']});
     }
   }
 
   private async run() {
+    const nextMessageAccepted = await this.lifecycle.sourceIndexerOracle
+      .thegraph()
+      .channel()
+      .nextMessageAccepted({blockNumber: 0});
     const nextOracleAssigned = await this.lifecycle.sourceIndexerOracle
-      .thegraph().oracle()
+      .thegraph()
+      .oracle()
       .nextAssigned({blockNumber: 0});
     console.log(JSON.stringify(nextOracleAssigned));
   }

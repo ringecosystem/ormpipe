@@ -1,13 +1,5 @@
-import {IndexerInput} from "../types/indexer";
-import {Gqlc} from "../gqlc";
+import {GraphCommon} from "./_common";
 
-export class GraphAirnode {
-  private readonly input: IndexerInput;
-  private readonly gqlc: Gqlc;
-
-  constructor(input: IndexerInput, gqlc: Gqlc) {
-    this.input = input;
-    this.gqlc = gqlc;
-  }
+export class GraphAirnode extends GraphCommon{
 
 }

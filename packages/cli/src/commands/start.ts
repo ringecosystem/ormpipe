@@ -62,8 +62,7 @@ export default class Start extends Command {
     try {
       await ormpRelay.start(input);
     } catch (e: any) {
-      const message = e.message ?? `${e}`;
-      logger.error(message, {target: 'cli', breads: ['ormpipe', 'start', 'task']})
+      logger.error(e, {target: 'cli', breads: ['ormpipe', 'start', 'task']})
     }
   }
 }

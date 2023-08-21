@@ -1,18 +1,10 @@
-import {IndexerInput} from "../types/indexer";
-import {Gqlc} from "../gqlc";
-import {IGraphResponse, OrmpRelayerAssigned, QueryNextRelayerAssigned} from "../types/graph";
+import {OrmpRelayerAssigned, QueryNextRelayerAssigned} from "../types/graph";
+import {GraphCommon} from "./_common";
 
-export class GraphRelayer {
-  private readonly input: IndexerInput;
-  private readonly gqlc: Gqlc;
+export class GraphRelayer extends GraphCommon {
 
-  constructor(input: IndexerInput, gqlc: Gqlc) {
-    this.input = input;
-    this.gqlc = gqlc;
-  }
-
-  public async nextAssigned(options: QueryNextRelayerAssigned): Promise<OrmpRelayerAssigned | undefined> {
-    const graphql = `
+  public async nextAssigned(variables: QueryNextRelayerAssigned): Promise<OrmpRelayerAssigned | undefined> {
+    const query = `
     query NextRelayerAssigned($blockNumber: BigInt!) {
       ormpRelayerAssigneds(
         first: 1
@@ -32,10 +24,7 @@ export class GraphRelayer {
       }
     }
     `;
-    const resp: IGraphResponse<Record<string, OrmpRelayerAssigned[]>> = await this.gqlc.query({query: graphql, variables: options});
-    const {data} = resp;
-    const assigneds = data['ormpRelayerAssigneds'];
-    return assigneds ? assigneds[0] : undefined;
+    return await super.single({query, variables, schema: 'ormpRelayerAssigneds'});
   }
 
 }

@@ -8,7 +8,7 @@ import {Gqlc} from "../gqlc";
 
 export class ThegraphIndexer {
   private readonly input: IndexerInput;
-  private readonly http: Gqlc;
+  private readonly gqlc: Gqlc;
   private readonly graphOracle: GraphOracle;
   private readonly graphRelayer: GraphRelayer;
   private readonly graphChannel: GraphChannel;
@@ -16,11 +16,11 @@ export class ThegraphIndexer {
 
   constructor(input: IndexerInput) {
     this.input = input;
-    this.http = new Gqlc(input);
-    this.graphOracle = new GraphOracle(input, this.http);
-    this.graphRelayer = new GraphRelayer(input, this.http);
-    this.graphChannel = new GraphChannel(input, this.http);
-    this.graphAirnode = new GraphAirnode(input, this.http);
+    this.gqlc = new Gqlc(input);
+    this.graphOracle = new GraphOracle(input, this.gqlc);
+    this.graphRelayer = new GraphRelayer(input, this.gqlc);
+    this.graphChannel = new GraphChannel(input, this.gqlc);
+    this.graphAirnode = new GraphAirnode(input, this.gqlc);
   }
 
   public oracle(): GraphOracle {
