@@ -24,7 +24,9 @@ function _refactorMessage(info: winston.Logform.TransformableInfo) {
   for (let i = 0; i < albs.length; i++) {
     const bread = albs[i];
     const breadLen = bread.length;
-    const needLen = (i + 1) > savedBreadLength.length ? breadLen : savedBreadLength[i];
+    const needLen = (i + 1) > savedBreadLength.length
+      ? breadLen
+      : (breadLen > savedBreadLength[i] ? breadLen : savedBreadLength[i]);
     parts.push(pad(bread, needLen, padOpts));
     savedBreadLength[i] = needLen;
   }
