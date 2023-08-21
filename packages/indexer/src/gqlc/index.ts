@@ -15,6 +15,10 @@ export class Gqlc {
     this.axios = this._axios(config.endpoint);
   }
 
+  public get endpoint(): string {
+    return this.config.endpoint
+  }
+
   private _axios(endpoint: string): AxiosInstance {
     const service = axios.create({
       // baseURL: 'https://httpbin.org/post',

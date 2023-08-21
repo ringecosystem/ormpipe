@@ -18,12 +18,16 @@ export class GraphCommon {
     this._gqlc = gqlc;
   }
 
-  public get input() {
+  public get input(): IndexerInput {
     return this._input
   }
 
-  public get gqlc() {
+  public get gqlc(): Gqlc {
     return this._gqlc
+  }
+
+  public get endpoint(): string {
+    return this.gqlc.endpoint
   }
 
   public async list<T>(options: QueryGenericGraphql): Promise<T[]> {

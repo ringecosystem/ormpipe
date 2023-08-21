@@ -35,11 +35,11 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   private async run() {
 
-    logger.debug(`query last message dispatched from ${super.targetName}`, super.meta({target: 'oracle'}));
+    logger.debug(`query last message dispatched from ${super.targetName} indexer-channel`, super.meta({target: 'oracle'}));
     const targetLastMessageDispatched = await this.targetIndexerChannel.lastMessageDispatched();
     // todo: check running block
     const queryNextMessageAndOracleFromBlockNumber = +(targetLastMessageDispatched?.blockNumber ?? 0);
-    logger.debug(`queried next oracle from block is ${queryNextMessageAndOracleFromBlockNumber}`, super.meta({target: 'oracle'}));
+    logger.debug(`queried next oracle from block number ${queryNextMessageAndOracleFromBlockNumber}`, super.meta({target: 'oracle'}));
 
     const sourceNextMessageAccepted = await this.sourceIndexerChannel.nextMessageAccepted({
       blockNumber: queryNextMessageAndOracleFromBlockNumber
