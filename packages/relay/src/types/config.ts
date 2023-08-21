@@ -6,6 +6,6 @@ export interface RelayConfig {
   targetChainName: string
   targetChainEndpoint: string
   indexerEndpoint: string
-  indexerOracleEndpoint?: string
-  indexerRelayerEndpoint?: string
+  indexerOracleEndpoint: string
+  indexerRelayerEndpoint: string
 }

@@ -1,5 +1,5 @@
 import {Args, Command, Flags} from '@oclif/core'
-import {OracleRealy, RelayConfig} from "@darwinia/ormpipe-relay"
+import {OrmpRelay, RelayConfig} from "@darwinia/ormpipe-relay"
 const camelize = require('camelize')
 
 export default class Start extends Command {
@@ -53,10 +53,14 @@ export default class Start extends Command {
 //      this.log(`you input --force and --file: ${args.file}`)
 //    }
 
-    const res = camelize(flags) as unknown as RelayConfig;
-    console.log(res);
+    const flagData = camelize(flags) as unknown as RelayConfig;
+    const relayConfig = {
+      ...flagData,
+      indexerOracleEndpoint: flagData.indexerOracleEndpoint ?? flagData.indexerEndpoint,
+      indexerRelayerEndpoint:flagData.indexerRelayerEndpoint ?? flagData.indexerEndpoint,
+    } as RelayConfig;
 
-    const relayer = new OracleRealy();
-    await relayer.start();
+    const ormpRelay = new OrmpRelay(relayConfig);
+    await ormpRelay.start();
   }
 }

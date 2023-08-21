@@ -1,6 +1,4 @@
 
-export * from './relay/oracle'
-export * from './relay/relayer'
-
+export * from './ormp_relay'
 
 export * from './types/config'
