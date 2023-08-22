@@ -1,5 +1,3 @@
-
-
 export interface _QueryWithBlockNumber {
   blockNumber: number
 }
@@ -52,4 +50,15 @@ export interface OrmpChannelMessageAccepted extends BaseGraphEntity {
 export interface OrmpChannelMessageDispatched extends BaseGraphEntity {
   msgHash: string
   dispatchResult: string
+}
+
+export interface AirnodeBeaconBase extends BaseGraphEntity {
+  beaconId: string
+}
+
+export interface AirnodeBeacon extends AirnodeBeaconBase {
+  beacon_airnode: string
+  beacon_endpointId: string
+  beacon_sponsor: string
+  beacon_sponsorWallet: string
 }
