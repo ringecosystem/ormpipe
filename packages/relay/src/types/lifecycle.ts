@@ -1,5 +1,5 @@
 import {
-  ThegraphIndexChannel,
+  ThegraphIndexOrmp,
   ThegraphIndexerAirnode,
   ThegraphIndexerOracle,
   ThegraphIndexerRelayer
@@ -17,14 +17,14 @@ export interface BaseLifecycle {
 
 export interface OracleLifecycle extends BaseLifecycle {
   sourceIndexerOracle: ThegraphIndexerOracle,
-  sourceIndexerChannel: ThegraphIndexChannel,
-  targetIndexerChannel: ThegraphIndexChannel,
+  sourceIndexerOrmp: ThegraphIndexOrmp,
+  targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerAirnode: ThegraphIndexerAirnode,
 }
 
 export interface RelayerLifecycle extends BaseLifecycle {
   sourceIndexerRelayer: ThegraphIndexerRelayer,
-  sourceIndexerChannel: ThegraphIndexChannel,
-  targetIndexerChannel: ThegraphIndexChannel,
+  sourceIndexerOrmp: ThegraphIndexOrmp,
+  targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerAirnode: ThegraphIndexerAirnode,
 }

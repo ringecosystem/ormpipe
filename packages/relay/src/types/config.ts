@@ -14,13 +14,13 @@ export interface RelayConfig {
   sourceIndexerEndpoint: string
   sourceIndexerOracleEndpoint: string
   sourceIndexerRelayerEndpoint: string
-  sourceIndexerChannelEndpoint: string
+  sourceIndexerOrmpEndpoint: string
   sourceIndexerAirnodeEndpoint: string
 
   targetIndexerEndpoint: string
   targetIndexerOracleEndpoint: string
   targetIndexerRelayerEndpoint: string
-  targetIndexerChannelEndpoint: string
+  targetIndexerOrmpEndpoint: string
   targetIndexerAirnodeEndpoint: string
 }
 

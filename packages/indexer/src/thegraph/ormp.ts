@@ -6,7 +6,7 @@ import {
 } from "../types/graph";
 import {GraphCommon} from "./_common";
 
-export class ThegraphIndexChannel extends GraphCommon {
+export class ThegraphIndexOrmp extends GraphCommon {
 
   public async inspectMessageAccepted(variables: QueryChannelMessageAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
     const query = `

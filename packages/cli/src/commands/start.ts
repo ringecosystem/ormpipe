@@ -1,6 +1,7 @@
 import {Args, Command, Flags} from '@oclif/core'
 import {OrmpRelay, RelayConfig, StartInput, StartTask} from "@darwinia/ormpipe-relay"
 import {logger} from "@darwinia/ormpipe-logger";
+
 const camelize = require('camelize')
 
 export default class Start extends Command {
@@ -37,9 +38,9 @@ export default class Start extends Command {
       required: false,
       description: '[source-chain] indexer for relayer endpoint, default use --source-indexer-endpoint'
     }),
-    'source-indexer-channel-endpoint': Flags.string({
+    'source-indexer-ormp-endpoint': Flags.string({
       required: false,
-      description: '[source-chain] indexer for channel endpoint, default use --source-indexer-endpoint'
+      description: '[source-chain] indexer for ormp endpoint, default use --source-indexer-endpoint'
     }),
     'source-indexer-airnode-endpoint': Flags.string({
       required: false,
@@ -58,9 +59,9 @@ export default class Start extends Command {
       required: false,
       description: '[target-chain] indexer for relayer endpoint, default use --target-indexer-endpoint'
     }),
-    'target-indexer-channel-endpoint': Flags.string({
+    'target-indexer-ormp-endpoint': Flags.string({
       required: false,
-      description: '[target-chain] indexer for channel endpoint, default use --target-indexer-endpoint'
+      description: '[target-chain] indexer for ormp endpoint, default use --target-indexer-endpoint'
     }),
     'target-indexer-airnode-endpoint': Flags.string({
       required: false,
@@ -89,12 +90,12 @@ export default class Start extends Command {
 
       sourceIndexerOracleEndpoint: relayFlags.sourceIndexerOracleEndpoint ?? relayFlags.sourceIndexerEndpoint,
       sourceIndexerRelayerEndpoint: relayFlags.sourceIndexerRelayerEndpoint ?? relayFlags.sourceIndexerEndpoint,
-      sourceIndexerChannelEndpoint: relayFlags.sourceIndexerChannelEndpoint ?? relayFlags.sourceIndexerEndpoint,
+      sourceIndexerOrmpEndpoint: relayFlags.sourceIndexerOrmpEndpoint ?? relayFlags.sourceIndexerEndpoint,
       sourceIndexerAirnodeEndpoint: relayFlags.sourceIndexerAirnodeEndpoint ?? relayFlags.sourceIndexerEndpoint,
 
       targetIndexerOracleEndpoint: relayFlags.targetIndexerOracleEndpoint ?? relayFlags.targetIndexerEndpoint,
       targetIndexerRelayerEndpoint: relayFlags.targetIndexerRelayerEndpoint ?? relayFlags.targetIndexerEndpoint,
-      targetIndexerChannelEndpoint: relayFlags.targetIndexerChannelEndpoint ?? relayFlags.targetIndexerEndpoint,
+      targetIndexerOrmpEndpoint: relayFlags.targetIndexerOrmpEndpoint ?? relayFlags.targetIndexerEndpoint,
       targetIndexerAirnodeEndpoint: relayFlags.targetIndexerAirnodeEndpoint ?? relayFlags.targetIndexerEndpoint,
     };
 

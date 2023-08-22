@@ -28,12 +28,12 @@ export class OrmpRelay {
     //   sourceIndexerEndpoint: this.config.targetIndexerEndpoint,
     //   sourceIndexerOracleEndpoint: this.config.targetIndexerOracleEndpoint,
     //   sourceIndexerRelayerEndpoint: this.config.targetIndexerRelayerEndpoint,
-    //   sourceIndexerChannelEndpoint: this.config.targetIndexerChannelEndpoint,
+    //   sourceIndexerOrmpEndpoint: this.config.targetIndexerOrmpEndpoint,
     //   sourceIndexerAirnodeEndpoint: this.config.targetIndexerAirnodeEndpoint,
     //   targetIndexerEndpoint: this.config.sourceIndexerEndpoint,
     //   targetIndexerOracleEndpoint: this.config.sourceIndexerOracleEndpoint,
     //   targetIndexerRelayerEndpoint: this.config.sourceIndexerRelayerEndpoint,
-    //   targetIndexerChannelEndpoint: this.config.sourceIndexerChannelEndpoint,
+    //   targetIndexerOrmpEndpoint: this.config.sourceIndexerOrmpEndpoint,
     //   targetIndexerAirnodeEndpoint: this.config.sourceIndexerAirnodeEndpoint,
     // };
 
@@ -63,20 +63,20 @@ export class OrmpRelay {
           : '--source-indexer-oracle-endpoint or --source-indexer-endpoint'
       );
     }
-    if (!config.sourceIndexerChannelEndpoint) {
+    if (!config.sourceIndexerOrmpEndpoint) {
       throw new Error(
         'missing '
         + direction == RelayDirection.SourceToTarget
-          ? '--source-indexer-channel-endpoint or --source-indexer-endpoint'
-          : '--source-indexer-channel-endpoint or --source-indexer-endpoint'
+          ? '--source-indexer-ormp-endpoint or --source-indexer-endpoint'
+          : '--source-indexer-ormp-endpoint or --source-indexer-endpoint'
       );
     }
-    if (!config.targetIndexerChannelEndpoint) {
+    if (!config.targetIndexerOrmpEndpoint) {
       throw new Error(
         'missing '
         + direction == RelayDirection.SourceToTarget
-          ? '--target-indexer-channel-endpoint or --target-indexer-endpoint'
-          : '--target-indexer-channel-endpoint or --target-indexer-endpoint'
+          ? '--target-indexer-ormp-endpoint or --target-indexer-endpoint'
+          : '--target-indexer-ormp-endpoint or --target-indexer-endpoint'
       );
     }
     const sourceIndexer = this.initSourceIndexer(config);
@@ -86,8 +86,8 @@ export class OrmpRelay {
     return {
       ...baseLifecycle,
       sourceIndexerOracle: sourceIndexer.oracle(),
-      sourceIndexerChannel: sourceIndexer.channel(),
-      targetIndexerChannel: targetIndexer.channel(),
+      sourceIndexerOrmp: sourceIndexer.ormp(),
+      targetIndexerOrmp: targetIndexer.ormp(),
       targetIndexerAirnode: targetIndexer.airnode(),
     };
   }
@@ -101,20 +101,20 @@ export class OrmpRelay {
           : '--source-indexer-relayer-endpoint or --source-indexer-endpoint'
       );
     }
-    if (!config.sourceIndexerChannelEndpoint) {
+    if (!config.sourceIndexerOrmpEndpoint) {
       throw new Error(
         'missing '
         + direction == RelayDirection.SourceToTarget
-          ? '--source-indexer-channel-endpoint or --source-channel-endpoint'
-          : '--source-indexer-channel-endpoint or --source-channel-endpoint'
+          ? '--source-indexer-ormp-endpoint or --source-ormp-endpoint'
+          : '--source-indexer-ormp-endpoint or --source-ormp-endpoint'
       );
     }
-    if (!config.targetIndexerChannelEndpoint) {
+    if (!config.targetIndexerOrmpEndpoint) {
       throw new Error(
         'missing '
         + direction == RelayDirection.SourceToTarget
-          ? '--target-indexer-channel-endpoint or --target-channel-endpoint'
-          : '--target-indexer-channel-endpoint or --target-channel-endpoint'
+          ? '--target-indexer-ormp-endpoint or --target-ormp-endpoint'
+          : '--target-indexer-ormp-endpoint or --target-ormp-endpoint'
       );
     }
     const sourceIndexer = this.initSourceIndexer(config);
@@ -123,9 +123,9 @@ export class OrmpRelay {
     const baseLifecycle = await this.initBaseLifecycle(config, direction);
     return {
       ...baseLifecycle,
-      sourceIndexerChannel: sourceIndexer.channel(),
+      sourceIndexerOrmp: sourceIndexer.ormp(),
       sourceIndexerRelayer: sourceIndexer.relayer(),
-      targetIndexerChannel: targetIndexer.channel(),
+      targetIndexerOrmp: targetIndexer.ormp(),
       targetIndexerAirnode: targetIndexer.airnode(),
     };
   }
@@ -153,7 +153,7 @@ export class OrmpRelay {
       endpoint: config.sourceIndexerEndpoint,
       oracleEndpoint: config.sourceIndexerOracleEndpoint,
       relayerEndpoint: config.sourceIndexerRelayerEndpoint,
-      channelEndpoint: config.sourceIndexerRelayerEndpoint,
+      ormpEndpoint: config.sourceIndexerOrmpEndpoint,
       airnodeEndpoint: config.sourceIndexerAirnodeEndpoint,
     }).thegraph();
   }
@@ -163,7 +163,7 @@ export class OrmpRelay {
       endpoint: config.targetIndexerEndpoint,
       oracleEndpoint: config.targetIndexerOracleEndpoint,
       relayerEndpoint: config.targetIndexerRelayerEndpoint,
-      channelEndpoint: config.targetIndexerRelayerEndpoint,
+      ormpEndpoint: config.targetIndexerOrmpEndpoint,
       airnodeEndpoint: config.targetIndexerAirnodeEndpoint,
     }).thegraph();
   }

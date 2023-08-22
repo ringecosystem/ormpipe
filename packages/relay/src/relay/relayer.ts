@@ -1,6 +1,6 @@
 import {RelayerLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
-import {ThegraphIndexChannel, ThegraphIndexerAirnode, ThegraphIndexerRelayer} from "@darwinia/ormpipe-indexer";
+import {ThegraphIndexOrmp, ThegraphIndexerAirnode, ThegraphIndexerRelayer} from "@darwinia/ormpipe-indexer";
 
 export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
@@ -12,12 +12,12 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     return super.lifecycle.sourceIndexerRelayer
   }
 
-  public get sourceIndexerChannel(): ThegraphIndexChannel {
-    return super.lifecycle.sourceIndexerChannel
+  public get sourceIndexerOrmp(): ThegraphIndexOrmp {
+    return super.lifecycle.sourceIndexerOrmp
   }
 
-  public get targetIndexerChannel(): ThegraphIndexChannel {
-    return super.lifecycle.targetIndexerChannel
+  public get targetIndexerOrmp(): ThegraphIndexOrmp {
+    return super.lifecycle.targetIndexerOrmp
   }
 
   public get targetIndexerAirnode(): ThegraphIndexerAirnode {

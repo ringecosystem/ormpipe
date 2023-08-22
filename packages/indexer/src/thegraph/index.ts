@@ -1,7 +1,7 @@
 import {IndexerInput} from "../types/indexer";
 import {ThegraphIndexerOracle} from "./oracle";
 import {ThegraphIndexerRelayer} from "./relayer";
-import {ThegraphIndexChannel} from "./channel";
+import {ThegraphIndexOrmp} from "./ormp";
 import {ThegraphIndexerAirnode} from "./airnode";
 import {Gqlc} from "../gqlc";
 
@@ -9,11 +9,11 @@ import {Gqlc} from "../gqlc";
 export class ThegraphIndexer {
   private readonly graphOracle: ThegraphIndexerOracle;
   private readonly graphRelayer: ThegraphIndexerRelayer;
-  private readonly graphChannel: ThegraphIndexChannel;
+  private readonly graphOrmp: ThegraphIndexOrmp;
   private readonly graphAirnode: ThegraphIndexerAirnode;
 
   constructor(input: IndexerInput) {
-    const {endpoint, oracleEndpoint, relayerEndpoint, channelEndpoint, airnodeEndpoint} = input;
+    const {endpoint, oracleEndpoint, relayerEndpoint, ormpEndpoint, airnodeEndpoint} = input;
     this.graphOracle = new ThegraphIndexerOracle(input, new Gqlc({
       timeout: input.timeout,
       endpoint: oracleEndpoint ?? endpoint
@@ -22,9 +22,9 @@ export class ThegraphIndexer {
       timeout: input.timeout,
       endpoint: relayerEndpoint ?? endpoint,
     }));
-    this.graphChannel = new ThegraphIndexChannel(input, new Gqlc({
+    this.graphOrmp = new ThegraphIndexOrmp(input, new Gqlc({
       timeout: input.timeout,
-      endpoint: channelEndpoint ?? endpoint,
+      endpoint: ormpEndpoint ?? endpoint,
     }));
     this.graphAirnode = new ThegraphIndexerAirnode(input, new Gqlc({
       timeout: input.timeout,
@@ -40,8 +40,8 @@ export class ThegraphIndexer {
     return this.graphRelayer
   }
 
-  public channel(): ThegraphIndexChannel {
-    return this.graphChannel;
+  public ormp(): ThegraphIndexOrmp {
+    return this.graphOrmp;
   }
 
   public airnode(): ThegraphIndexerAirnode {

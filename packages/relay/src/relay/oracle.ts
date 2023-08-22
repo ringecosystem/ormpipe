@@ -1,7 +1,7 @@
 import {logger} from "@darwinia/ormpipe-logger";
 import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
-import {ThegraphIndexChannel, ThegraphIndexerAirnode, ThegraphIndexerOracle} from "@darwinia/ormpipe-indexer";
+import {ThegraphIndexOrmp, ThegraphIndexerAirnode, ThegraphIndexerOracle} from "@darwinia/ormpipe-indexer";
 
 export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
@@ -13,12 +13,12 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     return super.lifecycle.sourceIndexerOracle
   }
 
-  public get sourceIndexerChannel(): ThegraphIndexChannel {
-    return super.lifecycle.sourceIndexerChannel
+  public get sourceIndexerOrmp(): ThegraphIndexOrmp {
+    return super.lifecycle.sourceIndexerOrmp
   }
 
-  public get targetIndexerChannel(): ThegraphIndexChannel {
-    return super.lifecycle.targetIndexerChannel
+  public get targetIndexerOrmp(): ThegraphIndexOrmp {
+    return super.lifecycle.targetIndexerOrmp
   }
 
   public get targetIndexerAirnode(): ThegraphIndexerAirnode {
@@ -38,7 +38,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel`,
       super.meta({target: 'oracle'})
     );
-    const targetLastMessageDispatched = await this.targetIndexerChannel.lastMessageDispatched();
+    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
     // todo: check running block
     const queryNextMessageAndOracleFromBlockNumber = +(targetLastMessageDispatched?.blockNumber ?? 0);
     logger.debug(
@@ -47,7 +47,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta({target: 'oracle'})
     );
 
-    const sourceNextMessageAccepted = await this.sourceIndexerChannel.nextMessageAccepted({
+    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
       blockNumber: queryNextMessageAndOracleFromBlockNumber
     });
     if (!sourceNextMessageAccepted) {
