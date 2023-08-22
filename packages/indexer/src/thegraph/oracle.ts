@@ -6,7 +6,7 @@ export class ThegraphIndexerOracle extends GraphCommon {
 
   public async nextAssigned(variables: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
     const query = `
-    query NextOracleAssigned($blockNumber: BigInt!) {
+    query QueryNextOracleAssigned($blockNumber: BigInt!) {
       ormpOracleAssigneds(
         first: 1
         orderBy: blockNumber

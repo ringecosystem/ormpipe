@@ -42,8 +42,9 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     // todo: check running block
     const queryNextMessageAndOracleFromBlockNumber = +(targetLastMessageDispatched?.blockNumber ?? 0);
     logger.debug(
-      `queried next oracle from block number %s`,
+      `queried next oracle from block number %s(%s)`,
       queryNextMessageAndOracleFromBlockNumber,
+      super.sourceName,
       super.meta({target: 'oracle'})
     );
 

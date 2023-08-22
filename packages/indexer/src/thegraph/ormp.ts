@@ -42,7 +42,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
   public async nextMessageAccepted(variables: QueryNextChannelMessagAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
     const query = `
     query QueryNextMessageAccepted {
-      messageAccepteds(
+      ormpProtocolMessageAccepteds(
         first: 1
         orderBy: blockNumber
         orderDirection: asc
@@ -67,13 +67,13 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
     }
     `;
-    return await super.single({query, variables, schema: 'messageAccepteds'});
+    return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
 
   public async lastMessageDispatched(): Promise<OrmpChannelMessageDispatched | undefined> {
     const query = `
     query QueryLastMessageDispatched {
-      messageDispatcheds(
+      ormpProtocolMessageDispatcheds(
         first: 1
         orderBy: blockNumber
         orderDirection: desc
@@ -88,7 +88,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
     }
     `;
-    return await super.single({query, variables: {}, schema: 'messageDispatcheds'});
+    return await super.single({query, variables: {}, schema: 'ormpProtocolMessageDispatcheds'});
   }
 
 }
