@@ -6,6 +6,7 @@ import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
 import {RelayerRelay} from "./relay/relayer";
 import {RelayDirection} from "./types/mark";
 import {ThegraphIndexer} from "@darwinia/ormpipe-indexer/dist/thegraph";
+import {RelayClient} from "./client";
 
 export class OrmpRelay {
   constructor(
@@ -130,8 +131,14 @@ export class OrmpRelay {
   }
 
   private async initBaseLifecycle(config: RelayConfig, direction: RelayDirection): Promise<BaseLifecycle> {
-    const sourceClient = new ethers.JsonRpcProvider(config.sourceEndpoint);
-    const targetClient = new ethers.JsonRpcProvider(config.targetEndpoint);
+    const sourceClient = new RelayClient({
+      name: config.sourceName,
+      endpoint: config.sourceEndpoint,
+    });
+    const targetClient = new RelayClient({
+      name: config.targetName,
+      endpoint: config.targetEndpoint,
+    });
     return {
       direction,
       sourceName: config.sourceName,

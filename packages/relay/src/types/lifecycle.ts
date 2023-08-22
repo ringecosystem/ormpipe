@@ -1,17 +1,18 @@
 import {
-  ThegraphIndexChannel, ThegraphIndexerAirnode,
+  ThegraphIndexChannel,
+  ThegraphIndexerAirnode,
   ThegraphIndexerOracle,
   ThegraphIndexerRelayer
 } from "@darwinia/ormpipe-indexer";
-import {ethers} from "ethers";
 import {RelayDirection} from "./mark";
+import {RelayClient} from "../client";
 
 export interface BaseLifecycle {
   direction: RelayDirection,
   sourceName: string,
   targetName: string,
-  sourceClient: ethers.JsonRpcProvider,
-  targetClient: ethers.JsonRpcProvider,
+  sourceClient: RelayClient,
+  targetClient: RelayClient,
 }
 
 export interface OracleLifecycle extends BaseLifecycle {

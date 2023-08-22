@@ -73,7 +73,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta({target: 'oracle'})
     );
 
-    const sourceFinalizedBLock = await this.sourceClient.getBlock('finalized', false);
+    const sourceFinalizedBLock = await this.sourceClient.provider.getBlock('finalized', false);
     if (!sourceFinalizedBLock) {
       logger.error(
         'can not get %s finalized block',

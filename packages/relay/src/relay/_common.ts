@@ -1,5 +1,5 @@
 import {BaseLifecycle} from "../types/lifecycle";
-import {ethers} from "ethers";
+import {RelayClient} from "../client";
 
 export class CommonRelay<T extends BaseLifecycle> {
 
@@ -21,11 +21,11 @@ export class CommonRelay<T extends BaseLifecycle> {
     return this.lifecycle.targetName
   }
 
-  public get sourceClient(): ethers.JsonRpcProvider {
+  public get sourceClient(): RelayClient {
     return this.lifecycle.sourceClient
   }
 
-  public get targetClient(): ethers.JsonRpcProvider {
+  public get targetClient(): RelayClient {
     return this.lifecycle.targetClient
   }
 
