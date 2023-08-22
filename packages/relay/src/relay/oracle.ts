@@ -35,7 +35,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   private async run() {
     logger.debug(
-      `query last message dispatched from ${super.targetName} indexer-channel`,
+      `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta({target: 'oracle'})
     );
     const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();

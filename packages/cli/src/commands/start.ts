@@ -1,5 +1,5 @@
 import {Args, Command, Flags} from '@oclif/core'
-import {OrmpRelay, RelayConfig, StartInput, StartTask} from "@darwinia/ormpipe-relay"
+import {OrmpRelay, RelayConfig, StartRelayFlag, StartInput, StartTask} from "@darwinia/ormpipe-relay"
 import {logger} from "@darwinia/ormpipe-logger";
 
 const camelize = require('camelize')
@@ -68,6 +68,42 @@ export default class Start extends Command {
       description: '[target-chain] indexer for airnode endpoint, default use --target-indexer-endpoint'
     }),
 
+    'source-signer': Flags.string({
+      required: false,
+      description: '[source-chain] get source signer interactively',
+    }),
+    'source-signer-env': Flags.string({
+      required: false,
+      description: '[source-chain] get source signer from environment',
+      default: 'ORMPIPE_SOURCE_SIGNER',
+    }),
+    'source-signer-oracle': Flags.string({
+      required: false,
+      description: '[source-chain] get source signer for oracle contract interactively',
+    }),
+    'source-signer-oracle-env': Flags.string({
+      required: false,
+      description: '[source-chain] get source signer for oracle contract from environment',
+      default: 'ORMPIPE_SOURCE_SIGNER_ORACLE',
+    }),
+    'target-signer': Flags.string({
+      required: false,
+      description: '[target-chain] get source signer interactively',
+    }),
+    'target-signer-env': Flags.string({
+      required: false,
+      description: '[target-chain] get source signer from environment',
+      default: 'ORMPIPE_TARGET_SIGNER',
+    }),
+    'target-signer-oracle': Flags.string({
+      required: false,
+      description: '[target-chain] get source signer for oracle contract interactively',
+    }),
+    'target-signer-oracle-env': Flags.string({
+      required: false,
+      description: '[target-chain] get source signer for oracle contract from environment',
+      default: 'ORMPIPE_TARGET_SIGNER_ORACLE',
+    }),
   }
 
   static args = {
@@ -83,21 +119,23 @@ export default class Start extends Command {
 
     const {task} = args;
 
-    const relayFlags = camelize(flags) as unknown as RelayConfig;
+    const rawRelayFlags = camelize(flags) as unknown as StartRelayFlag;
 
-    const relayConfig: RelayConfig = {
-      ...relayFlags,
+    const relayConfig: StartRelayFlag = {
+      ...rawRelayFlags,
 
-      sourceIndexerOracleEndpoint: relayFlags.sourceIndexerOracleEndpoint ?? relayFlags.sourceIndexerEndpoint,
-      sourceIndexerRelayerEndpoint: relayFlags.sourceIndexerRelayerEndpoint ?? relayFlags.sourceIndexerEndpoint,
-      sourceIndexerOrmpEndpoint: relayFlags.sourceIndexerOrmpEndpoint ?? relayFlags.sourceIndexerEndpoint,
-      sourceIndexerAirnodeEndpoint: relayFlags.sourceIndexerAirnodeEndpoint ?? relayFlags.sourceIndexerEndpoint,
+      sourceIndexerOracleEndpoint: rawRelayFlags.sourceIndexerOracleEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
+      sourceIndexerRelayerEndpoint: rawRelayFlags.sourceIndexerRelayerEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
+      sourceIndexerOrmpEndpoint: rawRelayFlags.sourceIndexerOrmpEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
+      sourceIndexerAirnodeEndpoint: rawRelayFlags.sourceIndexerAirnodeEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
 
-      targetIndexerOracleEndpoint: relayFlags.targetIndexerOracleEndpoint ?? relayFlags.targetIndexerEndpoint,
-      targetIndexerRelayerEndpoint: relayFlags.targetIndexerRelayerEndpoint ?? relayFlags.targetIndexerEndpoint,
-      targetIndexerOrmpEndpoint: relayFlags.targetIndexerOrmpEndpoint ?? relayFlags.targetIndexerEndpoint,
-      targetIndexerAirnodeEndpoint: relayFlags.targetIndexerAirnodeEndpoint ?? relayFlags.targetIndexerEndpoint,
+      targetIndexerOracleEndpoint: rawRelayFlags.targetIndexerOracleEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
+      targetIndexerRelayerEndpoint: rawRelayFlags.targetIndexerRelayerEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
+      targetIndexerOrmpEndpoint: rawRelayFlags.targetIndexerOrmpEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
+      targetIndexerAirnodeEndpoint: rawRelayFlags.targetIndexerAirnodeEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
     };
+    
+    console.log(relayConfig)
 
     const ormpRelay = new OrmpRelay(relayConfig);
     const input: StartInput = {

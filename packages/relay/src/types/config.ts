@@ -22,6 +22,19 @@ export interface RelayConfig {
   targetIndexerRelayerEndpoint: string
   targetIndexerOrmpEndpoint: string
   targetIndexerAirnodeEndpoint: string
+
+  sourceSigner: string
+  sourceSignerOracle: string
+  targetSigner: string
+  targetSignerOracle: string
+
+}
+
+export interface StartRelayFlag extends RelayConfig {
+  sourceSignerEnv: string
+  targetSignerEnv: string
+  sourceSignerOracleEnv: string
+  targetSignerOracleEnv: string
 }
 
 export interface StartInput {
