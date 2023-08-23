@@ -94,18 +94,48 @@ export default class Start extends Command {
       required: false,
       description: '[source-chain] get source signer interactively',
     }),
-    'source-signer-oracle': Flags.boolean({
+    'source-signer-airnode': Flags.boolean({
       required: false,
-      description: '[source-chain] get source signer for oracle contract interactively',
+      description: '[source-chain] get source signer for airnode contract interactively',
+    }),
+    'source-signer-relayer': Flags.boolean({
+      required: false,
+      description: '[source-chain] get source signer for relayer contract interactively',
     }),
     'target-signer': Flags.boolean({
       required: false,
       description: '[target-chain] get target signer interactively',
     }),
-    'target-signer-oracle': Flags.string({
+    'target-signer-airnode': Flags.string({
       required: false,
-      description: '[target-chain] get target signer for oracle contract interactively',
+      description: '[target-chain] get target signer for airnode contract interactively',
     }),
+    'target-signer-relayer': Flags.string({
+      required: false,
+      description: '[target-chain] get target signer for relayer contract interactively',
+    }),
+
+    'source-address-airnode': Flags.string({
+      required: false,
+      description: '[source-chain] source chain airnode contract address',
+      env: 'ORMPIPE_SOURCE_ADDRESS_AIRNODE',
+    }),
+    'source-address-relayer': Flags.string({
+      required: false,
+      description: '[source-chain] source chain relayer contract address',
+      env: 'ORMPIPE_SOURCE_ADDRESS_RELAYER',
+    }),
+    'target-address-airnode': Flags.string({
+      required: false,
+      description: '[target-chain] target chain airnode contract address',
+      env: 'ORMPIPE_TARGET_ADDRESS_AIRNODE',
+    }),
+    'target-address-relayer': Flags.string({
+      required: false,
+      description: '[target-chain] target chain relayer contract address',
+      env: 'ORMPIPE_TARGET_ADDRESS_RELAYER',
+    }),
+
   }
 
   static args = {
@@ -123,7 +153,6 @@ export default class Start extends Command {
 
     const rawRelayFlags = camelize(flags) as unknown as StartRelayFlag;
     const relayConfig = await this.buildFlag(rawRelayFlags);
-    console.log(relayConfig)
 
     const ormpRelay = new OrmpRelay(relayConfig);
     const input: StartInput = {
@@ -132,7 +161,7 @@ export default class Start extends Command {
     try {
       await ormpRelay.start(input);
     } catch (e: any) {
-      logger.error(e, {target: 'cli', breads: ['ormpipe', 'start', 'task']})
+      logger.error(e, {target: 'cli', breads: ['ormpipe', 'start', task]})
     }
   }
 
@@ -159,14 +188,23 @@ export default class Start extends Command {
       title: 'please type source signer',
       default: process.env.ORMPIPE_SOURCE_SIGNER,
     });
-    const sourceSignerOracle = await this.interactiveValue({
+    const sourceSignerAirnode = await this.interactiveValue({
       required: false,
-      enable: !!relayConfig.sourceSignerOracle,
+      enable: !!relayConfig.sourceSignerAirnode,
       type: 'password',
-      name: 'source-signer-oracle',
-      message: 'missing --source-signer-oracle or ORMPIPE_SOURCE_SIGNER_ORACLE',
-      title: 'please type source signer for oracle contract',
-      default: process.env.ORMPIPE_SOURCE_SIGNER_ORACLE,
+      name: 'source-signer-airnode',
+      message: 'missing --source-signer-airnode or ORMPIPE_SOURCE_SIGNER_ORACLE',
+      title: 'please type source signer for airnode contract',
+      default: process.env.ORMPIPE_SOURCE_SIGNER_AIRNODE,
+    });
+    const sourceSignerRelayer = await this.interactiveValue({
+      required: false,
+      enable: !!relayConfig.sourceSignerRelayer,
+      type: 'password',
+      name: 'source-signer-relayer',
+      message: 'missing --source-signer-relayer or ORMPIPE_SOURCE_SIGNER_RELAYER',
+      title: 'please type source signer for relayer contract',
+      default: process.env.ORMPIPE_SOURCE_SIGNER_RELAYER,
     });
     const targetSigner = await this.interactiveValue({
       required: false,
@@ -177,23 +215,34 @@ export default class Start extends Command {
       title: 'please type target signer',
       default: process.env.ORMPIPE_TARGET_SIGNER,
     });
-    const targetSignerOracle = await this.interactiveValue({
+    const targetSignerAirnode = await this.interactiveValue({
       required: false,
-      enable: !!relayConfig.targetSignerOracle,
+      enable: !!relayConfig.targetSignerAirnode,
       type: 'password',
-      name: 'target-signer-oracle',
-      message: 'missing --target-signer-oracle or ORMPIPE_TARGET_SIGNER_ORACLE',
-      title: 'please type target signer for oracle contract',
-      default: process.env.ORMPIPE_TARGET_SIGNER_ORACLE,
+      name: 'target-signer-airnode',
+      message: 'missing --target-signer-airnode or ORMPIPE_TARGET_SIGNER_ORACLE',
+      title: 'please type target signer for airnode contract',
+      default: process.env.ORMPIPE_TARGET_SIGNER_AIRNODE,
+    });
+    const targetSignerRelayer = await this.interactiveValue({
+      required: false,
+      enable: !!relayConfig.targetSignerRelayer,
+      type: 'password',
+      name: 'target-signer-relayer',
+      message: 'missing --target-signer-relayer or ORMPIPE_TARGET_SIGNER_RELAYER',
+      title: 'please type target signer for relayer contract',
+      default: process.env.ORMPIPE_TARGET_SIGNER_RELAYER,
     });
 
 
     return {
       ...relayConfig,
       sourceSigner,
-      sourceSignerOracle: sourceSignerOracle ?? sourceSigner,
+      sourceSignerAirnode: sourceSignerAirnode ?? sourceSigner,
+      sourceSignerRelayer: sourceSignerRelayer ?? sourceSigner,
       targetSigner,
-      targetSignerOracle: targetSignerOracle ?? targetSigner,
+      targetSignerAirnode: targetSignerAirnode ?? targetSigner,
+      targetSignerRelayer: targetSignerRelayer ?? targetSigner,
     } as RelayConfig;
   }
 

@@ -2,6 +2,7 @@ import {logger} from "@darwinia/ormpipe-logger";
 import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {ThegraphIndexOrmp, ThegraphIndexerAirnode, ThegraphIndexerOracle} from "@darwinia/ormpipe-indexer";
+import {AirnodeContractClient} from "../client/contract_airnode";
 
 export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
@@ -23,6 +24,10 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   public get targetIndexerAirnode(): ThegraphIndexerAirnode {
     return super.lifecycle.targetIndexerAirnode
+  }
+
+  public get targetAirnodeClient(): AirnodeContractClient {
+    return super.lifecycle.targetAirnodeClient
   }
 
   public async start() {
@@ -108,6 +113,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.targetName,
       super.meta({target: 'oracle'}),
     );
+
+    await this.targetAirnodeClient.requestFinalizedHash();
 
     console.log(JSON.stringify(beacons));
   }

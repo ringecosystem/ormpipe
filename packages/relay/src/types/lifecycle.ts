@@ -6,6 +6,8 @@ import {
 } from "@darwinia/ormpipe-indexer";
 import {RelayDirection} from "./mark";
 import {RelayClient} from "../client";
+import {AirnodeContractClient} from "../client/contract_airnode";
+import {RelayerContractClient} from "../client/contract_relayer";
 
 export interface BaseLifecycle {
   direction: RelayDirection,
@@ -20,6 +22,7 @@ export interface OracleLifecycle extends BaseLifecycle {
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerAirnode: ThegraphIndexerAirnode,
+  targetAirnodeClient: AirnodeContractClient,
 }
 
 export interface RelayerLifecycle extends BaseLifecycle {
@@ -27,4 +30,5 @@ export interface RelayerLifecycle extends BaseLifecycle {
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerAirnode: ThegraphIndexerAirnode,
+  targetRelayerClient: RelayerContractClient,
 }

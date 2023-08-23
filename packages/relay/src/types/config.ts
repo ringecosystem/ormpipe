@@ -24,9 +24,16 @@ export interface RelayConfig {
   targetIndexerAirnodeEndpoint: string
 
   sourceSigner: string
-  sourceSignerOracle: string
+  sourceSignerAirnode: string
+  sourceSignerRelayer: string
   targetSigner: string
-  targetSignerOracle: string
+  targetSignerAirnode: string
+  targetSignerRelayer: string
+
+  sourceAddressAirnode: string
+  sourceAddressRelayer: string
+  targetAddressAirnode: string
+  targetAddressRelayer: string
 
 }
 
