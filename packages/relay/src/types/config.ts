@@ -30,12 +30,7 @@ export interface RelayConfig {
 
 }
 
-export interface StartRelayFlag extends RelayConfig {
-  sourceSignerEnv: string
-  targetSignerEnv: string
-  sourceSignerOracleEnv: string
-  targetSignerOracleEnv: string
-}
+export type StartRelayFlag = RelayConfig;
 
 export interface StartInput {
   task: StartTask

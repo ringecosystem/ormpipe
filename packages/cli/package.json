@@ -21,7 +21,8 @@
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^3.2.0",
-    "camelize": "^1"
+    "camelize": "^1",
+    "enquirer": "^2"
   },
   "devDependencies": {
     "@types/jest": "^29",
