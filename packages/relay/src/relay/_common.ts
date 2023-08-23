@@ -29,18 +29,14 @@ export class CommonRelay<T extends BaseLifecycle> {
     return this.lifecycle.targetClient
   }
 
-  public meta(meta: RelayLogMeta): any {
+  public meta(target: string, breads?: string[]): any {
     return {
-      target: meta.target,
+      target,
       breads: [
         `${this.sourceName}>${this.targetName}`,
-        ...(meta.breads ?? [])
+        ...(breads ?? [])
       ]
     }
   }
 }
 
-export interface RelayLogMeta {
-  target: string,
-  breads?: string[],
-}

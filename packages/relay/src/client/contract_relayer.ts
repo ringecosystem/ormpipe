@@ -1,5 +1,6 @@
 import {ContractClientConfig} from "./index";
 import {ethers} from "ethers";
+const abi = require("../abis/OrmpRelayer.json");
 
 export class RelayerContractClient {
 
@@ -7,7 +8,7 @@ export class RelayerContractClient {
 
   constructor(config: ContractClientConfig) {
     const wallet = new ethers.Wallet(config.signer, config.provider);
-    this.contract = new ethers.Contract(config.address, '', wallet);
+    this.contract = new ethers.Contract(config.address, abi, wallet);
   }
 
 

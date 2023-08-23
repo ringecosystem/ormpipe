@@ -1,8 +1,10 @@
 import {logger} from "@darwinia/ormpipe-logger";
 import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
-import {ThegraphIndexOrmp, ThegraphIndexerAirnode, ThegraphIndexerOracle} from "@darwinia/ormpipe-indexer";
+import {ThegraphIndexerAirnode, ThegraphIndexerOracle, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
 import {AirnodeContractClient} from "../client/contract_airnode";
+import * as asyncx from "async";
+import {setTimeout} from 'node:timers/promises';
 
 export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
@@ -32,16 +34,23 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   public async start() {
     try {
-      await this.run();
+      const rets = await asyncx.parallel({
+        deliver: callback => this.delivery(),
+        aggregate: callback => this.aggregate(),
+      });
+      console.log(rets);
+      // await this.delivery();
+      // await this.aggregate();
     } catch (e: any) {
-      logger.error(e, super.meta({target: 'oracle'}));
+      logger.error(e, super.meta('oracle'));
     }
   }
 
-  private async run() {
+  private async delivery() {
+    logger.debug('start oracle deliver', super.meta('oracle', ['delivery']));
     logger.debug(
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
-      super.meta({target: 'oracle'})
+      super.meta('oracle', ['delivery'])
     );
     const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
     // todo: check running block
@@ -50,14 +59,14 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       `queried next oracle from block number %s(%s)`,
       queryNextMessageAndOracleFromBlockNumber,
       super.sourceName,
-      super.meta({target: 'oracle'})
+      super.meta('oracle', ['delivery'])
     );
 
     const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
       blockNumber: queryNextMessageAndOracleFromBlockNumber
     });
     if (!sourceNextMessageAccepted) {
-      logger.info('not have more message accepted', super.meta({target: 'oracle'}));
+      logger.info('not have more message accepted', super.meta('oracle', ['delivery']));
       return;
     }
     const sourceNextOracleAssigned = await this.sourceIndexerOracle.nextAssigned({
@@ -67,7 +76,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       logger.info(
         `new message accepted but not assigned to myself. %s`,
         sourceNextMessageAccepted.msgHash,
-        super.meta({target: 'oracle'})
+        super.meta('oracle', ['delivery'])
       );
       return;
     }
@@ -76,7 +85,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       sourceNextMessageAccepted.msgHash,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
-      super.meta({target: 'oracle'})
+      super.meta('oracle', ['delivery'])
     );
 
     const sourceFinalizedBLock = await this.sourceClient.provider.getBlock('finalized', false);
@@ -84,7 +93,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       logger.error(
         'can not get %s finalized block',
         super.sourceName,
-        super.meta({target: 'oracle'}),
+        super.meta('oracle', ['delivery']),
       );
       return;
     }
@@ -94,7 +103,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
         sourceNextMessageAccepted.blockNumber,
         sourceFinalizedBLock.number,
         super.sourceName,
-        super.meta({target: 'oracle'}),
+        super.meta('oracle', ['delivery']),
       )
       return;
     }
@@ -103,7 +112,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       sourceNextMessageAccepted.blockNumber,
       sourceFinalizedBLock.number,
       super.sourceName,
-      super.meta({target: 'oracle'}),
+      super.meta('oracle', ['delivery']),
     );
 
     const beacons = await this.targetIndexerAirnode.beacons();
@@ -111,12 +120,22 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       'queried %s beacons from %s airnode-dapi contract',
       beacons.length,
       super.targetName,
-      super.meta({target: 'oracle'}),
+      super.meta('oracle', ['delivery']),
     );
 
+    logger.warn('==== TODO: requestFinalizedHash =====', super.meta('oracle', ['delivery']));
     await this.targetAirnodeClient.requestFinalizedHash();
+    logger.info(
+      'called %s airnode contract requestFinalizedHash, wait aggregate',
+      super.targetName,
+      super.meta('oracle', ['delivery']),
+    );
+  }
 
-    console.log(JSON.stringify(beacons));
+  private async aggregate() {
+    logger.debug('start oracle aggregate', super.meta('oracle', ['aggregate']));
+    await setTimeout(8000);
+    console.log('aggregated end');
   }
 
 }

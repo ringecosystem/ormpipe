@@ -4,7 +4,7 @@
   "description": "ormpipe relay",
   "main": "dist/index.js",
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && tsc -b && shx cp -r src/abis dist/",
     "lint": "eslint . --ext .ts --fix",
     "posttest": "yarn lint",
     "test": "jest",
@@ -15,11 +15,13 @@
   "license": "MIT",
   "dependencies": {
     "@darwinia/ormpipe-indexer": "^0.0.1",
-    "ethers": "^6"
+    "ethers": "^6",
+    "async": "^3"
   },
   "devDependencies": {
     "@types/jest": "^29",
     "@types/node": "^20",
+    "@types/async": "^3",
     "@typescript-eslint/eslint-plugin": "^5",
     "@typescript-eslint/parser": "^5",
     "eslint": "^8",
