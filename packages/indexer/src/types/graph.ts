@@ -11,6 +11,10 @@ export type QueryNextOracleAssigned = _QueryWithBlockNumber
 export type QueryNextRelayerAssigned = _QueryWithBlockNumber
 export type QueryNextChannelMessagAccepted = _QueryWithBlockNumber
 
+export interface QueryNextAirnodeCompleted {
+  beaconId: string
+}
+
 export interface QueryChannelMessageAccepted {
   msgHash: string
 }
@@ -61,4 +65,14 @@ export interface AirnodeBeacon extends AirnodeBeaconBase {
   beacon_endpointId: string
   beacon_sponsor: string
   beacon_sponsorWallet: string
+}
+
+export interface AirnodeComplted extends AirnodeBeaconBase {
+  requestId: string
+  data: string
+}
+
+export interface AirnodBeaconCompletedDistruibution {
+  beaconId: string
+  data: string
 }
