@@ -33,17 +33,25 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   public async start() {
     try {
-      const rets = await asyncx.parallel({
-        delivery: callback => this.delivery(),
-        aggregate: callback => this.aggregate(),
-      });
-      console.log(rets);
+      await asyncx.parallel({
+        delivery: callback => {
+          this.delivery()
+            .then(() => callback(null))
+            .catch(e => callback(e));
+        },
+        aggregate: callback => {
+          this.aggregate()
+            .then(() => callback(null))
+            .catch(e => callback(e));
+        },
+      })
     } catch (e: any) {
       logger.error(e, super.meta('oracle'));
     }
   }
 
   private async delivery() {
+    logger.debug('start oracle deliver', super.meta('oracle', ['delivery']));
     // delivery start block
     logger.debug(
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
@@ -59,7 +67,6 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('oracle', ['delivery'])
     );
 
-    logger.debug('start oracle deliver', super.meta('oracle', ['delivery']));
     const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
       blockNumber: queryNextMessageAndOracleFromBlockNumber,
     });
@@ -175,6 +182,18 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     }
     const completedData = completedDatas[0];
 
+    const lastAggregatedMessageRoot = await this.targetIndexerAirnode.lastAggregatedMessageRoot();
+    if (lastAggregatedMessageRoot) {
+      if (lastAggregatedMessageRoot.msgRoot === completedData) {
+        logger.warn(
+          'the message root %s already aggregated',
+          super.targetName,
+          super.meta('oracle', ['aggregate']),
+        );
+        return;
+      }
+    }
+
     const aggregateBeaconIds = distruibutions
       .filter(item => item.data == completedData)
       .map(item => item.beaconId);
@@ -184,6 +203,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       JSON.stringify(aggregateBeaconIds),
       super.meta('oracle', ['aggregate']),
     );
+
     logger.warn('==== TODO: aggregateBeacons =====', super.meta('oracle', ['aggregate']));
     await this.targetAirnodeClient.aggregateBeacons(aggregateBeaconIds);
 

@@ -72,7 +72,11 @@ export interface AirnodeComplted extends AirnodeBeaconBase {
   data: string
 }
 
-export interface AirnodBeaconCompletedDistruibution {
+export interface AirnodeBeaconCompletedDistruibution {
   beaconId: string
   data: string
+}
+
+export interface AirnodeAggregatedMessageRoot {
+  msgRoot: string
 }

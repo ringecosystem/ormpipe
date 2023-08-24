@@ -12,4 +12,8 @@ export class RelayerContractClient {
   }
 
 
+  public async relay() {
+
+  }
+
 }

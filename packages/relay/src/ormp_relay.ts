@@ -1,12 +1,13 @@
 import {OracleRelay} from "./relay/oracle";
-import {RelayConfig, StartInput, StartTask} from "./types/config";
-import {ethers} from "ethers";
+import {RawOrmpRelayStartInput, RelayConfig, OrmpRelayStartInput, StartTask} from "./types/config";
 import {BaseLifecycle, OracleLifecycle, RelayerLifecycle} from "./types/lifecycle";
 import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
 import {RelayerRelay} from "./relay/relayer";
 import {RelayDirection} from "./types/mark";
 import {ThegraphIndexer} from "@darwinia/ormpipe-indexer/dist/thegraph";
 import {RelayClient} from "./client";
+import {setTimeout} from "timers/promises";
+import {logger} from "@darwinia/ormpipe-logger";
 
 export class OrmpRelay {
   constructor(
@@ -14,40 +15,86 @@ export class OrmpRelay {
   ) {
   }
 
-  public async start(input: StartInput) {
-    // start ormp relay
+  public async start(input: OrmpRelayStartInput) {
+    let times = 0;
+    while (true) {
+      times += 1;
+      logger.info('====== try to relay round %s ======', times, {target: 'ormpipe'});
+      const {tasks} = input;
+      for (const task of tasks) {
+        try {
+          await this.run({task});
+        } catch (e: any) {
+          logger.error(e, {target: 'ormpipe', breads: ['ormpipe', 'start', task]});
+        } finally {
+          await setTimeout(5000);
+        }
+      }
+    }
+  }
 
+  private async run(input: RawOrmpRelayStartInput) {
     // source -> target
     const sourceToTargetConfig: RelayConfig = {...this.config};
     // target -> source
-    // const targetToSourceConfig: RelayConfig = {
-    //   sourceName: this.config.targetName,
-    //   sourceEndpoint: this.config.targetEndpoint,
-    //   targetName: this.config.sourceName,
-    //   targetEndpoint: this.config.sourceEndpoint,
-    //   sourceIndexerEndpoint: this.config.targetIndexerEndpoint,
-    //   sourceIndexerOracleEndpoint: this.config.targetIndexerOracleEndpoint,
-    //   sourceIndexerRelayerEndpoint: this.config.targetIndexerRelayerEndpoint,
-    //   sourceIndexerOrmpEndpoint: this.config.targetIndexerOrmpEndpoint,
-    //   sourceIndexerAirnodeEndpoint: this.config.targetIndexerAirnodeEndpoint,
-    //   targetIndexerEndpoint: this.config.sourceIndexerEndpoint,
-    //   targetIndexerOracleEndpoint: this.config.sourceIndexerOracleEndpoint,
-    //   targetIndexerRelayerEndpoint: this.config.sourceIndexerRelayerEndpoint,
-    //   targetIndexerOrmpEndpoint: this.config.sourceIndexerOrmpEndpoint,
-    //   targetIndexerAirnodeEndpoint: this.config.sourceIndexerAirnodeEndpoint,
-    // };
+    const targetToSourceConfig: RelayConfig = {
+      task: this.config.task,
+      sourceName: this.config.targetName,
+      sourceEndpoint: this.config.targetEndpoint,
+      targetName: this.config.sourceName,
+      targetEndpoint: this.config.sourceEndpoint,
+      sourceIndexerEndpoint: this.config.targetIndexerEndpoint,
+      sourceIndexerOracleEndpoint: this.config.targetIndexerOracleEndpoint,
+      sourceIndexerRelayerEndpoint: this.config.targetIndexerRelayerEndpoint,
+      sourceIndexerOrmpEndpoint: this.config.targetIndexerOrmpEndpoint,
+      sourceIndexerAirnodeEndpoint: this.config.targetIndexerAirnodeEndpoint,
+      targetIndexerEndpoint: this.config.sourceIndexerEndpoint,
+      targetIndexerOracleEndpoint: this.config.sourceIndexerOracleEndpoint,
+      targetIndexerRelayerEndpoint: this.config.sourceIndexerRelayerEndpoint,
+      targetIndexerOrmpEndpoint: this.config.sourceIndexerOrmpEndpoint,
+      targetIndexerAirnodeEndpoint: this.config.sourceIndexerAirnodeEndpoint,
+      sourceSigner: this.config.targetSigner,
+      sourceSignerAirnode: this.config.targetSignerAirnode,
+      sourceSignerRelayer: this.config.targetSignerRelayer,
+      targetSigner: this.config.sourceSigner,
+      targetSignerAirnode: this.config.sourceSignerAirnode,
+      targetSignerRelayer: this.config.sourceSignerRelayer,
+      sourceAddressAirnode: this.config.targetAddressAirnode,
+      sourceAddressRelayer: this.config.targetAddressRelayer,
+      targetAddressAirnode: this.config.sourceAddressAirnode,
+      targetAddressRelayer: this.config.sourceAddressRelayer,
+    };
 
     switch (input.task) {
       case StartTask.oracle: {
-        const lifecycle = await this.initOracleLifecycle(sourceToTargetConfig, RelayDirection.SourceToTarget);
-        const relayer = new OracleRelay(lifecycle);
-        await relayer.start();
+        const sourceToTargetLifecycle = await this.initOracleLifecycle(
+          sourceToTargetConfig,
+          RelayDirection.SourceToTarget,
+        );
+        const targetToSourceLifecycle = await this.initOracleLifecycle(
+          targetToSourceConfig,
+          RelayDirection.TargetToSource,
+        );
+        const sourceToTargetRelayer = new OracleRelay(sourceToTargetLifecycle);
+        await sourceToTargetRelayer.start();
+        const targetToSourceRelayer = new OracleRelay(targetToSourceLifecycle);
+        await targetToSourceRelayer.start();
         break;
       }
       case StartTask.relayer: {
-        const lifecycle = await this.initRelayerLifecycle(sourceToTargetConfig, RelayDirection.TargetToSource);
-        const relayer = new RelayerRelay(lifecycle);
-        await relayer.start();
+        const sourceToTargetLifecycle = await this.initRelayerLifecycle(
+          sourceToTargetConfig,
+          RelayDirection.TargetToSource,
+        );
+        const targetToSourceLifeCycle = await this.initRelayerLifecycle(
+          targetToSourceConfig,
+          RelayDirection.TargetToSource,
+        );
+        const sourceToTargetRelayer = new RelayerRelay(sourceToTargetLifecycle);
+        await sourceToTargetRelayer.start();
+
+        const targetToSourceRelayer = new RelayerRelay(targetToSourceLifeCycle);
+        await targetToSourceRelayer.start();
         break;
       }
     }

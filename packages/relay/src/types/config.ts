@@ -5,6 +5,7 @@ export enum StartTask {
 }
 
 export interface RelayConfig {
+  task: StartTask[],
   sourceName: string
   sourceEndpoint: string
 
@@ -39,6 +40,10 @@ export interface RelayConfig {
 
 export type StartRelayFlag = RelayConfig;
 
-export interface StartInput {
+export interface OrmpRelayStartInput {
+  tasks: StartTask[]
+}
+
+export interface RawOrmpRelayStartInput {
   task: StartTask
 }

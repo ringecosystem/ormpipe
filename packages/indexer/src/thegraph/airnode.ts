@@ -1,8 +1,9 @@
 import {GraphCommon} from "./_common";
 import {
-  AirnodBeaconCompletedDistruibution,
+  AirnodeAggregatedMessageRoot,
   AirnodeBeacon,
   AirnodeBeaconBase,
+  AirnodeBeaconCompletedDistruibution,
   AirnodeComplted,
   QueryNextAirnodeCompleted
 } from "../types/graph";
@@ -72,14 +73,34 @@ export class ThegraphIndexerAirnode extends GraphCommon {
     return await super.single({query, variables, schema: 'airnodeRrpCompleteds'})
   }
 
-  public async beaconAirnodeCompletedDistribution(beacons: string[]): Promise<AirnodBeaconCompletedDistruibution[]> {
-    const completeds = [] as AirnodBeaconCompletedDistruibution[];
+  public async beaconAirnodeCompletedDistribution(beacons: string[]): Promise<AirnodeBeaconCompletedDistruibution[]> {
+    const completeds = [] as AirnodeBeaconCompletedDistruibution[];
     for (const beaconId of beacons) {
       const c = await this.lastAirnodeCompleted({beaconId});
       if (!c) continue;
       completeds.push(c);
     }
     return completeds;
+  }
+
+  public async lastAggregatedMessageRoot(): Promise<AirnodeAggregatedMessageRoot | undefined> {
+    const query = `
+    query QueryLastAggregatedMessageRoot {
+      aggregatedMessageRoots(
+        first: 1
+        orderBy: blockNumber
+        orderDirection: desc
+      ) {
+        id
+        blockNumber
+        blockTimestamp
+        transactionHash
+
+        msgRoot
+      }
+    }
+    `;
+    return await super.single({query, schema: 'aggregatedMessageRoots'});
   }
 
 }

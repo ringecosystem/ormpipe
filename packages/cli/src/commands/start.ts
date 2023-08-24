@@ -1,5 +1,5 @@
 import {Args, Command, Flags} from '@oclif/core'
-import {OrmpRelay, RelayConfig, StartRelayFlag, StartInput, StartTask} from "@darwinia/ormpipe-relay"
+import {OrmpRelay, RelayConfig, StartRelayFlag, OrmpRelayStartInput, StartTask} from "@darwinia/ormpipe-relay"
 import {logger} from "@darwinia/ormpipe-logger";
 import * as enquirer from 'enquirer';
 
@@ -14,6 +14,13 @@ export default class Start extends Command {
   ]
 
   static flags = {
+    task: Flags.string({
+      required: true,
+      multiple: true,
+      description: 'task name',
+      options: [StartTask.oracle, StartTask.relayer],
+    }),
+
     'source-name': Flags.string({
       required: true,
       description: '[source-chain] name',
@@ -139,29 +146,30 @@ export default class Start extends Command {
   }
 
   static args = {
-    task: Args.string({
-      required: true,
-      description: 'relay task name',
-      options: ['oracle', 'relayer'],
-    }),
+    // task: Args.string({
+    //   required: true,
+    //   description: 'relay task name',
+    //   options: ['oracle', 'relayer'],
+    // }),
   }
 
   public async run(): Promise<void> {
-    const {args, flags} = await this.parse(Start)
+    const {flags} = await this.parse(Start)
 
-    const {task} = args;
+    // const {task} = args;
 
     const rawRelayFlags = camelize(flags) as unknown as StartRelayFlag;
     const relayConfig = await this.buildFlag(rawRelayFlags);
 
     const ormpRelay = new OrmpRelay(relayConfig);
-    const input: StartInput = {
-      task: task as unknown as StartTask,
+    const input: OrmpRelayStartInput = {
+      tasks: rawRelayFlags.task,
     };
     try {
+      console.log(input);
       await ormpRelay.start(input);
     } catch (e: any) {
-      logger.error(e, {target: 'cli', breads: ['ormpipe', 'start', task]})
+      logger.error(e, {target: 'cli', breads: ['ormpipe', 'start']})
     }
   }
 
@@ -258,7 +266,7 @@ export default class Start extends Command {
     let value = options.default;
 
     if (options.enable) {
-      const response: {field: string} = await enquirer.prompt({
+      const response: { field: string } = await enquirer.prompt({
         type: options.type ?? 'input',
         name: 'field',
         message: options.title,
