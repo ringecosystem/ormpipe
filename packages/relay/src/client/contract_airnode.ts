@@ -2,10 +2,6 @@ import {ContractClientConfig} from "./index";
 import {ethers} from "ethers";
 const abi = require('../abis/AirnodeDapi.json');
 
-export interface AirnodeCompletedData {
-
-}
-
 export class AirnodeContractClient {
 
   private readonly contract: ethers.Contract;
