@@ -1,0 +1,28 @@
+{
+  "name": "@darwinia/ormpipe",
+  "version": "0.0.1",
+  "description": "ORMP relay program",
+  "private": true,
+  "author": "Darwinia Network <hello@darwinia.network>",
+  "license": "MIT",
+  "homepage": "https://github.com/darwinia-network/ormpipe",
+  "bugs": {
+    "url": "https://github.com/darwinia-network/ormpipe/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darwinia-network/ormpipe.git"
+  },
+  "scripts": {
+    "build:all": "lerna run build",
+    "test:all": "lerna run test",
+    "lint:all": "lerna run lint"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "lerna": "^7.1.4",
+    "nx": "^16.6.0"
+  }
+}
