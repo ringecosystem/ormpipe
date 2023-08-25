@@ -1,10 +1,9 @@
-import {Args, Command, Flags} from '@oclif/core'
+import {Command, Flags} from '@oclif/core'
 import {OrmpRelay, RelayConfig, StartRelayFlag, OrmpRelayStartInput, StartTask} from "@darwinia/ormpipe-relay"
 import {logger} from "@darwinia/ormpipe-logger";
 import * as enquirer from 'enquirer';
 
 const camelize = require('camelize')
-// const { prompt } = require('enquirer')
 
 export default class Start extends Command {
   static description = 'describe the command here'
@@ -166,7 +165,6 @@ export default class Start extends Command {
       tasks: rawRelayFlags.task,
     };
     try {
-      console.log(input);
       await ormpRelay.start(input);
     } catch (e: any) {
       logger.error(e, {target: 'cli', breads: ['ormpipe', 'start']})
