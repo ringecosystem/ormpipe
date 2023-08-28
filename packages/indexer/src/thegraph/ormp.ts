@@ -11,7 +11,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
   public async inspectMessageAccepted(variables: QueryChannelMessageAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
     const query = `
     query QueryMessageAccepted($msgHash: Bytes!) {
-      messageAccepteds(
+      ormpProtocolMessageAccepteds(
         first: 1
         orderBy: blockNumber
         orderDirection: asc
@@ -36,18 +36,18 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
     }
     `;
-    return await super.single({query, variables, schema: 'messageAccepteds'});
+    return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
 
   public async nextMessageAccepted(variables: QueryNextChannelMessagAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
     const query = `
-    query QueryNextMessageAccepted {
+    query QueryNextMessageAccepted($blockNumber: BigInt!) {
       ormpProtocolMessageAccepteds(
         first: 1
         orderBy: blockNumber
         orderDirection: asc
         where: {
-          blockNumber_gt: 0
+          blockNumber_gt: $blockNumber
         }
       ) {
         id
@@ -88,7 +88,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
     }
     `;
-    return await super.single({query, variables: {}, schema: 'ormpProtocolMessageDispatcheds'});
+    return await super.single({query, schema: 'ormpProtocolMessageDispatcheds'});
   }
 
 }
