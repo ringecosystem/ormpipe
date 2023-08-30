@@ -44,7 +44,7 @@ export class GraphCommon {
     return data ? new GraphResponseData(data) : GraphResponseData.def();
   }
 
-  public async list<T>(options: QueryGenericGraphql): Promise<T[] | undefined> {
+  public async list<T>(options: QueryGenericGraphql): Promise<T[]> {
     const gdata = await this.query(options);
     return gdata.list<T>(options.schema);
   }

@@ -11,7 +11,7 @@ const padOpts = {
 function _refactorMessage(info: winston.Logform.TransformableInfo) {
   const {target, message, breads, timestamp} = info;
 
-  const albs = [];
+  const albs = [] as string[];
   if (target) {
     albs.push(target);
   }
@@ -27,7 +27,8 @@ function _refactorMessage(info: winston.Logform.TransformableInfo) {
     const needLen = (i + 1) > savedBreadLength.length
       ? breadLen
       : (breadLen > savedBreadLength[i] ? breadLen : savedBreadLength[i]);
-    parts.push(pad(bread, needLen, padOpts));
+    const breadText = pad(bread, needLen, padOpts);
+    parts.push(breadText);
     savedBreadLength[i] = needLen;
   }
 

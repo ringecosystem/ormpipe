@@ -1,8 +1,11 @@
 import {RelayerLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {ThegraphIndexOrmp, ThegraphIndexerAirnode, ThegraphIndexerRelayer} from "@darwinia/ormpipe-indexer";
-import {RelayerContractClient} from "../client/contract_relayer";
+import {OrmpProtocolMessage, RelayerContractClient} from "../client/contract_relayer";
 import {logger} from "@darwinia/ormpipe-logger";
+import {IncrementalMerkleTree} from '../helper/imt'
+import {AbiCoder} from "ethers";
+import chalk = require('chalk');
 
 export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
@@ -34,7 +37,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     try {
       await this.run();
     } catch (e: any) {
-      logger.error(e, super.meta('relayer'));
+      logger.error(e, super.meta('relayer', ['relay']));
     }
   }
 
@@ -45,9 +48,17 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('relayer', ['relay'])
     );
-    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
     // todo: check running block
-    const queryNextMessageStartBlockNumber = +(targetLastMessageDispatched?.blockNumber ?? 0);
+    let queryNextMessageStartBlockNumber = 0;
+    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
+    if (targetLastMessageDispatched) {
+      const sourceChainLastDispatched = await this.sourceIndexerOrmp.inspectMessageAccepted({
+        msgHash: targetLastMessageDispatched.msgHash,
+      });
+      if (sourceChainLastDispatched) {
+        queryNextMessageStartBlockNumber = +sourceChainLastDispatched.blockNumber;
+      }
+    }
     logger.debug(
       `queried next relayer from block number %s(%s)`,
       queryNextMessageStartBlockNumber,
@@ -73,7 +84,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return;
     }
     logger.info(
-      `new message accepted %s wait block %s(%s) finalized`,
+      'new message accepted %s from %s(%s)',
       sourceNextMessageAccepted.msgHash,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
@@ -89,10 +100,10 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return;
     }
-    const lastAggregatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
-      msgHash: targetLastAggregatedMessageRoot.msgRoot,
+    const sourceLastAggregatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+      root: targetLastAggregatedMessageRoot.msgRoot,
     });
-    if (!lastAggregatedMessageAccepted) {
+    if (!sourceLastAggregatedMessageAccepted) {
       logger.warn(
         'can not query message accepted from %s use aggregated message %s %s',
         super.sourceName,
@@ -102,19 +113,66 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return;
     }
-    if (sourceNextMessageAccepted.blockNumber <= lastAggregatedMessageAccepted.blockNumber) {
+    // console.log(sourceNextMessageAccepted.blockNumber, sourceLastAggregatedMessageAccepted.blockNumber);
+    if (sourceNextMessageAccepted.blockNumber > sourceLastAggregatedMessageAccepted.blockNumber) {
       logger.info(
-        'last accepted message already aggregated from %s',
+        'last accepted message large than aggregated message from %s (%s > %s)',
         super.targetName,
+        sourceNextMessageAccepted.blockNumber,
+        sourceLastAggregatedMessageAccepted.blockNumber,
         super.meta('relayer', ['relay'])
       );
       return;
     }
 
-    sourceNextMessageAccepted.message_index
-    logger.info('relay message');
-    // todo: relay message
-    await this.targetRelayerClient.relay();
+
+    const message: OrmpProtocolMessage = {
+      channel: sourceNextMessageAccepted.message_channel,
+      index: +sourceNextMessageAccepted.message_index,
+      fromChainId: +sourceNextMessageAccepted.message_fromChainId,
+      from: sourceNextMessageAccepted.message_from,
+      toChainId: +sourceNextMessageAccepted.message_toChainId,
+      to: sourceNextMessageAccepted.message_to,
+      encoded: sourceNextMessageAccepted.message_encoded,
+    };
+
+    const rawMsgHashes = await this.sourceIndexerOrmp.messageHashes({
+      blockNumber: +sourceLastAggregatedMessageAccepted.blockNumber,
+    });
+    const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
+    const imt = new IncrementalMerkleTree(msgHashes);
+    const messageProof = imt.getSingleHexProof(message.index);
+
+    const abiCoder = AbiCoder.defaultAbiCoder();
+    const params = sourceNextRelayerAssigned.parmas;
+    const decodedGasLimit = abiCoder.decode(['uint'], params);
+    const gasLimit = decodedGasLimit[0];
+
+    const encodedProof = abiCoder.encode([
+        'tuple(uint blockNumber, uint messageIndex, bytes32[32] messageProof)'],
+      [
+        {
+          blockNumber: sourceNextMessageAccepted.blockNumber,
+          messageIndex: message.index,
+          messageProof: messageProof
+        }
+      ]
+    );
+
+    console.log(imt.root());
+    console.log(rawMsgHashes);
+    console.log(message);
+    console.log(messageProof);
+
+    // console.log('------ relay');
+    const targetTxRelayMessage = await this.targetRelayerClient.relay(message, encodedProof, gasLimit);
+    logger.info(
+      'message relayed to %s {tx: %s, block: %s}',
+      super.targetName,
+      chalk.magenta(targetTxRelayMessage.hash),
+      chalk.cyan(targetTxRelayMessage.blockNumber),
+      super.meta('relayer', ['relay'])
+    );
   }
 
 }

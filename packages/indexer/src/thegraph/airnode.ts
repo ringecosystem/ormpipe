@@ -8,6 +8,17 @@ import {
   QueryNextAirnodeCompleted
 } from "../types/graph";
 
+enum BeaconOperation {
+  add = 'add',
+  remove = 'remove',
+}
+
+interface BeaconSortable {
+  beaconId: string
+  blockNumber: number
+  operation: BeaconOperation,
+}
+
 export class ThegraphIndexerAirnode extends GraphCommon {
 
   public async beacons(): Promise<AirnodeBeacon[]> {
@@ -45,7 +56,35 @@ export class ThegraphIndexerAirnode extends GraphCommon {
     const gdata = await super.query({query});
     const addeds: AirnodeBeacon[] = gdata.list('addBeacons');
     const removeds: AirnodeBeaconBase[] = gdata.list('removeBeacons');
-    return addeds.filter(ai => removeds.findIndex(ri => ri.beaconId == ai.beaconId) == -1);
+    const beaconsSortables: BeaconSortable[] = [
+      ...removeds.map(item => {
+        return {beaconId: item.beaconId, blockNumber: +item.blockNumber, operation: BeaconOperation.remove};
+      }),
+      ...addeds.map(item => {
+        return {beaconId: item.beaconId, blockNumber: +item.blockNumber, operation: BeaconOperation.add};
+      }),
+    ];
+    beaconsSortables.sort((a, b) => a.blockNumber - b.blockNumber);
+    const beacons: AirnodeBeacon[] = [];
+    for (const bsa of beaconsSortables) {
+      switch (bsa.operation) {
+        case BeaconOperation.add:
+          const beaconAdd = addeds.find(
+            item => item.beaconId == bsa.beaconId && +item.blockNumber == bsa.blockNumber
+          )
+          if (beaconAdd) {
+            beacons.push(beaconAdd);
+          }
+          break;
+        case BeaconOperation.remove:
+          beacons.splice(
+            beacons.findIndex(item => item.beaconId == bsa.beaconId && +item.blockNumber == bsa.blockNumber),
+            1
+          );
+          break;
+      }
+    }
+    return beacons;
   }
 
   public async lastAirnodeCompleted(variables: QueryNextAirnodeCompleted): Promise<AirnodeComplted | undefined> {

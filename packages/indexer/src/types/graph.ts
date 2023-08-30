@@ -10,14 +10,17 @@ export interface QueryGraph {
 export type QueryNextOracleAssigned = _QueryWithBlockNumber
 export type QueryNextRelayerAssigned = _QueryWithBlockNumber
 export type QueryNextChannelMessagAccepted = _QueryWithBlockNumber
+export type QueryMessageHashes = _QueryWithBlockNumber
 
 export interface QueryNextAirnodeCompleted {
   beaconId: string
 }
 
 export interface QueryChannelMessageAccepted {
-  msgHash: string
+  msgHash?: string
+  root?: string
 }
+
 
 export interface IGraphResponse<T> {
   data: T

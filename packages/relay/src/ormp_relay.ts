@@ -1,5 +1,5 @@
 import {OracleRelay} from "./relay/oracle";
-import {RawOrmpRelayStartInput, RelayConfig, OrmpRelayStartInput, StartTask} from "./types/config";
+import {OrmpRelayStartInput, RawOrmpRelayStartInput, RelayConfig, StartTask} from "./types/config";
 import {BaseLifecycle, OracleLifecycle, RelayerLifecycle} from "./types/lifecycle";
 import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
 import {RelayerRelay} from "./relay/relayer";
@@ -16,14 +16,23 @@ export class OrmpRelay {
   }
 
   public async start(input: OrmpRelayStartInput) {
+    if (!this.config.enableSourceToTarget && !this.config.enableTargetToSource) {
+      logger.warn(
+        'not have pipe enabled, please add --enable-source-to-target or --enable-target-to-source to your command',
+        {target: 'ormpipe', breads: ['ormpipe', 'start']},
+      );
+      return;
+    }
+
+    const {tasks, features} = input;
+
     let times = 0;
     while (true) {
       times += 1;
       logger.info('====== try to relay round %s ======', times, {target: 'ormpipe'});
-      const {tasks} = input;
       for (const task of tasks) {
         try {
-          await this.run({task});
+          await this.run({task, features});
         } catch (e: any) {
           logger.error(e, {target: 'ormpipe', breads: ['ormpipe', 'start', task]});
         } finally {
@@ -39,6 +48,9 @@ export class OrmpRelay {
     // target -> source
     const targetToSourceConfig: RelayConfig = {
       task: this.config.task,
+      feature: this.config.feature,
+      enableSourceToTarget: this.config.enableSourceToTarget,
+      enableTargetToSource: this.config.enableTargetToSource,
       sourceName: this.config.targetName,
       sourceEndpoint: this.config.targetEndpoint,
       targetName: this.config.sourceName,
@@ -65,36 +77,46 @@ export class OrmpRelay {
       targetAddressRelayer: this.config.sourceAddressRelayer,
     };
 
+    const features = input.features;
     switch (input.task) {
       case StartTask.oracle: {
-        const sourceToTargetLifecycle = await this.initOracleLifecycle(
-          sourceToTargetConfig,
-          RelayDirection.SourceToTarget,
-        );
-        const targetToSourceLifecycle = await this.initOracleLifecycle(
-          targetToSourceConfig,
-          RelayDirection.TargetToSource,
-        );
-        const sourceToTargetRelayer = new OracleRelay(sourceToTargetLifecycle);
-        await sourceToTargetRelayer.start();
-        const targetToSourceRelayer = new OracleRelay(targetToSourceLifecycle);
-        await targetToSourceRelayer.start();
+        if (sourceToTargetConfig.enableSourceToTarget) {
+          const sourceToTargetLifecycle = await this.initOracleLifecycle(
+            sourceToTargetConfig,
+            RelayDirection.SourceToTarget,
+          );
+          const sourceToTargetRelayer = new OracleRelay(sourceToTargetLifecycle);
+          await sourceToTargetRelayer.start(features);
+        }
+
+        if (targetToSourceConfig.enableTargetToSource) {
+          const targetToSourceLifecycle = await this.initOracleLifecycle(
+            targetToSourceConfig,
+            RelayDirection.TargetToSource,
+          );
+          const targetToSourceRelayer = new OracleRelay(targetToSourceLifecycle);
+          await targetToSourceRelayer.start(features);
+        }
         break;
       }
       case StartTask.relayer: {
-        const sourceToTargetLifecycle = await this.initRelayerLifecycle(
-          sourceToTargetConfig,
-          RelayDirection.TargetToSource,
-        );
-        const targetToSourceLifeCycle = await this.initRelayerLifecycle(
-          targetToSourceConfig,
-          RelayDirection.TargetToSource,
-        );
-        const sourceToTargetRelayer = new RelayerRelay(sourceToTargetLifecycle);
-        await sourceToTargetRelayer.start();
+        if (sourceToTargetConfig.enableSourceToTarget) {
+          const sourceToTargetLifecycle = await this.initRelayerLifecycle(
+            sourceToTargetConfig,
+            RelayDirection.TargetToSource,
+          );
+          const sourceToTargetRelayer = new RelayerRelay(sourceToTargetLifecycle);
+          await sourceToTargetRelayer.start();
+        }
 
-        const targetToSourceRelayer = new RelayerRelay(targetToSourceLifeCycle);
-        await targetToSourceRelayer.start();
+        if (targetToSourceConfig.enableTargetToSource) {
+          const targetToSourceLifeCycle = await this.initRelayerLifecycle(
+            targetToSourceConfig,
+            RelayDirection.TargetToSource,
+          );
+          const targetToSourceRelayer = new RelayerRelay(targetToSourceLifeCycle);
+          await targetToSourceRelayer.start();
+        }
         break;
       }
     }

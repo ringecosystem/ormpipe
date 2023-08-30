@@ -16,6 +16,14 @@ export interface ContractClientConfig {
   evm: ethers.JsonRpcProvider
 }
 
+export interface TransactionResponse {
+  from: string
+  to: string
+  hash: string
+  blockHash: string
+  blockNumber: string
+}
+
 export class RelayClient {
 
   private readonly _config: RelayClientConfig;

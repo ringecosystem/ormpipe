@@ -1,5 +1,12 @@
 import {Command, Flags} from '@oclif/core'
-import {OrmpRelay, RelayConfig, StartRelayFlag, OrmpRelayStartInput, StartTask} from "@darwinia/ormpipe-relay"
+import {
+  OrmpRelay,
+  RelayConfig,
+  StartRelayFlag,
+  OrmpRelayStartInput,
+  StartTask,
+  RelayFeature
+} from "@darwinia/ormpipe-relay"
 import {logger} from "@darwinia/ormpipe-logger";
 import * as enquirer from 'enquirer';
 
@@ -17,7 +24,21 @@ export default class Start extends Command {
       required: true,
       multiple: true,
       description: 'task name',
-      options: [StartTask.oracle, StartTask.relayer],
+      options: Object.values(StartTask),
+    }),
+    feature: Flags.string({
+      required: false,
+      multiple: true,
+      description: 'features',
+      options: Object.values(RelayFeature),
+    }),
+    'enable-source-to-target': Flags.boolean({
+      required: false,
+      description: 'enable relay source to target',
+    }),
+    'enable-target-to-source': Flags.boolean({
+      required: false,
+      description: 'enable relay source to target',
     }),
 
     'source-name': Flags.string({
@@ -162,7 +183,8 @@ export default class Start extends Command {
 
     const ormpRelay = new OrmpRelay(relayConfig);
     const input: OrmpRelayStartInput = {
-      tasks: rawRelayFlags.task,
+      tasks: relayConfig.task,
+      features: relayConfig.feature,
     };
     try {
       await ormpRelay.start(input);
@@ -174,6 +196,13 @@ export default class Start extends Command {
   private async buildFlag(rawRelayFlags: StartRelayFlag): Promise<RelayConfig> {
     const relayConfig: StartRelayFlag = {
       ...rawRelayFlags,
+
+      enableSourceToTarget: rawRelayFlags.enableSourceToTarget ?? false,
+      enableTargetToSource: rawRelayFlags.enableTargetToSource ?? false,
+      feature: rawRelayFlags.feature ?? [
+        RelayFeature.oracle_delivery,
+        RelayFeature.oracle_aggregate,
+      ],
 
       sourceIndexerOracleEndpoint: rawRelayFlags.sourceIndexerOracleEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
       sourceIndexerRelayerEndpoint: rawRelayFlags.sourceIndexerRelayerEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
