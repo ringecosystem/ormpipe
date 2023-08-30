@@ -8,6 +8,7 @@ import {GraphCommon} from "./_common";
 
 export class ThegraphIndexOrmp extends GraphCommon {
 
+  // todo: change use message index
   public async inspectMessageAccepted(variables: QueryChannelMessageAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
     if (!variables.msgHash && !variables.root)
       throw new Error('missing msghash or root');
