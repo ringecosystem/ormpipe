@@ -1,11 +1,19 @@
-
 export enum StartTask {
   oracle = 'oracle',
   relayer = 'relayer',
 }
 
+export enum RelayFeature {
+  oracle_delivery = 'oracle.delivery',
+  oracle_aggregate = 'oracle.aggregate',
+}
+
 export interface RelayConfig {
-  task: StartTask[],
+  task: StartTask[]
+  feature: RelayFeature[]
+  enableSourceToTarget: boolean
+  enableTargetToSource: boolean
+
   sourceName: string
   sourceEndpoint: string
 
@@ -42,8 +50,10 @@ export type StartRelayFlag = RelayConfig;
 
 export interface OrmpRelayStartInput {
   tasks: StartTask[]
+  features: RelayFeature[]
 }
 
 export interface RawOrmpRelayStartInput {
   task: StartTask
+  features: RelayFeature[]
 }

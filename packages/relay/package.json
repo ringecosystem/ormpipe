@@ -4,7 +4,7 @@
   "description": "ormpipe relay",
   "main": "dist/index.js",
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b && shx cp -r src/abis dist/",
+    "build": "shx rm -rf dist && tsc --AllowJs && shx cp -r src/abis dist/",
     "lint": "eslint . --ext .ts --fix",
     "posttest": "yarn lint",
     "test": "jest",
@@ -16,7 +16,9 @@
   "dependencies": {
     "@darwinia/ormpipe-indexer": "^0.0.1",
     "ethers": "^6",
-    "async": "^3"
+    "async": "^3",
+    "chalk": "^4",
+    "@chainsafe/ssz": "^0.9"
   },
   "devDependencies": {
     "@types/jest": "^29",
@@ -29,6 +31,7 @@
     "shx": "^0.3",
     "ts-node": "^10",
     "tslib": "^2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "chai": "^4"
   }
 }
