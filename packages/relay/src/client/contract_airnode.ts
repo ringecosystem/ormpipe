@@ -13,7 +13,7 @@ export class AirnodeContractClient {
     this.contract = new ethers.Contract(config.address, abi, wallet);
   }
 
-  public async getRequestFee(): Promise<BigInt> {
+  public async getRequestFee(): Promise<bigint> {
     const resp = await this.contract['getRequestFee']();
     return resp[1];
   }

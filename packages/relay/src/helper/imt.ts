@@ -30,7 +30,7 @@ export class IncrementalMerkleTree extends Tree {
   }
 
   getSingleHexProof(i: number) {
-    let proof = this.getSingleProof(i)
+    const proof = this.getSingleProof(i)
     return proof.map(toHexString)
   }
 }

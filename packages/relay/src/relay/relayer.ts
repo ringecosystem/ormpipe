@@ -159,10 +159,10 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       ]
     );
 
-    console.log(imt.root());
-    console.log(rawMsgHashes);
-    console.log(message);
-    console.log(messageProof);
+    // console.log(imt.root());
+    // console.log(rawMsgHashes);
+    // console.log(message);
+    // console.log(messageProof);
 
     // console.log('------ relay');
     const targetTxRelayMessage = await this.targetRelayerClient.relay(message, encodedProof, gasLimit);
