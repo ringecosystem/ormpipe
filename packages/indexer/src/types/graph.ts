@@ -7,10 +7,13 @@ export interface QueryGraph {
   variables?: Record<string, any>
 }
 
-export type QueryNextOracleAssigned = _QueryWithBlockNumber
-export type QueryNextRelayerAssigned = _QueryWithBlockNumber
-export type QueryNextChannelMessagAccepted = _QueryWithBlockNumber
-export type QueryMessageHashes = _QueryWithBlockNumber
+export interface QueryNextRelayerAssigned {
+  msgHash: string
+}
+
+export interface QueryNextChannelMessageAccepted {
+  messageIndex: number
+}
 
 export interface QueryNextAirnodeCompleted {
   beaconId: string
@@ -20,6 +23,13 @@ export interface QueryChannelMessageAccepted {
   msgHash?: string
   root?: string
 }
+
+export interface QueryMessageHashes {
+  messageIndex: number
+}
+
+
+export type QueryNextOracleAssigned = QueryNextRelayerAssigned
 
 
 export interface IGraphResponse<T> {

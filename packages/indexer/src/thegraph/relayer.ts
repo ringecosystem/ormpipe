@@ -5,13 +5,13 @@ export class ThegraphIndexerRelayer extends GraphCommon {
 
   public async nextAssigned(variables: QueryNextRelayerAssigned): Promise<OrmpRelayerAssigned | undefined> {
     const query = `
-    query NextRelayerAssigned($blockNumber: BigInt!) {
+    query NextRelayerAssigned($msgHash: Bytes!) {
       ormpRelayerAssigneds(
         first: 1
         orderBy: blockNumber
         orderDirection: asc
         where: {
-          blockNumber_gt: $blockNumber
+          msgHash: $msgHash
         }
       ) {
         id

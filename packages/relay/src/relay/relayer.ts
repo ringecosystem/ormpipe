@@ -49,33 +49,36 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       super.meta('relayer', ['relay'])
     );
     // todo: check running block
-    let queryNextMessageStartBlockNumber = 0;
+    let queryNextMessageIndexStart = 0;
+    let sourceMessageIndexAtBlock = 0;
     const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
     if (targetLastMessageDispatched) {
       const sourceChainLastDispatched = await this.sourceIndexerOrmp.inspectMessageAccepted({
         msgHash: targetLastMessageDispatched.msgHash,
       });
       if (sourceChainLastDispatched) {
-        queryNextMessageStartBlockNumber = +sourceChainLastDispatched.blockNumber;
+        queryNextMessageIndexStart = +sourceChainLastDispatched.message_index;
+        sourceMessageIndexAtBlock = +sourceChainLastDispatched.blockNumber;
       }
     }
     logger.debug(
-      `queried next relayer from block number %s(%s)`,
-      queryNextMessageStartBlockNumber,
+      `queried next relayer from message index %s at block %s(%s)`,
+      queryNextMessageIndexStart,
+      sourceMessageIndexAtBlock,
       super.sourceName,
       super.meta('relayer', ['relay'])
     );
     const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-      blockNumber: queryNextMessageStartBlockNumber,
+      messageIndex: queryNextMessageIndexStart,
     });
     if (!sourceNextMessageAccepted) {
       logger.info('not have more message accepted', super.meta('relayer', ['relay']));
       return;
     }
     const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.nextAssigned({
-      blockNumber: queryNextMessageStartBlockNumber,
+      msgHash: sourceNextMessageAccepted.msgHash,
     });
-    if (!sourceNextRelayerAssigned || sourceNextMessageAccepted.msgHash !== sourceNextRelayerAssigned.msgHash) {
+    if (!sourceNextRelayerAssigned) {
       logger.info(
         `new message accepted but not assigned to myself. %s`,
         sourceNextMessageAccepted.msgHash,
@@ -137,7 +140,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     };
 
     const rawMsgHashes = await this.sourceIndexerOrmp.messageHashes({
-      blockNumber: +sourceLastAggregatedMessageAccepted.blockNumber,
+      messageIndex: +sourceLastAggregatedMessageAccepted.message_index,
     });
     const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
     const imt = new IncrementalMerkleTree(msgHashes);

@@ -6,13 +6,13 @@ export class ThegraphIndexerOracle extends GraphCommon {
 
   public async nextAssigned(variables: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
     const query = `
-    query QueryNextOracleAssigned($blockNumber: BigInt!) {
+    query QueryNextOracleAssigned($msgHash: Bytes!) {
       ormpOracleAssigneds(
         first: 1
         orderBy: blockNumber
         orderDirection: asc
         where: {
-          blockNumber_gt: $blockNumber
+          msgHash: $msgHash
         }
       ) {
         id
