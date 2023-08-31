@@ -8,8 +8,10 @@ import {RelayDirection} from "./mark";
 import {RelayClient} from "../client";
 import {AirnodeContractClient} from "../client/contract_airnode";
 import {RelayerContractClient} from "../client/contract_relayer";
+import {RelayStorage} from "../helper/storage";
 
 export interface BaseLifecycle {
+  storage: RelayStorage,
   direction: RelayDirection,
   sourceName: string,
   targetName: string,

@@ -3,7 +3,7 @@ import {AirnodeContractClient} from "./contract_airnode";
 import {RelayerContractClient} from "./contract_relayer";
 
 export interface RelayClientConfig {
-  name: string
+  chainName: string
   endpoint: string
   signer: string
   signerAirnode: string
@@ -11,6 +11,7 @@ export interface RelayClientConfig {
 }
 
 export interface ContractClientConfig {
+  chainName: string
   signer: string
   address: string
   evm: ethers.JsonRpcProvider
@@ -44,6 +45,7 @@ export class RelayClient {
 
   public airnode(address: string): AirnodeContractClient {
     return new AirnodeContractClient({
+      chainName: this.config.chainName,
       signer: this.config.signerAirnode ?? this.config.signer,
       address,
       evm: this.evm
@@ -52,6 +54,7 @@ export class RelayClient {
 
   public relayer(address: string): RelayerContractClient {
     return new RelayerContractClient({
+      chainName: this.config.chainName,
       signer: this.config.signerRelayer ?? this.config.signer,
       address,
       evm: this.evm

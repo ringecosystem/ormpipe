@@ -9,6 +9,8 @@ import chalk = require('chalk');
 
 export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
+  private static CK_RELAYER_RELAIED = 'ormpipe.relayer.relaied';
+
   constructor(lifecycle: RelayerLifecycle) {
     super(lifecycle);
   }
@@ -37,16 +39,16 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     try {
       await this.run();
     } catch (e: any) {
-      logger.error(e, super.meta('relayer', ['relay']));
+      logger.error(e, super.meta('ormpipe-relay', ['relayer:relay']));
     }
   }
 
   private async run() {
-    logger.debug('start relayer relay', super.meta('relayer', ['relay']));
+    logger.debug('start relayer relay', super.meta('ormpipe-relay', ['relayer:relay']));
 
     logger.debug(
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
-      super.meta('relayer', ['relay'])
+      super.meta('ormpipe-relay', ['relayer:relay'])
     );
     // todo: check running block
     let queryNextMessageIndexStart = 0;
@@ -66,13 +68,24 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       queryNextMessageIndexStart,
       sourceMessageIndexAtBlock,
       super.sourceName,
-      super.meta('relayer', ['relay'])
+      super.meta('ormpipe-relay', ['relayer:relay'])
     );
+    const cachedLastRelaiedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
+    if (cachedLastRelaiedIndex && cachedLastRelaiedIndex == queryNextMessageIndexStart) {
+      logger.warn(
+        'the message index (%s) already relay to %s, please wait finalized',
+        queryNextMessageIndexStart,
+        super.targetName,
+        super.meta('ormpipe-relay', ['relayer:relay'])
+      );
+      return;
+    }
+
     const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
       messageIndex: queryNextMessageIndexStart,
     });
     if (!sourceNextMessageAccepted) {
-      logger.info('not have more message accepted', super.meta('relayer', ['relay']));
+      logger.info('not have more message accepted', super.meta('ormpipe-relay', ['relayer:relay']));
       return;
     }
     const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.nextAssigned({
@@ -82,7 +95,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       logger.info(
         `new message accepted but not assigned to myself. %s`,
         sourceNextMessageAccepted.msgHash,
-        super.meta('relayer', ['relay'])
+        super.meta('ormpipe-relay', ['relayer:relay'])
       );
       return;
     }
@@ -91,7 +104,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       sourceNextMessageAccepted.msgHash,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
-      super.meta('relayer', ['relay'])
+      super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
     const targetLastAggregatedMessageRoot = await this.targetIndexerAirnode.lastAggregatedMessageRoot();
@@ -99,7 +112,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       logger.warn(
         'not have any aggregated message root from %s',
         super.targetName,
-        super.meta('relayer', ['relay'])
+        super.meta('ormpipe-relay', ['relayer:relay'])
       );
       return;
     }
@@ -112,7 +125,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         super.sourceName,
         super.targetName,
         targetLastAggregatedMessageRoot.msgRoot,
-        super.meta('relayer', ['relay'])
+        super.meta('ormpipe-relay', ['relayer:relay'])
       );
       return;
     }
@@ -123,7 +136,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         super.targetName,
         sourceNextMessageAccepted.blockNumber,
         sourceLastAggregatedMessageAccepted.blockNumber,
-        super.meta('relayer', ['relay'])
+        super.meta('ormpipe-relay', ['relayer:relay'])
       );
       return;
     }
@@ -174,8 +187,10 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       super.targetName,
       chalk.magenta(targetTxRelayMessage.hash),
       chalk.cyan(targetTxRelayMessage.blockNumber),
-      super.meta('relayer', ['relay'])
+      super.meta('ormpipe-relay', ['relayer:relay'])
     );
+
+    await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, queryNextMessageIndexStart);
   }
 
 }

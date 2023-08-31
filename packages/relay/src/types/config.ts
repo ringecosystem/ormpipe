@@ -11,6 +11,7 @@ export enum RelayFeature {
 export interface RelayConfig {
   task: StartTask[]
   feature: RelayFeature[]
+  dataPath: string
   enableSourceToTarget: boolean
   enableTargetToSource: boolean
 
