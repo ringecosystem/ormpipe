@@ -163,6 +163,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   private async aggregate() {
     logger.debug('start oracle aggregate', super.meta('oracle', ['aggregate']));
 
+    // todo: check running block
     const beacons = await this.targetIndexerAirnode.beacons();
     const countBeacons = beacons.length;
     logger.debug(
