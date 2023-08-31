@@ -8,6 +8,7 @@ import {ThegraphIndexer} from "@darwinia/ormpipe-indexer/dist/thegraph";
 import {RelayClient} from "./client";
 import {setTimeout} from "timers/promises";
 import {logger} from "@darwinia/ormpipe-logger";
+import {RelayStorage} from "./helper/storage";
 
 export class OrmpRelay {
   constructor(
@@ -51,6 +52,7 @@ export class OrmpRelay {
       feature: this.config.feature,
       enableSourceToTarget: this.config.enableSourceToTarget,
       enableTargetToSource: this.config.enableTargetToSource,
+      dataPath: this.config.dataPath,
       sourceName: this.config.targetName,
       sourceEndpoint: this.config.targetEndpoint,
       targetName: this.config.sourceName,
@@ -228,20 +230,22 @@ export class OrmpRelay {
 
   private async initBaseLifecycle(config: RelayConfig, direction: RelayDirection): Promise<BaseLifecycle> {
     const sourceClient = new RelayClient({
-      name: config.sourceName,
+      chainName: config.sourceName,
       endpoint: config.sourceEndpoint,
       signer: config.sourceSigner,
       signerAirnode: config.sourceSignerAirnode,
       signerRelayer: config.sourceSignerRelayer,
     });
     const targetClient = new RelayClient({
-      name: config.targetName,
+      chainName: config.targetName,
       endpoint: config.targetEndpoint,
       signer: config.targetSigner,
       signerAirnode: config.targetSignerAirnode,
       signerRelayer: config.targetSignerRelayer,
     });
+    const storage = new RelayStorage(config.dataPath);
     return {
+      storage,
       direction,
       sourceName: config.sourceName,
       targetName: config.targetName,

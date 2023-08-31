@@ -1,5 +1,6 @@
 import {BaseLifecycle} from "../types/lifecycle";
 import {RelayClient} from "../client";
+import {RelayStorage} from "../helper/storage";
 
 export class CommonRelay<T extends BaseLifecycle> {
 
@@ -27,6 +28,10 @@ export class CommonRelay<T extends BaseLifecycle> {
 
   public get targetClient(): RelayClient {
     return this.lifecycle.targetClient
+  }
+
+  public get storage(): RelayStorage {
+    return this.lifecycle.storage
   }
 
   public meta(target: string, breads?: string[]): any {

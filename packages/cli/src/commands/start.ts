@@ -10,6 +10,7 @@ import {
 import {logger} from "@darwinia/ormpipe-logger";
 import * as enquirer from 'enquirer';
 
+const homedir = require('os').homedir();
 const camelize = require('camelize')
 
 export default class Start extends Command {
@@ -39,6 +40,12 @@ export default class Start extends Command {
     'enable-target-to-source': Flags.boolean({
       required: false,
       description: 'enable relay source to target',
+    }),
+    'data-path': Flags.string({
+      required: true,
+      description: 'data path',
+      env: 'ORMPIPE_DATA_PATH',
+      default: `${homedir}/.ormpipe`,
     }),
 
     'source-name': Flags.string({
