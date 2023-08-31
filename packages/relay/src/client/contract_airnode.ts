@@ -1,6 +1,6 @@
 import {ContractClientConfig, TransactionResponse} from "./index";
 import {ethers} from "ethers";
-import {AirnodeBeacon} from "@darwinia/ormpipe-indexer/dist/types/graph";
+import {AirnodeBeacon} from "@darwinia/ormpipe-indexer";
 const abi = require('../abis/AirnodeDapi.json');
 
 

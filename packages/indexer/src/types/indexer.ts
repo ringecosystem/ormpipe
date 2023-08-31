@@ -1,5 +1,3 @@
-import {Vendor} from "./marks";
-
 export interface IndexerHttpConfig {
   timeout?: number;
 }

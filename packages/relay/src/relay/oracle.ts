@@ -67,27 +67,38 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('oracle', ['delivery'])
     );
-    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
     // todo: check running block
-    const queryNextMessageAndOracleFromBlockNumber = +(targetLastMessageDispatched?.blockNumber ?? 0);
+    let queryNextMessageIndexStart = 0;
+    let sourceMessageIndexAtBlock = 0;
+    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
+    if (targetLastMessageDispatched) {
+      const sourceChainLastDispatched = await this.sourceIndexerOrmp.inspectMessageAccepted({
+        msgHash: targetLastMessageDispatched.msgHash,
+      });
+      if (sourceChainLastDispatched) {
+        queryNextMessageIndexStart = +sourceChainLastDispatched.message_index;
+        sourceMessageIndexAtBlock = +sourceChainLastDispatched.blockNumber;
+      }
+    }
     logger.debug(
-      `queried next oracle from block number %s(%s)`,
-      queryNextMessageAndOracleFromBlockNumber,
+      `queried next oracle from message %s at block number %s(%s)`,
+      queryNextMessageIndexStart,
+      sourceMessageIndexAtBlock,
       super.sourceName,
       super.meta('oracle', ['delivery'])
     );
 
     const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-      blockNumber: queryNextMessageAndOracleFromBlockNumber,
+      messageIndex: queryNextMessageIndexStart,
     });
     if (!sourceNextMessageAccepted) {
       logger.info('not have more message accepted', super.meta('oracle', ['delivery']));
       return;
     }
     const sourceNextOracleAssigned = await this.sourceIndexerOracle.nextAssigned({
-      blockNumber: queryNextMessageAndOracleFromBlockNumber,
+      msgHash: sourceNextMessageAccepted.msgHash,
     });
-    if (!sourceNextOracleAssigned || sourceNextMessageAccepted.msgHash !== sourceNextOracleAssigned.msgHash) {
+    if (!sourceNextOracleAssigned) {
       logger.info(
         `new message accepted but not assigned to myself. %s`,
         sourceNextMessageAccepted.msgHash,

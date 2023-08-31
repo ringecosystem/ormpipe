@@ -4,7 +4,7 @@ const {
   zeroNode,
   LeafNode,
   toGindex,
-} = require('./verify/lib/index.js')
+} = require('@darwinia/contracts-verify/src/imt/lib/index.js')
 
 export class IncrementalMerkleTree extends Tree {
   constructor(leaves: Buffer[]) {

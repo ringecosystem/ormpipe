@@ -2,7 +2,7 @@ import {
   OrmpChannelMessageAccepted,
   OrmpChannelMessageDispatched,
   QueryChannelMessageAccepted, QueryMessageHashes,
-  QueryNextChannelMessagAccepted
+  QueryNextChannelMessageAccepted
 } from "../types/graph";
 import {GraphCommon} from "./_common";
 
@@ -47,12 +47,12 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async messageHashes(variables: QueryMessageHashes): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($blockNumber: BigInt!) {
+    query QueryMessageAcceptedHashes($messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
         orderBy: message_index
         orderDirection: asc
         where: {
-          blockNumber_lt: $blockNumber
+          message_index_lt: $messageIndex
         }
       ) {
         msgHash
@@ -67,15 +67,15 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return resp.map(item => item.msgHash)
   }
 
-  public async nextMessageAccepted(variables: QueryNextChannelMessagAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
+  public async nextMessageAccepted(variables: QueryNextChannelMessageAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
     const query = `
-    query QueryNextMessageAccepted($blockNumber: BigInt!) {
+    query QueryNextMessageAccepted($messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
         first: 1
         orderBy: blockNumber
         orderDirection: asc
         where: {
-          blockNumber_gt: $blockNumber
+          message_index_gt: $messageIndex
         }
       ) {
         id
