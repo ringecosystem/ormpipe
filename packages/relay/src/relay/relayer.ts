@@ -50,7 +50,6 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
-    // todo: check running block
     let queryNextMessageIndexStart = 0;
     let sourceMessageIndexAtBlock = 0;
     const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();

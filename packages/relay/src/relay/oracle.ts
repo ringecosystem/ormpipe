@@ -70,7 +70,6 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('ormpipe-relay', ['oracle:delivery'])
     );
-    // todo: check running block
     let queryNextMessageIndexStart = 0;
     let sourceMessageIndexAtBlock = 0;
     const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
