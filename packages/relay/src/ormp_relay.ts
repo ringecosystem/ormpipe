@@ -243,7 +243,9 @@ export class OrmpRelay {
       signerAirnode: config.targetSignerAirnode,
       signerRelayer: config.targetSignerRelayer,
     });
-    const storage = new RelayStorage(config.dataPath);
+    const storage = new RelayStorage(config.dataPath, {
+      keyPrefix: `${config.sourceName}-${config.targetName}`,
+    });
     return {
       storage,
       direction,
