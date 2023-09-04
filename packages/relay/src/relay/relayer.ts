@@ -38,9 +38,14 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
   public async start() {
     try {
       await this.run();
+      await this.process();
     } catch (e: any) {
       logger.error(e, super.meta('ormpipe-relay', ['relayer:relay']));
     }
+  }
+
+  private async process() {
+    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
   }
 
   private async run() {
@@ -50,7 +55,6 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
-    // todo: check running block
     let queryNextMessageIndexStart = 0;
     let sourceMessageIndexAtBlock = 0;
     const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
@@ -70,6 +74,23 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       super.sourceName,
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
+    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
+      messageIndex: queryNextMessageIndexStart,
+    });
+    const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
+    logger.info(
+      'sync status [%s,%s] (%s)',
+      sourceNextMessageAccepted?.message_index ?? queryNextMessageIndexStart,
+      sourceLastMessageAccepted?.message_index ?? 0,
+      super.sourceName,
+      super.meta('ormpipe-relay', ['relayer:relay']),
+    );
+
+    if (!sourceNextMessageAccepted) {
+      logger.info('not have more message accepted', super.meta('ormpipe-relay', ['relayer:relay']));
+      return;
+    }
+
     const cachedLastRelaiedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
     if (cachedLastRelaiedIndex && cachedLastRelaiedIndex == queryNextMessageIndexStart) {
       logger.warn(
@@ -81,13 +102,6 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return;
     }
 
-    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-      messageIndex: queryNextMessageIndexStart,
-    });
-    if (!sourceNextMessageAccepted) {
-      logger.info('not have more message accepted', super.meta('ormpipe-relay', ['relayer:relay']));
-      return;
-    }
     const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.nextAssigned({
       msgHash: sourceNextMessageAccepted.msgHash,
     });

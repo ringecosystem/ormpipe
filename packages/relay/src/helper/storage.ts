@@ -8,16 +8,22 @@ interface StorageSchema {
   dataType: string,
 }
 
+export interface StorageOptions {
+  keyPrefix?: string
+}
+
 export class RelayStorage {
 
   private readonly cachePath: string;
+  private readonly options: StorageOptions;
 
   private initialized: boolean;
 
 
-  constructor(cachePath: string,) {
+  constructor(cachePath: string, options?: StorageOptions) {
     this.cachePath = `${cachePath}/cache`;
     this.initialized = false;
+    this.options = options ?? {} as StorageOptions;
   }
 
   private get cache() {
@@ -31,6 +37,12 @@ export class RelayStorage {
     this.initialized = true;
   }
 
+  private key(key: string): string {
+    return this.options.keyPrefix
+      ? `${this.options.keyPrefix}-${key}`
+      : key;
+  }
+
   public async put(key: string, value: any | undefined) {
     if (!value) return;
     if (!this.initialized) {
@@ -40,12 +52,12 @@ export class RelayStorage {
       data: value,
       dataType: typeof value,
     };
-    await this.cache.put(this.cachePath, key, JSON.stringify(schema))
+    await this.cache.put(this.cachePath, this.key(key), JSON.stringify(schema))
   }
 
   public async get<T>(key: string): Promise<T | undefined> {
     try {
-      const cacheResp = await this.cache.get(this.cachePath, key);
+      const cacheResp = await this.cache.get(this.cachePath, this.key(key));
       const cachedData = cacheResp.data;
       if (!cachedData) return;
 
@@ -74,7 +86,7 @@ export class RelayStorage {
   }
 
   public async remove(key: string) {
-    await this.cache.rm.entry(this.cachePath, key);
+    await this.cache.rm.entry(this.cachePath, this.key(key));
   }
 
 

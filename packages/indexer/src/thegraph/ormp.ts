@@ -98,6 +98,34 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
 
+  public async lastMessageAccepted(): Promise<OrmpChannelMessageAccepted | undefined> {
+    const query = `
+    query QueryNextMessageAccepted {
+      ormpProtocolMessageAccepteds(
+        first: 1
+        orderBy: blockNumber
+        orderDirection: desc
+      ) {
+        id
+        blockNumber
+        blockTimestamp
+        transactionHash
+
+        msgHash
+        root
+        message_channel
+        message_index
+        message_fromChainId
+        message_from
+        message_toChainId
+        message_to
+        message_encoded
+      }
+    }
+    `;
+    return await super.single({query, schema: 'ormpProtocolMessageAccepteds'});
+  }
+
   public async lastMessageDispatched(): Promise<OrmpChannelMessageDispatched | undefined> {
     const query = `
     query QueryLastMessageDispatched {

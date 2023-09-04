@@ -30,7 +30,7 @@ export class OrmpRelay {
     let times = 0;
     while (true) {
       times += 1;
-      logger.info('====== try to relay round %s ======', times, {target: 'ormpipe'});
+      logger.info('====== ormpipe relay round %s ======', times, {target: 'ormpipe'});
       for (const task of tasks) {
         try {
           await this.run({task, features});
@@ -243,7 +243,9 @@ export class OrmpRelay {
       signerAirnode: config.targetSignerAirnode,
       signerRelayer: config.targetSignerRelayer,
     });
-    const storage = new RelayStorage(config.dataPath);
+    const storage = new RelayStorage(config.dataPath, {
+      keyPrefix: `${config.sourceName}-${config.targetName}`,
+    });
     return {
       storage,
       direction,

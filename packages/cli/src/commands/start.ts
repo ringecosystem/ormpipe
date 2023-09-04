@@ -22,6 +22,7 @@ export default class Start extends Command {
 
   static flags = {
     task: Flags.string({
+      char: 't',
       required: true,
       multiple: true,
       description: 'task name',
@@ -39,10 +40,11 @@ export default class Start extends Command {
     }),
     'enable-target-to-source': Flags.boolean({
       required: false,
-      description: 'enable relay source to target',
+      description: 'enable relay target to source',
     }),
     'data-path': Flags.string({
-      required: true,
+      char: 'd',
+      required: false,
       description: 'data path',
       env: 'ORMPIPE_DATA_PATH',
       default: `${homedir}/.ormpipe`,
@@ -126,27 +128,27 @@ export default class Start extends Command {
 
     'source-signer': Flags.boolean({
       required: false,
-      description: '[source-chain] get source signer interactively',
+      description: '[source-chain] source signer interactively',
     }),
     'source-signer-airnode': Flags.boolean({
       required: false,
-      description: '[source-chain] get source signer for airnode contract interactively',
+      description: '[source-chain] source signer for airnode contract interactively',
     }),
     'source-signer-relayer': Flags.boolean({
       required: false,
-      description: '[source-chain] get source signer for relayer contract interactively',
+      description: '[source-chain] source signer for relayer contract interactively',
     }),
     'target-signer': Flags.boolean({
       required: false,
-      description: '[target-chain] get target signer interactively',
+      description: '[target-chain] target signer interactively',
     }),
-    'target-signer-airnode': Flags.string({
+    'target-signer-airnode': Flags.boolean({
       required: false,
-      description: '[target-chain] get target signer for airnode contract interactively',
+      description: '[target-chain] target signer for airnode contract interactively',
     }),
-    'target-signer-relayer': Flags.string({
+    'target-signer-relayer': Flags.boolean({
       required: false,
-      description: '[target-chain] get target signer for relayer contract interactively',
+      description: '[target-chain] target signer for relayer contract interactively',
     }),
 
     'source-address-airnode': Flags.string({

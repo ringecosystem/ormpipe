@@ -47,7 +47,7 @@ const customFormat = winston.format((info, opt) => {
 });
 
 export const logger: Logger = winston.createLogger({
-  level: process.env.ORMPIPE_LOG_LEVEL ?? 'debug',
+  level: process.env.ORMPIPE_LOG_LEVEL ?? 'info',
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
