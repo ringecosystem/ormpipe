@@ -2,8 +2,6 @@ import {Command, Flags} from '@oclif/core'
 import {
   OrmpRelay,
   RelayConfig,
-  StartRelayFlag,
-  OrmpRelayStartInput,
   StartTask,
   RelayFeature
 } from "@darwinia/ormpipe-relay"
@@ -21,14 +19,14 @@ export default class Start extends Command {
   ]
 
   static flags = {
-    task: Flags.string({
+    tasks: Flags.string({
       char: 't',
       required: true,
       multiple: true,
       description: 'task name',
       options: Object.values(StartTask),
     }),
-    feature: Flags.string({
+    features: Flags.string({
       required: false,
       multiple: true,
       description: 'features',
@@ -187,28 +185,24 @@ export default class Start extends Command {
 
     // const {task} = args;
 
-    const rawRelayFlags = camelize(flags) as unknown as StartRelayFlag;
+    const rawRelayFlags = camelize(flags) as unknown as RelayConfig;
     const relayConfig = await this.buildFlag(rawRelayFlags);
 
     const ormpRelay = new OrmpRelay(relayConfig);
-    const input: OrmpRelayStartInput = {
-      tasks: relayConfig.task,
-      features: relayConfig.feature,
-    };
     try {
-      await ormpRelay.start(input);
+      await ormpRelay.start();
     } catch (e: any) {
       logger.error(e, {target: 'cli', breads: ['ormpipe', 'start']})
     }
   }
 
-  private async buildFlag(rawRelayFlags: StartRelayFlag): Promise<RelayConfig> {
-    const relayConfig: StartRelayFlag = {
+  private async buildFlag(rawRelayFlags: RelayConfig): Promise<RelayConfig> {
+    const relayConfig: RelayConfig = {
       ...rawRelayFlags,
 
       enableSourceToTarget: rawRelayFlags.enableSourceToTarget ?? false,
       enableTargetToSource: rawRelayFlags.enableTargetToSource ?? false,
-      feature: rawRelayFlags.feature ?? [
+      features: rawRelayFlags.features ?? [
         RelayFeature.oracle_delivery,
         RelayFeature.oracle_aggregate,
       ],

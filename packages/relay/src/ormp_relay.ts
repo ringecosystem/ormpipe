@@ -1,5 +1,5 @@
 import {OracleRelay} from "./relay/oracle";
-import {OrmpRelayStartInput, RawOrmpRelayStartInput, RelayConfig, StartTask} from "./types/config";
+import {OrmpRelayStartInput, RelayConfig, StartTask} from "./types/config";
 import {BaseLifecycle, OracleLifecycle, RelayerLifecycle} from "./types/lifecycle";
 import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
 import {RelayerRelay} from "./relay/relayer";
@@ -16,7 +16,7 @@ export class OrmpRelay {
   ) {
   }
 
-  public async start(input: OrmpRelayStartInput) {
+  public async start() {
     if (!this.config.enableSourceToTarget && !this.config.enableTargetToSource) {
       logger.warn(
         'not have pipe enabled, please add --enable-source-to-target or --enable-target-to-source to your command',
@@ -25,7 +25,7 @@ export class OrmpRelay {
       return;
     }
 
-    const {tasks, features} = input;
+    const {tasks, features} = this.config;
 
     let times = 0;
     while (true) {
@@ -43,16 +43,12 @@ export class OrmpRelay {
     }
   }
 
-  private async run(input: RawOrmpRelayStartInput) {
+  private async run(input: OrmpRelayStartInput) {
     // source -> target
     const sourceToTargetConfig: RelayConfig = {...this.config};
     // target -> source
     const targetToSourceConfig: RelayConfig = {
-      task: this.config.task,
-      feature: this.config.feature,
-      enableSourceToTarget: this.config.enableSourceToTarget,
-      enableTargetToSource: this.config.enableTargetToSource,
-      dataPath: this.config.dataPath,
+      ...this.config,
       sourceName: this.config.targetName,
       sourceEndpoint: this.config.targetEndpoint,
       targetName: this.config.sourceName,
