@@ -9,8 +9,8 @@ export enum RelayFeature {
 }
 
 export interface RelayConfig {
-  task: StartTask[]
-  feature: RelayFeature[]
+  tasks: StartTask[]
+  features: RelayFeature[]
   dataPath: string
   enableSourceToTarget: boolean
   enableTargetToSource: boolean
@@ -47,14 +47,7 @@ export interface RelayConfig {
 
 }
 
-export type StartRelayFlag = RelayConfig;
-
 export interface OrmpRelayStartInput {
-  tasks: StartTask[]
-  features: RelayFeature[]
-}
-
-export interface RawOrmpRelayStartInput {
   task: StartTask
   features: RelayFeature[]
 }
