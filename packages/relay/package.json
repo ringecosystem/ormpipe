@@ -3,6 +3,11 @@
   "version": "0.0.1",
   "description": "ormpipe relay",
   "main": "dist/index.js",
+  "author": "Darwinia Netowrk",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "shx rm -rf dist && tsc -b && shx cp -r src/abis dist/",
     "lint": "eslint . --ext .ts --fix",
@@ -11,8 +16,6 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
   },
-  "author": "Darwinia Netowrk",
-  "license": "MIT",
   "dependencies": {
     "@darwinia/ormpipe-indexer": "^0.0.1",
     "ethers": "^6",

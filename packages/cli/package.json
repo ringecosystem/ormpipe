@@ -10,6 +10,9 @@
   "license": "MIT",
   "main": "dist/index.js",
   "repository": "darwinia-network/ormpipe",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "/bin",
     "/dist",
