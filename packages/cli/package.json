@@ -51,8 +51,8 @@
     ],
     "topicSeparator": " ",
     "topics": {
-      "hello": {
-        "description": "Say hello to the world and others"
+      "start": {
+        "description": "Start ormpipe"
       }
     },
     "hooks": {
@@ -75,7 +75,6 @@
   },
   "bugs": "https://github.com/darwinia-network/ormpipe/issues",
   "keywords": [
-    "oclif"
-  ],
-  "types": "dist/index.d.ts"
+    "darwinia", "ormp"
+  ]
 }
