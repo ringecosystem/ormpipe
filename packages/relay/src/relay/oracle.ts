@@ -223,7 +223,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     const cachedLastAggregatedMessageRoot = await super.storage.get(OracleRelay.CK_ORACLE_AGGREGATED);
     if (cachedLastAggregatedMessageRoot && cachedLastAggregatedMessageRoot == completedData) {
       logger.warn(
-        'the message root %s already aggregated(queried by cache), please wait message relay',
+        'the message root %s already aggregated (queried by cache)',
         completedData,
         super.meta('ormpipe-relay', ['oracle:aggregate']),
       );
@@ -233,7 +233,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     const lastAggregatedMessageRoot = await this.targetIndexerAirnode.lastAggregatedMessageRoot();
     if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.msgRoot === completedData) {
       logger.warn(
-        'the message root %s already aggregated(queried by indexer), please wait message relay',
+        'the message root %s already aggregated (queried by indexer)',
         completedData,
         super.meta('ormpipe-relay', ['oracle:aggregate']),
       );
@@ -252,7 +252,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
     const targetTxAggregateBeacons = await this.targetAirnodeClient.aggregateBeacons(aggregateBeaconIds);
     logger.info(
-      'aggreated beacons to %s airnode-api contract {tx: %s, block: %s}',
+      'aggregated beacons to %s airnode-api contract {tx: %s, block: %s}',
       super.targetName,
       chalk.magenta(targetTxAggregateBeacons.hash),
       chalk.cyan(targetTxAggregateBeacons.blockNumber),
