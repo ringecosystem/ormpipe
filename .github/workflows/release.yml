@@ -5,8 +5,7 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
-  pull_request:
-    branches: [main]
+
 env:
   DOCKER_REGISTRY: ghcr.io
 
