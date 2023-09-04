@@ -17,7 +17,7 @@
     "build:all": "lerna run build",
     "test:all": "lerna run test",
     "lint:all": "lerna run lint",
-    "publish:npm": "lerna publish from-package --no-private --yes"
+    "publish:npm": "lerna publish from-package --loglevel=silly --no-private --yes -- --verbose"
   },
   "workspaces": [
     "packages/*"
