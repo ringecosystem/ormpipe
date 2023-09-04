@@ -37,9 +37,8 @@ export class RelayClient {
     this._evm.on('debug', info => {
       const {action, payload} = info;
       if (!action) return;
-      if (action.indexOf('receive') != -1) {
-        return;
-      }
+      const logLevel = process.env.ORMPIPE_LOG_LEVEL ?? 'info';
+      if (logLevel != 'debug') return;
       logger.debug(
         JSON.stringify(payload),
         {
