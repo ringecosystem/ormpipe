@@ -16,7 +16,8 @@
   "scripts": {
     "build:all": "lerna run build",
     "test:all": "lerna run test",
-    "lint:all": "lerna run lint"
+    "lint:all": "lerna run lint",
+    "publish:npm": "lerna publish --no-private --yes"
   },
   "workspaces": [
     "packages/*"
