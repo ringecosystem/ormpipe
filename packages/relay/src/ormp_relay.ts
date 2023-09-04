@@ -30,7 +30,7 @@ export class OrmpRelay {
     let times = 0;
     while (true) {
       times += 1;
-      logger.info('====== try to relay round %s ======', times, {target: 'ormpipe'});
+      logger.info('====== ormpipe relay round %s ======', times, {target: 'ormpipe'});
       for (const task of tasks) {
         try {
           await this.run({task, features});
