@@ -1,0 +1,22 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main]
+
+
+jobs:
+  build-package:
+    name: Build package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install deps
+        run: yarn install
+
+      - name: Build
+        run: yarn build:all
