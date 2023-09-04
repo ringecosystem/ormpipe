@@ -1,11 +1,7 @@
-oclif-hello-world
+ormpipe
 =================
 
-oclif example Hello World CLI
-
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![CircleCI](https://circleci.com/gh/oclif/hello-world/tree/main.svg?style=shield)](https://circleci.com/gh/oclif/hello-world/tree/main)
-[![GitHub license](https://img.shields.io/github/license/oclif/hello-world)](https://github.com/oclif/hello-world/blob/main/LICENSE)
+darwinia ormp protocol relay program
 
 <!-- toc -->
 * [Usage](#usage)
@@ -41,46 +37,6 @@ USAGE
 * [`ormpipe plugins update`](#ormpipe-plugins-update)
 
 ## `ormpipe hello PERSON`
-
-Say hello
-
-```
-USAGE
-  $ ormpipe hello PERSON -f <value>
-
-ARGUMENTS
-  PERSON  Person to say hello to
-
-FLAGS
-  -f, --from=<value>  (required) Who is saying hello
-
-DESCRIPTION
-  Say hello
-
-EXAMPLES
-  $ oex hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
-```
-
-_See code: [dist/commands/hello/index.ts](https://github.com/fewensa/ormpipe/blob/v0.0.0/dist/commands/hello/index.ts)_
-
-## `ormpipe hello world`
-
-Say hello world
-
-```
-USAGE
-  $ ormpipe hello world
-
-DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ ormpipe hello world
-  hello world! (./src/commands/hello/world.ts)
-```
-
-_See code: [dist/commands/hello/world.ts](https://github.com/fewensa/ormpipe/blob/v0.0.0/dist/commands/hello/world.ts)_
 
 ## `ormpipe help [COMMANDS]`
 

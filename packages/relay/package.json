@@ -17,18 +17,19 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@darwinia/ormpipe-indexer": "^0.0.1",
-    "ethers": "^6",
-    "async": "^3",
-    "chalk": "^4",
     "@chainsafe/ssz": "^0.9",
     "@darwinia/contracts-verify": "^1",
-    "cacache": "^18"
+    "@darwinia/ormpipe-indexer": "^0.0.1",
+    "async": "^3",
+    "cacache": "^18",
+    "chalk": "^4",
+    "ethers": "^6"
   },
   "devDependencies": {
+    "@types/async": "^3",
+    "@types/cacache": "^17",
     "@types/jest": "^29",
     "@types/node": "^20",
-    "@types/async": "^3",
     "@typescript-eslint/eslint-plugin": "^5",
     "@typescript-eslint/parser": "^5",
     "eslint": "^8",
@@ -36,7 +37,6 @@
     "shx": "^0.3",
     "ts-node": "^10",
     "tslib": "^2",
-    "typescript": "^5",
-    "@types/cacache": "^17"
+    "typescript": "^5"
   }
 }

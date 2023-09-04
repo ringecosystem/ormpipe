@@ -17,8 +17,8 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "winston": "^3",
-    "@stdlib/string-pad": "^0"
+    "@stdlib/string-pad": "^0",
+    "winston": "^3"
   },
   "devDependencies": {
     "@types/jest": "^29",

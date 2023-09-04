@@ -75,7 +75,6 @@
   },
   "bugs": "https://github.com/darwinia-network/ormpipe/issues",
   "keywords": [
-    "oclif"
-  ],
-  "types": "dist/index.d.ts"
+    "darwinia", "ormp"
+  ]
 }
