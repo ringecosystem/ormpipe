@@ -23,7 +23,6 @@
     "@darwinia/ormpipe-relay": "^0.0.1",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
-    "@oclif/plugin-plugins": "^3.2.0",
     "camelize": "^1",
     "enquirer": "^2"
   },
@@ -46,8 +45,7 @@
     "dirname": "ormpipe",
     "commands": "./dist/commands",
     "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-help"
     ],
     "topicSeparator": " ",
     "topics": {
