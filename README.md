@@ -76,6 +76,9 @@ endpoint
 `--source-indexer-oracle-endpoint` and `--target-indexer-endpoint` source chain
 and target chain oracle contract indexer.
 
+> you can use `indexer-oracle-endpoint` or `indexer-endpoint` this is
+> same, `indexer-oracle-endpoint` has higher priority
+
 **airnode contract address**
 
 `--source-address-airnode` and `--target-address-airnode` source chain and
