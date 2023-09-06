@@ -29,7 +29,7 @@ docker run -it --name=ormpipe \
   --help
 ```
 
-### Oracle relay
+## Oracle relay
 
 Run oracle relay, you should deploy your oracle contract, and deploy
 your indexer to index your contract events.
@@ -110,7 +110,7 @@ source and target chain or use env `ORMPIPE_SOURCE_SIGNER_AIRNODE` and `ORMPIPE_
 `--enable-source-to-target` and `--enable-target-to-source` enable relay
 direction.
 
-### Realyer relay
+## Realyer relay
 
 Run relayer relay, you should deploy you relayer contract, and deploy your relayer contract indexer.
 
@@ -187,3 +187,25 @@ source and target chain or use env `ORMPIPE_SOURCE_SIGNER_AIRNODE` and `ORMPIPE_
 `--enable-source-to-target` and `--enable-target-to-source` enable relay
 direction.
 
+
+## Oracle and Realyer
+
+
+```bash
+ormpipe start \
+  --task=oracle relayer \
+  --source-name=arbitrum-goerli \
+  --target-name=pangolin \
+  --source-endpoint=https://endpoints.omniatech.io/v1/arbitrum/goerli/public \
+  --target-endpoint=https://pangolin-rpc.darwinia.network \
+  --source-indexer-endpoint=https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest \
+  --target-indexer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-pangolin \
+  --source-address-airnode=0xa681492DBAd5a3999cFCE2d72196d5784dd08D0c \
+  --source-address-relayer=0x000000fbfBc6954C8CBba3130b5Aee7f3Ea5108e \
+  --target-address-airnode=0x770713580e5c618A4D29D7E8c0d7604276B63832 \
+  --target-address-relayer=0x000000fbfBc6954C8CBba3130b5Aee7f3Ea5108e \
+  --source-signer \
+  --target-signer \
+  --enable-source-to-target \
+  --enable-target-to-source
+```
