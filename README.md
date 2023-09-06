@@ -58,19 +58,37 @@ ormpipe start \
   --enable-target-to-source
 ```
 
-**--tasks**
+**tasks**
+
 `--tasks` or `-t` start task name, type `oracle`
 
-- `--source-name` and `--target-name` source chain and target chain name
-- `--source-endpoint` and `--target-endpoint` source chain and target chain
-  endpoint
-- `--source-indexer-oracle-endpoint` and `--target-indexer-endpoint` source
-  chain and target chan oracle contract indexer.
-- `--source-address-airnode` and `--target-address-airnode` source chain and
-  target chain deployed airnode contract address
-- `--source-signer-airnode` and `--target-signer` your account private key in
-  source and target chain
-- `--enable-source-to-target` and `--enable-target-to-source` enable relay
-  direction.
+**chain name**
+
+`--source-name` and `--target-name` source chain and target chain name
+
+**chain endpoint**
+
+`--source-endpoint` and `--target-endpoint` source chain and target chain
+endpoint
+
+**oracle indexer endpoint**
+
+`--source-indexer-oracle-endpoint` and `--target-indexer-endpoint` source chain
+and target chain oracle contract indexer.
+
+**airnode contract address**
+
+`--source-address-airnode` and `--target-address-airnode` source chain and
+target chain deployed airnode contract address
+
+**signer**
+
+`--source-signer-airnode` and `--target-signer` your account private key in
+source and target chain
+
+**enable**
+
+`--enable-source-to-target` and `--enable-target-to-source` enable relay
+direction.
 
 ### Realyer relay
