@@ -20,7 +20,7 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@darwinia/ormpipe-relay": "^0.0.1",
+    "@darwinia/ormpipe-relay": "^0.0.2",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "camelize": "^1",
