@@ -17,7 +17,7 @@ export class ThegraphIndexerRelayer extends GraphCommon {
         id
         msgHash
         fee
-        parmas
+        params
         blockNumber
         blockTimestamp
         transactionHash

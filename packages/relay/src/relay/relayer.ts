@@ -174,7 +174,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     const messageProof = imt.getSingleHexProof(message.index);
 
     const abiCoder = AbiCoder.defaultAbiCoder();
-    const params = sourceNextRelayerAssigned.parmas;
+    const params = sourceNextRelayerAssigned.params;
     const decodedGasLimit = abiCoder.decode(['uint'], params);
     const gasLimit = decodedGasLimit[0];
 

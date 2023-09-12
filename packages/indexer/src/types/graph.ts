@@ -49,7 +49,7 @@ export interface OrmpOracleAssigned extends BaseGraphEntity {
 }
 
 export interface OrmpRelayerAssigned extends OrmpOracleAssigned {
-  parmas: string
+  params: string
 }
 
 export interface OrmpChannelMessageAccepted extends BaseGraphEntity {
