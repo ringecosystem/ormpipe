@@ -2,7 +2,7 @@
   {
     "inputs": [
       { "internalType": "address", "name": "dao", "type": "address" },
-      { "internalType": "address", "name": "endpoint", "type": "address" }
+      { "internalType": "address", "name": "ormp", "type": "address" }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -25,8 +25,14 @@
       {
         "indexed": false,
         "internalType": "bytes",
-        "name": "parmas",
+        "name": "params",
         "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32[32]",
+        "name": "proof",
+        "type": "bytes32[32]"
       }
     ],
     "name": "Assigned",
@@ -103,7 +109,7 @@
   },
   {
     "inputs": [],
-    "name": "ENDPOINT",
+    "name": "PROTOCOL",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
