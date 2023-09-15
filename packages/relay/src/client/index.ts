@@ -2,6 +2,7 @@ import {ethers} from "ethers";
 import {AirnodeContractClient} from "./contract_airnode";
 import {RelayerContractClient} from "./contract_relayer";
 import {logger} from "@darwinia/ormpipe-logger";
+import chalk = require('chalk');
 
 export interface RelayClientConfig {
   chainName: string
@@ -35,14 +36,20 @@ export class RelayClient {
     this._config = config
     this._evm = new ethers.JsonRpcProvider(config.endpoint);
     this._evm.on('debug', info => {
-      const {action, payload} = info;
+      const {action, payload, result} = info;
       if (!action) return;
       const logLevel = process.env.ORMPIPE_LOG_LEVEL ?? 'info';
       if (logLevel != 'debug') return;
+      let logText = '';
+      if (action.indexOf('receive') != -1) {
+        logText = JSON.stringify(result);
+      } else {
+        logText = JSON.stringify(payload);
+      }
       logger.debug(
-        JSON.stringify(payload),
+        chalk.gray(logText),
         {
-          target: 'ormpile-relay',
+          target: 'ormpipe-relay',
           breads: [`ethers:${this._config.chainName}`, `${action}`]
         }
       );

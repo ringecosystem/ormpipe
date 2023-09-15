@@ -78,7 +78,7 @@ export class ThegraphIndexerAirnode extends GraphCommon {
           break;
         case BeaconOperation.remove:
           beacons.splice(
-            beacons.findIndex(item => item.beaconId == bsa.beaconId && +item.blockNumber == bsa.blockNumber),
+            beacons.findIndex(item => item.beaconId == bsa.beaconId),
             1
           );
           break;

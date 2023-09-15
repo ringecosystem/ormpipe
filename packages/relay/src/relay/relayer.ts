@@ -55,7 +55,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
-    let queryNextMessageIndexStart = 0;
+    let queryNextMessageIndexStart = -1;
     let sourceMessageIndexAtBlock = 0;
     const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
     if (targetLastMessageDispatched) {
