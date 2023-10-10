@@ -47,13 +47,10 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async messageHashes(variables: QueryMessageHashes): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($messageIndex: BigInt!) {
+    query QueryMessageAcceptedHashes {
       ormpProtocolMessageAccepteds(
         orderBy: message_index
         orderDirection: asc
-        where: {
-          message_index_lt: $messageIndex
-        }
       ) {
         msgHash
       }
@@ -61,7 +58,6 @@ export class ThegraphIndexOrmp extends GraphCommon {
     `;
     const resp: OrmpChannelMessageAccepted[] = await super.list({
       query,
-      variables,
       schema: 'ormpProtocolMessageAccepteds',
     });
     return resp.map(item => item.msgHash)

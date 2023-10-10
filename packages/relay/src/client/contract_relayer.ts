@@ -32,6 +32,11 @@ export class RelayerContractClient {
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
 
+    await this.contract['relay'].estimateGas(
+      message,
+      proof,
+      gasLimit,
+    );
     const tx = await this.contract['relay'](
       message,
       proof,

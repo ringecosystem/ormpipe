@@ -179,14 +179,15 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
     const beacons = await this.targetIndexerAirnode.beacons();
     const countBeacons = beacons.length;
+    const beaconIds = beacons.map(item => item.beaconId);
     logger.debug(
-      'queried %s beacons from %s airnode-dapi contract',
+      'queried %s beacons from %s airnode-dapi contract. %s',
       countBeacons,
       super.targetName,
+      chalk.gray(JSON.stringify(beaconIds)),
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const beaconIds = beacons.map(item => item.beaconId);
     const distruibutions = await this.targetIndexerAirnode.beaconAirnodeCompletedDistribution(beaconIds);
     if (!distruibutions.length) {
       logger.warn(
@@ -241,11 +242,12 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
     const aggregateBeaconIds = distruibutions
       .filter(item => item.data == completedData)
-      .map(item => item.beaconId);
+      .map(item => item.beaconId)
+      .sort((one, two) => (one > two ? 1 : -1));
     logger.debug(
       'aggregate beacons %s to %s airnode-api contract',
+      chalk.gray(JSON.stringify(aggregateBeaconIds)),
       super.targetName,
-      JSON.stringify(aggregateBeaconIds),
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 

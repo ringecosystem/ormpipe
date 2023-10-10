@@ -38,14 +38,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
   public async start() {
     try {
       await this.run();
-      await this.process();
     } catch (e: any) {
       logger.error(e, super.meta('ormpipe-relay', ['relayer:relay']));
     }
-  }
-
-  private async process() {
-    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
   }
 
   private async run() {
@@ -193,7 +188,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     // console.log(rawMsgHashes);
     // console.log(message);
     // console.log(messageProof);
-
+    //
     // console.log('------ relay');
     const targetTxRelayMessage = await this.targetRelayerClient.relay(message, encodedProof, gasLimit);
     logger.info(

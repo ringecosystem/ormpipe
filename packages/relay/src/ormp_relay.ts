@@ -37,7 +37,7 @@ export class OrmpRelay {
         } catch (e: any) {
           logger.error(e, {target: 'ormpipe', breads: ['ormpipe', 'start', task]});
         } finally {
-          await setTimeout(5000);
+          await setTimeout(10000);
         }
       }
     }
