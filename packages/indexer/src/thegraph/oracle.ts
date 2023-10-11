@@ -6,7 +6,7 @@ export class ThegraphIndexerOracle extends GraphCommon {
 
   public async allAssignedList(): Promise<OrmpOracleAssigned[]> {
     const query = `
-    query QueryNextOracleAssigned {
+    query QueryNextOracleAssignedList {
       ormpOracleAssigneds(
         orderBy: blockNumber
         orderDirection: asc
@@ -23,7 +23,7 @@ export class ThegraphIndexerOracle extends GraphCommon {
     return await super.list({query, schema: 'ormpOracleAssigneds'});
   }
 
-  public async nextAssigned(variables: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
+  public async inspectAssigned(variables: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
     const query = `
     query QueryNextOracleAssigned($msgHash: Bytes!) {
       ormpOracleAssigneds(

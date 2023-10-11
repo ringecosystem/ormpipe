@@ -1,6 +1,11 @@
 import {RelayerLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
-import {ThegraphIndexOrmp, ThegraphIndexerAirnode, ThegraphIndexerRelayer} from "@darwinia/ormpipe-indexer";
+import {
+  ThegraphIndexOrmp,
+  ThegraphIndexerAirnode,
+  ThegraphIndexerRelayer,
+  OrmpChannelMessageAccepted
+} from "@darwinia/ormpipe-indexer";
 import {OrmpProtocolMessage, RelayerContractClient} from "../client/contract_relayer";
 import {logger} from "@darwinia/ormpipe-logger";
 import {IncrementalMerkleTree} from '../helper/imt'
@@ -43,6 +48,27 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     }
   }
 
+  private async _lastAssignedMessageAccepted(): Promise<OrmpChannelMessageAccepted | undefined> {
+    const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
+    if (cachedLastDeliveriedIndex) {
+      const nextSourceMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
+        messageIndex: +cachedLastDeliveriedIndex,
+      });
+      if (!nextSourceMessageAccepted) {
+        logger.debug(
+          `no new assigned message accepted`,
+          super.meta('ormpipe-relay', ['oracle:delivery'])
+        );
+        return;
+      }
+      return nextSourceMessageAccepted;
+    }
+
+    const allAssignedList = await this.sourceIndexerRelayer.allAssignedList();
+    const msgHashes = allAssignedList.map(item => item.msgHash);
+    return await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+  }
+
   private async run() {
     logger.debug('start relayer relay', super.meta('ormpipe-relay', ['relayer:relay']));
 
@@ -50,71 +76,35 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
-    let queryNextMessageIndexStart = -1;
-    let sourceMessageIndexAtBlock = 0;
-    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
-    if (targetLastMessageDispatched) {
-      const sourceChainLastDispatched = await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: targetLastMessageDispatched.msgHash,
-      });
-      if (sourceChainLastDispatched) {
-        queryNextMessageIndexStart = +sourceChainLastDispatched.message_index;
-        sourceMessageIndexAtBlock = +sourceChainLastDispatched.blockNumber;
-      }
-    }
-    logger.debug(
-      `queried next relayer from message index %s at block %s(%s)`,
-      queryNextMessageIndexStart,
-      sourceMessageIndexAtBlock,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['relayer:relay'])
-    );
-    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-      messageIndex: queryNextMessageIndexStart,
-    });
-    const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
-    logger.info(
-      'sync status [%s,%s] (%s)',
-      sourceNextMessageAccepted?.message_index ?? queryNextMessageIndexStart,
-      sourceLastMessageAccepted?.message_index ?? 0,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['relayer:relay']),
-    );
 
+    const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted();
     if (!sourceNextMessageAccepted) {
-      logger.info('not have more message accepted', super.meta('ormpipe-relay', ['relayer:relay']));
-      return;
-    }
-
-    const cachedLastRelaiedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
-    if (cachedLastRelaiedIndex && cachedLastRelaiedIndex == queryNextMessageIndexStart) {
-      logger.warn(
-        'the message index (%s) already relay to %s, please wait finalized',
-        queryNextMessageIndexStart,
-        super.targetName,
-        super.meta('ormpipe-relay', ['relayer:relay'])
-      );
-      return;
-    }
-
-    const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.nextAssigned({
-      msgHash: sourceNextMessageAccepted.msgHash,
-    });
-    if (!sourceNextRelayerAssigned) {
       logger.info(
-        `new message accepted but not assigned to myself. %s`,
-        sourceNextMessageAccepted.msgHash,
-        super.meta('ormpipe-relay', ['relayer:relay'])
+        `no new assigned message accepted`,
+        super.meta('ormpipe-relay', ['oracle:delivery'])
       );
       return;
     }
     logger.info(
-      'new message accepted %s from %s(%s)',
+      `new message accepted %s wait block %s(%s) finalized`,
       sourceNextMessageAccepted.msgHash,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
-      super.meta('ormpipe-relay', ['relayer:relay'])
+      super.meta('ormpipe-relay', ['oracle:delivery'])
     );
+
+    const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.inspectAssigned({
+      msgHash: sourceNextMessageAccepted.msgHash,
+    });
+    if (!sourceNextRelayerAssigned) {
+      logger.debug(
+        `found new message %s(%s), but not assigned to myself`,
+        sourceNextMessageAccepted.msgHash,
+        sourceNextMessageAccepted.message_index,
+        super.meta('ormpipe-relay', ['oracle:delivery'])
+      );
+      return;
+    }
 
     const targetLastAggregatedMessageRoot = await this.targetIndexerAirnode.lastAggregatedMessageRoot();
     if (!targetLastAggregatedMessageRoot) {
@@ -174,7 +164,8 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     const gasLimit = decodedGasLimit[0];
 
     const encodedProof = abiCoder.encode([
-        'tuple(uint blockNumber, uint messageIndex, bytes32[32] messageProof)'],
+        'tuple(uint blockNumber, uint messageIndex, bytes32[32] messageProof)'
+      ],
       [
         {
           blockNumber: sourceNextMessageAccepted.blockNumber,
@@ -199,7 +190,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
-    await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, queryNextMessageIndexStart);
+    await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, message.index);
   }
 
 }

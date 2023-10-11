@@ -71,9 +71,29 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   private async _lastAssignedMessageAccepted(): Promise<OrmpChannelMessageAccepted | undefined> {
     const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
     if (cachedLastDeliveriedIndex) {
-      return await this.sourceIndexerOrmp.nextMessageAccepted({
+      const nextSourceMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
         messageIndex: +cachedLastDeliveriedIndex,
       });
+      if (!nextSourceMessageAccepted) {
+        logger.debug(
+          `no new assigned message accepted`,
+          super.meta('ormpipe-relay', ['oracle:delivery'])
+        );
+        return;
+      }
+      const messageAssigned = await this.sourceIndexerOracle.inspectAssigned({
+        msgHash: nextSourceMessageAccepted.msgHash,
+      });
+      if (!messageAssigned) {
+        logger.debug(
+          `found new message %s(%s), but not assigned to myself`,
+          nextSourceMessageAccepted.msgHash,
+          nextSourceMessageAccepted.message_index,
+          super.meta('ormpipe-relay', ['oracle:delivery'])
+        );
+        return;
+      }
+      return nextSourceMessageAccepted;
     }
 
     const allAssignedList = await this.sourceIndexerOracle.allAssignedList();
