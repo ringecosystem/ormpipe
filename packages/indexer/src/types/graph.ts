@@ -15,6 +15,10 @@ export interface QueryNextChannelMessageAccepted {
   messageIndex: number
 }
 
+export interface QueryNextUndoMessageAccepted {
+  msgHashes: string[]
+}
+
 export interface QueryNextAirnodeCompleted {
   beaconId: string
 }
@@ -30,7 +34,6 @@ export interface QueryMessageHashes {
 
 
 export type QueryNextOracleAssigned = QueryNextRelayerAssigned
-
 
 export interface IGraphResponse<T> {
   data: T

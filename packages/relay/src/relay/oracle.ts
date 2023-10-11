@@ -1,7 +1,12 @@
 import {logger} from "@darwinia/ormpipe-logger";
 import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
-import {ThegraphIndexerAirnode, ThegraphIndexerOracle, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
+import {
+  OrmpChannelMessageAccepted,
+  ThegraphIndexerAirnode,
+  ThegraphIndexerOracle,
+  ThegraphIndexOrmp
+} from "@darwinia/ormpipe-indexer";
 import {AirnodeContractClient} from "../client/contract_airnode";
 import * as asyncx from "async";
 import {RelayFeature} from "../types/config";
@@ -63,6 +68,19 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     }
   }
 
+  private async _lastAssignedMessageAccepted(): Promise<OrmpChannelMessageAccepted | undefined> {
+    const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
+    if (cachedLastDeliveriedIndex) {
+      return await this.sourceIndexerOrmp.nextMessageAccepted({
+        messageIndex: +cachedLastDeliveriedIndex,
+      });
+    }
+
+    const allAssignedList = await this.sourceIndexerOracle.allAssignedList();
+    const msgHashes = allAssignedList.map(item => item.msgHash);
+    return await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+  }
+
   private async delivery() {
     logger.debug('start oracle delivery', super.meta('ormpipe-relay', ['oracle:delivery']));
     // delivery start block
@@ -70,50 +88,11 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('ormpipe-relay', ['oracle:delivery'])
     );
-    let queryNextMessageIndexStart = -1;
-    let sourceMessageIndexAtBlock = 0;
-    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
-    if (targetLastMessageDispatched) {
-      const sourceChainLastDispatched = await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: targetLastMessageDispatched.msgHash,
-      });
-      if (sourceChainLastDispatched) {
-        queryNextMessageIndexStart = +sourceChainLastDispatched.message_index;
-        sourceMessageIndexAtBlock = +sourceChainLastDispatched.blockNumber;
-      }
-    }
-    logger.debug(
-      `queried next oracle from message %s at block number %s(%s)`,
-      queryNextMessageIndexStart,
-      sourceMessageIndexAtBlock,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['oracle:delivery'])
-    );
-    const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
-    if (cachedLastDeliveriedIndex && cachedLastDeliveriedIndex == queryNextMessageIndexStart) {
-      logger.warn(
-        'this message index (%s) already deliveried to %s, please wait aggregate and message relay',
-        queryNextMessageIndexStart,
-        super.targetName,
-        super.meta('ormpipe-relay', ['oracle:delivery'])
-      )
-      return;
-    }
+    const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted();
 
-    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-      messageIndex: queryNextMessageIndexStart,
-    });
     if (!sourceNextMessageAccepted) {
-      logger.info('not have more message accepted', super.meta('ormpipe-relay', ['oracle:delivery']));
-      return;
-    }
-    const sourceNextOracleAssigned = await this.sourceIndexerOracle.nextAssigned({
-      msgHash: sourceNextMessageAccepted.msgHash,
-    });
-    if (!sourceNextOracleAssigned) {
       logger.info(
-        `new message accepted but not assigned to myself. %s`,
-        sourceNextMessageAccepted.msgHash,
+        `no new assigned message accepted or assigned to self`,
         super.meta('ormpipe-relay', ['oracle:delivery'])
       );
       return;
@@ -171,7 +150,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
-    await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, queryNextMessageIndexStart);
+    await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
   }
 
   private async aggregate() {

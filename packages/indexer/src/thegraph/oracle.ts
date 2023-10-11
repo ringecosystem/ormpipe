@@ -4,6 +4,25 @@ import {GraphCommon} from "./_common";
 
 export class ThegraphIndexerOracle extends GraphCommon {
 
+  public async allAssignedList(): Promise<OrmpOracleAssigned[]> {
+    const query = `
+    query QueryNextOracleAssigned {
+      ormpOracleAssigneds(
+        orderBy: blockNumber
+        orderDirection: asc
+      ) {
+        id
+        msgHash
+        fee
+        blockNumber
+        blockTimestamp
+        transactionHash
+      }
+    }
+    `;
+    return await super.list({query, schema: 'ormpOracleAssigneds'});
+  }
+
   public async nextAssigned(variables: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
     const query = `
     query QueryNextOracleAssigned($msgHash: Bytes!) {
