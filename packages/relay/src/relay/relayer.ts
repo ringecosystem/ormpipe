@@ -4,7 +4,7 @@ import {
   ThegraphIndexOrmp,
   ThegraphIndexerAirnode,
   ThegraphIndexerRelayer,
-  OrmpChannelMessageAccepted
+  OrmpMessageAccepted
 } from "@darwinia/ormpipe-indexer";
 import {OrmpProtocolMessage, RelayerContractClient} from "../client/contract_relayer";
 import {logger} from "@darwinia/ormpipe-logger";
@@ -48,7 +48,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     }
   }
 
-  private async _lastAssignedMessageAccepted(): Promise<OrmpChannelMessageAccepted | undefined> {
+  private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
     const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
     if (cachedLastDeliveriedIndex) {
       const nextSourceMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
@@ -172,9 +172,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       encoded: sourceNextMessageAccepted.message_encoded,
     };
 
-    const rawMsgHashes = await this.sourceIndexerOrmp.messageHashes({
-      messageIndex: +sourceLastAggregatedMessageAccepted.message_index,
-    });
+    const rawMsgHashes = await this.sourceIndexerOrmp.messageHashes();
     const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
     const imt = new IncrementalMerkleTree(msgHashes);
     const messageProof = imt.getSingleHexProof(message.index);

@@ -2,7 +2,7 @@ import {logger} from "@darwinia/ormpipe-logger";
 import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {
-  OrmpChannelMessageAccepted,
+  OrmpMessageAccepted,
   ThegraphIndexerAirnode,
   ThegraphIndexerOracle,
   ThegraphIndexOrmp
@@ -68,7 +68,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     }
   }
 
-  private async _lastAssignedMessageAccepted(): Promise<OrmpChannelMessageAccepted | undefined> {
+  private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
     const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
     if (cachedLastDeliveriedIndex) {
       const nextSourceMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({

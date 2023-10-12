@@ -11,7 +11,7 @@ export interface QueryNextRelayerAssigned {
   msgHash: string
 }
 
-export interface QueryNextChannelMessageAccepted {
+export interface QueryNextMessageAccepted {
   messageIndex: number
 }
 
@@ -26,10 +26,6 @@ export interface QueryNextAirnodeCompleted {
 export interface QueryChannelMessageAccepted {
   msgHash?: string
   root?: string
-}
-
-export interface QueryMessageHashes {
-  messageIndex: number
 }
 
 
@@ -55,7 +51,7 @@ export interface OrmpRelayerAssigned extends OrmpOracleAssigned {
   params: string
 }
 
-export interface OrmpChannelMessageAccepted extends BaseGraphEntity {
+export interface OrmpMessageAccepted extends BaseGraphEntity {
   msgHash: string
   root: string
   message_channel: string
