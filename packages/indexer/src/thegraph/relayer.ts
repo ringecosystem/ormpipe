@@ -5,7 +5,7 @@ export class ThegraphIndexerRelayer extends GraphCommon {
 
   public async allAssignedList(): Promise<OrmpRelayerAssigned[]> {
     const query = `
-    query QueryRelayerAssignedList($msgHash: Bytes!) {
+    query QueryRelayerAssignedList {
       ormpRelayerAssigneds(
         orderBy: blockNumber
         orderDirection: asc

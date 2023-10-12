@@ -56,7 +56,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       });
       if (!nextSourceMessageAccepted) {
         logger.debug(
-          `no new assigned message accepted`,
+          `no new assigned message accepted, queried by cache`,
           super.meta('ormpipe-relay', ['relayer:relay'])
         );
         return;

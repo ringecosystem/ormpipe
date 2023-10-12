@@ -65,6 +65,9 @@ export class ThegraphIndexOrmp extends GraphCommon {
   }
 
   public async nextUndoMessageAccepted(variables: QueryNextUndoMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
+    if (!variables.msgHashes.length) {
+      return this.nextMessageAccepted({messageIndex: -1});
+    }
     const query = `
     query QueryNextMessageAccepted($msgHashes: [String!]!) {
       ormpProtocolMessageAccepteds(
