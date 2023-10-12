@@ -124,8 +124,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     ) {
       logger.warn(
         `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
-        sourceNetwork.chainId,
-        targetNetwork.chainId,
+        sourceNetwork.chainId.toString(),
+        targetNetwork.chainId.toString(),
         sourceNextMessageAccepted.msgHash,
         sourceNextMessageAccepted.message_index,
         sourceNextMessageAccepted.message_fromChainId,

@@ -37,10 +37,11 @@ export class OrmpRelay {
         } catch (e: any) {
           logger.error(e, {target: 'ormpipe', breads: ['ormpipe', 'start', task]});
         } finally {
-          logger.info('this round [%s] all done, wait 10s', times, {target: 'ormpipe'});
-          await setTimeout(10000);
+          await setTimeout(5000);
         }
       }
+      await setTimeout(5000);
+      logger.info('this round [%s] all done, wait 5s', times, {target: 'ormpipe'});
     }
   }
 
