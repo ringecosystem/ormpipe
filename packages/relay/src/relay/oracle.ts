@@ -109,7 +109,6 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery'])
     );
     const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted();
-
     if (!sourceNextMessageAccepted) {
       logger.info(
         `no new assigned message accepted or assigned to self`,
@@ -117,6 +116,26 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       );
       return;
     }
+    const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
+    const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
+    if (
+      sourceNetwork.chainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
+      targetNetwork.chainId.toString() != sourceNextMessageAccepted.message_toChainId
+    ) {
+      logger.warn(
+        `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
+        sourceNetwork.chainId,
+        targetNetwork.chainId,
+        sourceNextMessageAccepted.msgHash,
+        sourceNextMessageAccepted.message_index,
+        sourceNextMessageAccepted.message_fromChainId,
+        sourceNextMessageAccepted.message_toChainId,
+        super.meta('ormpipe-relay', ['oracle:delivery']),
+      );
+      return;
+    }
+
+
     logger.info(
       `new message accepted %s wait block %s(%s) finalized`,
       sourceNextMessageAccepted.msgHash,

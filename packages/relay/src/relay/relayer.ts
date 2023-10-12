@@ -57,7 +57,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       if (!nextSourceMessageAccepted) {
         logger.debug(
           `no new assigned message accepted`,
-          super.meta('ormpipe-relay', ['oracle:delivery'])
+          super.meta('ormpipe-relay', ['relayer:relay'])
         );
         return;
       }
@@ -81,16 +81,36 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     if (!sourceNextMessageAccepted) {
       logger.info(
         `no new assigned message accepted`,
-        super.meta('ormpipe-relay', ['oracle:delivery'])
+        super.meta('ormpipe-relay', ['relayer:relay'])
       );
       return;
     }
+    const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
+    const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
+    if (
+      sourceNetwork.chainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
+      targetNetwork.chainId.toString() != sourceNextMessageAccepted.message_toChainId
+    ) {
+      logger.warn(
+        `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
+        sourceNetwork.chainId,
+        targetNetwork.chainId,
+        sourceNextMessageAccepted.msgHash,
+        sourceNextMessageAccepted.message_index,
+        sourceNextMessageAccepted.message_fromChainId,
+        sourceNextMessageAccepted.message_toChainId,
+        super.meta('ormpipe-relay', ['relayer:relay']),
+      );
+      return;
+    }
+
+
     logger.info(
       `new message accepted %s wait block %s(%s) finalized`,
       sourceNextMessageAccepted.msgHash,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
-      super.meta('ormpipe-relay', ['oracle:delivery'])
+      super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
     const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.inspectAssigned({
@@ -101,7 +121,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         `found new message %s(%s), but not assigned to myself`,
         sourceNextMessageAccepted.msgHash,
         sourceNextMessageAccepted.message_index,
-        super.meta('ormpipe-relay', ['oracle:delivery'])
+        super.meta('ormpipe-relay', ['relayer:relay'])
       );
       return;
     }
