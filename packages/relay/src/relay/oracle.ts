@@ -132,6 +132,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
         sourceNextMessageAccepted.message_toChainId,
         super.meta('ormpipe-relay', ['oracle:delivery']),
       );
+      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
       return;
     }
 

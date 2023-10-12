@@ -101,6 +101,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         sourceNextMessageAccepted.message_toChainId,
         super.meta('ormpipe-relay', ['relayer:relay']),
       );
+      await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
       return;
     }
 
