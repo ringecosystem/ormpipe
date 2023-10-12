@@ -105,15 +105,6 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return;
     }
 
-
-    logger.info(
-      `new message accepted %s wait block %s(%s) finalized`,
-      sourceNextMessageAccepted.msgHash,
-      sourceNextMessageAccepted.blockNumber,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['relayer:relay'])
-    );
-
     const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.inspectAssigned({
       msgHash: sourceNextMessageAccepted.msgHash,
     });
@@ -126,6 +117,14 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return;
     }
+
+    logger.info(
+      `new message accepted %s in %s(%s) prepared`,
+      sourceNextMessageAccepted.msgHash,
+      sourceNextMessageAccepted.blockNumber,
+      super.sourceName,
+      super.meta('ormpipe-relay', ['relayer:relay'])
+    );
 
     const targetLastAggregatedMessageRoot = await this.targetIndexerAirnode.lastAggregatedMessageRoot();
     if (!targetLastAggregatedMessageRoot) {
