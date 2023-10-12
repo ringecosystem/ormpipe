@@ -71,10 +71,10 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
     const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
     if (cachedLastDeliveriedIndex) {
-      const nextSourceMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
+      const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
         messageIndex: +cachedLastDeliveriedIndex,
       });
-      if (!nextSourceMessageAccepted) {
+      if (!sourceNextMessageAccepted) {
         logger.debug(
           `no new assigned message accepted`,
           super.meta('ormpipe-relay', ['oracle:delivery'])
@@ -82,23 +82,32 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
         return;
       }
       const messageAssigned = await this.sourceIndexerOracle.inspectAssigned({
-        msgHash: nextSourceMessageAccepted.msgHash,
+        msgHash: sourceNextMessageAccepted.msgHash,
       });
       if (!messageAssigned) {
         logger.debug(
           `found new message %s(%s), but not assigned to myself`,
-          nextSourceMessageAccepted.msgHash,
-          nextSourceMessageAccepted.message_index,
+          sourceNextMessageAccepted.msgHash,
+          sourceNextMessageAccepted.message_index,
           super.meta('ormpipe-relay', ['oracle:delivery'])
         );
         return;
       }
-      return nextSourceMessageAccepted;
+      return sourceNextMessageAccepted;
     }
 
     const allAssignedList = await this.sourceIndexerOracle.allAssignedList();
     const msgHashes = allAssignedList.map(item => item.msgHash);
-    return await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+    if (sourceNextMessageAccepted) {
+      return sourceNextMessageAccepted;
+    }
+    // save cache, if all message deliveried
+    const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
+    if (sourceLastMessageAccepted) {
+      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastMessageAccepted.message_index);
+    }
+    return sourceNextMessageAccepted;
   }
 
   private async delivery() {

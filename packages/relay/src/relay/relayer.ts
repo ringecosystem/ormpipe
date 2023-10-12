@@ -1,10 +1,10 @@
 import {RelayerLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {
-  ThegraphIndexOrmp,
+  OrmpMessageAccepted,
   ThegraphIndexerAirnode,
   ThegraphIndexerRelayer,
-  OrmpMessageAccepted
+  ThegraphIndexOrmp
 } from "@darwinia/ormpipe-indexer";
 import {OrmpProtocolMessage, RelayerContractClient} from "../client/contract_relayer";
 import {logger} from "@darwinia/ormpipe-logger";
@@ -49,24 +49,43 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
   }
 
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
+    let sourceNextMessageAccepted;
     const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
+    const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
+
+
+    let nextMessageIndex;
     if (cachedLastDeliveriedIndex) {
-      const nextSourceMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
+      sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
         messageIndex: +cachedLastDeliveriedIndex,
       });
-      if (!nextSourceMessageAccepted) {
+      if (!sourceNextMessageAccepted) {
         logger.debug(
           `no new assigned message accepted, queried by cache`,
           super.meta('ormpipe-relay', ['relayer:relay'])
         );
-        return;
       }
-      return nextSourceMessageAccepted;
+      nextMessageIndex = sourceNextMessageAccepted?.message_index ?? -1;
+    } else {
+      const allAssignedList = await this.sourceIndexerRelayer.allAssignedList();
+      const msgHashes = allAssignedList.map(item => item.msgHash);
+      sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+      nextMessageIndex = sourceNextMessageAccepted?.message_index ?? -1;
+      // save cache, if all message deliveried
+      if (!sourceNextMessageAccepted && sourceLastMessageAccepted) {
+        await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, +sourceLastMessageAccepted.message_index ?? -1);
+        nextMessageIndex = +(sourceLastMessageAccepted.message_index) ?? -1;
+      }
     }
 
-    const allAssignedList = await this.sourceIndexerRelayer.allAssignedList();
-    const msgHashes = allAssignedList.map(item => item.msgHash);
-    return await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+    logger.info(
+      'sync status [%s,%s] (%s)',
+      nextMessageIndex,
+      sourceLastMessageAccepted?.message_index ?? -1,
+      super.sourceName,
+      super.meta('ormpipe-relay', ['relayer:relay']),
+    );
+    return sourceNextMessageAccepted;
   }
 
   private async run() {
@@ -85,6 +104,8 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return;
     }
+
+
     const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
     const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
     if (

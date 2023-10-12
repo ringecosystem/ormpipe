@@ -19,7 +19,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     ) {
       ormpProtocolMessageAccepteds(
         first: 1
-        orderBy: blockNumber
+        orderBy: message_index
         orderDirection: asc
         where: {
           ${variables.msgHash ? 'msgHash: $msgHash' : ''}
@@ -53,6 +53,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         orderBy: message_index
         orderDirection: asc
       ) {
+        message_index
         msgHash
       }
     }
@@ -134,7 +135,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     query QueryNextMessageAccepted {
       ormpProtocolMessageAccepteds(
         first: 1
-        orderBy: blockNumber
+        orderBy: message_index
         orderDirection: desc
       ) {
         id
