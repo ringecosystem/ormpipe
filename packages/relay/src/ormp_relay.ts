@@ -30,13 +30,14 @@ export class OrmpRelay {
     let times = 0;
     while (true) {
       times += 1;
-      logger.info('====== ormpipe relay round %s ======', times, {target: 'ormpipe'});
+      logger.info('====== ormpipe relay round [%s] ======', times, {target: 'ormpipe'});
       for (const task of tasks) {
         try {
           await this.run({task, features});
         } catch (e: any) {
           logger.error(e, {target: 'ormpipe', breads: ['ormpipe', 'start', task]});
         } finally {
+          logger.info('this round [%s] all done, wait 10s', times, {target: 'ormpipe'});
           await setTimeout(10000);
         }
       }
