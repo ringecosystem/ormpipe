@@ -1,6 +1,6 @@
 import {IndexerInput} from "../types/indexer";
 import {Gqlc} from "../gqlc";
-import {IGraphResponse, OrmpChannelMessageAccepted, QueryGraph} from "../types/graph";
+import {IGraphResponse, QueryGraph} from "../types/graph";
 
 interface QueryGenericGraphql extends QueryGraph {
   schema: string

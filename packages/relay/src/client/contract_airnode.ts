@@ -3,6 +3,7 @@ import {ethers} from "ethers";
 import {AirnodeBeacon} from "@darwinia/ormpipe-indexer";
 import {logger} from "@darwinia/ormpipe-logger";
 const abi = require('../abis/AirnodeDapi.json');
+import chalk = require('chalk');
 
 
 export class AirnodeContractClient {
@@ -39,11 +40,14 @@ export class AirnodeContractClient {
     logger.debug(
       'call %s -> airnode.requestFinalizedHash %s, {value: %s}',
       this.config.chainName,
-      JSON.stringify(bcs),
+      chalk.gray(JSON.stringify(bcs)),
       requestFee,
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
-    const tx = await this.contract['requestFinalizedHash'](bcs, {value: requestFee});
+    const tx = await this.contract['requestFinalizedHash'](bcs, {
+      value: requestFee,
+      gasLimit: 60n * 100000n,
+    });
     return await tx.wait();
   }
 
@@ -51,7 +55,7 @@ export class AirnodeContractClient {
     logger.debug(
       'call %s -> airnode.aggregateBeacons %s',
       this.config.chainName,
-      JSON.stringify(beaconIds),
+      chalk.gray(JSON.stringify(beaconIds)),
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
     const tx = await this.contract['aggregateBeacons'](beaconIds);

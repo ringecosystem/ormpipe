@@ -1,7 +1,12 @@
 import {logger} from "@darwinia/ormpipe-logger";
 import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
-import {ThegraphIndexerAirnode, ThegraphIndexerOracle, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
+import {
+  OrmpMessageAccepted,
+  ThegraphIndexerAirnode,
+  ThegraphIndexerOracle,
+  ThegraphIndexOrmp
+} from "@darwinia/ormpipe-indexer";
 import {AirnodeContractClient} from "../client/contract_airnode";
 import * as asyncx from "async";
 import {RelayFeature} from "../types/config";
@@ -63,6 +68,48 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     }
   }
 
+  private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
+    const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
+    if (cachedLastDeliveriedIndex) {
+      const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
+        messageIndex: +cachedLastDeliveriedIndex,
+      });
+      if (!sourceNextMessageAccepted) {
+        logger.debug(
+          `no new assigned message accepted`,
+          super.meta('ormpipe-relay', ['oracle:delivery'])
+        );
+        return;
+      }
+      const messageAssigned = await this.sourceIndexerOracle.inspectAssigned({
+        msgHash: sourceNextMessageAccepted.msgHash,
+      });
+      if (!messageAssigned) {
+        logger.debug(
+          `found new message %s(%s), but not assigned to myself`,
+          sourceNextMessageAccepted.msgHash,
+          sourceNextMessageAccepted.message_index,
+          super.meta('ormpipe-relay', ['oracle:delivery'])
+        );
+        return;
+      }
+      return sourceNextMessageAccepted;
+    }
+
+    const allAssignedList = await this.sourceIndexerOracle.allAssignedList();
+    const msgHashes = allAssignedList.map(item => item.msgHash);
+    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+    if (sourceNextMessageAccepted) {
+      return sourceNextMessageAccepted;
+    }
+    // save cache, if all message deliveried
+    const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
+    if (sourceLastMessageAccepted) {
+      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastMessageAccepted.message_index);
+    }
+    return sourceNextMessageAccepted;
+  }
+
   private async delivery() {
     logger.debug('start oracle delivery', super.meta('ormpipe-relay', ['oracle:delivery']));
     // delivery start block
@@ -70,54 +117,35 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       `query last message dispatched from ${super.targetName} indexer-channel contract`,
       super.meta('ormpipe-relay', ['oracle:delivery'])
     );
-    let queryNextMessageIndexStart = 0;
-    let sourceMessageIndexAtBlock = 0;
-    const targetLastMessageDispatched = await this.targetIndexerOrmp.lastMessageDispatched();
-    if (targetLastMessageDispatched) {
-      const sourceChainLastDispatched = await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: targetLastMessageDispatched.msgHash,
-      });
-      if (sourceChainLastDispatched) {
-        queryNextMessageIndexStart = +sourceChainLastDispatched.message_index;
-        sourceMessageIndexAtBlock = +sourceChainLastDispatched.blockNumber;
-      }
-    }
-    logger.debug(
-      `queried next oracle from message %s at block number %s(%s)`,
-      queryNextMessageIndexStart,
-      sourceMessageIndexAtBlock,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['oracle:delivery'])
-    );
-    const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
-    if (cachedLastDeliveriedIndex && cachedLastDeliveriedIndex == queryNextMessageIndexStart) {
-      logger.warn(
-        'this message index (%s) already deliveried to %s, please wait aggregate and message relay',
-        queryNextMessageIndexStart,
-        super.targetName,
-        super.meta('ormpipe-relay', ['oracle:delivery'])
-      )
-      return;
-    }
-
-    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-      messageIndex: queryNextMessageIndexStart,
-    });
+    const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted();
     if (!sourceNextMessageAccepted) {
-      logger.info('not have more message accepted', super.meta('ormpipe-relay', ['oracle:delivery']));
-      return;
-    }
-    const sourceNextOracleAssigned = await this.sourceIndexerOracle.nextAssigned({
-      msgHash: sourceNextMessageAccepted.msgHash,
-    });
-    if (!sourceNextOracleAssigned) {
       logger.info(
-        `new message accepted but not assigned to myself. %s`,
-        sourceNextMessageAccepted.msgHash,
+        `no new assigned message accepted or assigned to self`,
         super.meta('ormpipe-relay', ['oracle:delivery'])
       );
       return;
     }
+    const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
+    const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
+    if (
+      sourceNetwork.chainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
+      targetNetwork.chainId.toString() != sourceNextMessageAccepted.message_toChainId
+    ) {
+      logger.warn(
+        `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
+        sourceNetwork.chainId.toString(),
+        targetNetwork.chainId.toString(),
+        sourceNextMessageAccepted.msgHash,
+        sourceNextMessageAccepted.message_index,
+        sourceNextMessageAccepted.message_fromChainId,
+        sourceNextMessageAccepted.message_toChainId,
+        super.meta('ormpipe-relay', ['oracle:delivery']),
+      );
+      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
+      return;
+    }
+
+
     logger.info(
       `new message accepted %s wait block %s(%s) finalized`,
       sourceNextMessageAccepted.msgHash,
@@ -171,7 +199,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
-    await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, queryNextMessageIndexStart);
+    await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
   }
 
   private async aggregate() {
@@ -179,14 +207,15 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
     const beacons = await this.targetIndexerAirnode.beacons();
     const countBeacons = beacons.length;
+    const beaconIds = beacons.map(item => item.beaconId);
     logger.debug(
-      'queried %s beacons from %s airnode-dapi contract',
+      'queried %s beacons from %s airnode-dapi contract. %s',
       countBeacons,
       super.targetName,
+      chalk.gray(JSON.stringify(beaconIds)),
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const beaconIds = beacons.map(item => item.beaconId);
     const distruibutions = await this.targetIndexerAirnode.beaconAirnodeCompletedDistribution(beaconIds);
     if (!distruibutions.length) {
       logger.warn(
@@ -241,11 +270,12 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
     const aggregateBeaconIds = distruibutions
       .filter(item => item.data == completedData)
-      .map(item => item.beaconId);
+      .map(item => item.beaconId)
+      .sort((one, two) => (one > two ? 1 : -1));
     logger.debug(
       'aggregate beacons %s to %s airnode-api contract',
+      chalk.gray(JSON.stringify(aggregateBeaconIds)),
       super.targetName,
-      JSON.stringify(aggregateBeaconIds),
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 

@@ -1,14 +1,15 @@
 import {
-  OrmpChannelMessageAccepted,
   OrmpChannelMessageDispatched,
-  QueryChannelMessageAccepted, QueryMessageHashes,
-  QueryNextChannelMessageAccepted
+  OrmpMessageAccepted,
+  QueryChannelMessageAccepted,
+  QueryNextMessageAccepted,
+  QueryNextUndoMessageAccepted
 } from "../types/graph";
 import {GraphCommon} from "./_common";
 
 export class ThegraphIndexOrmp extends GraphCommon {
 
-  public async inspectMessageAccepted(variables: QueryChannelMessageAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
+  public async inspectMessageAccepted(variables: QueryChannelMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
     if (!variables.msgHash && !variables.root)
       throw new Error('missing msghash or root');
     const query = `
@@ -18,7 +19,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     ) {
       ormpProtocolMessageAccepteds(
         first: 1
-        orderBy: blockNumber
+        orderBy: message_index
         orderDirection: asc
         where: {
           ${variables.msgHash ? 'msgHash: $msgHash' : ''}
@@ -45,34 +46,65 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
 
-  public async messageHashes(variables: QueryMessageHashes): Promise<string[]> {
+  public async messageHashes(): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($messageIndex: BigInt!) {
+    query QueryMessageAcceptedHashes {
       ormpProtocolMessageAccepteds(
         orderBy: message_index
         orderDirection: asc
-        where: {
-          message_index_lt: $messageIndex
-        }
       ) {
+        message_index
         msgHash
       }
     }
     `;
-    const resp: OrmpChannelMessageAccepted[] = await super.list({
+    const resp: OrmpMessageAccepted[] = await super.list({
       query,
-      variables,
       schema: 'ormpProtocolMessageAccepteds',
     });
     return resp.map(item => item.msgHash)
   }
 
-  public async nextMessageAccepted(variables: QueryNextChannelMessageAccepted): Promise<OrmpChannelMessageAccepted | undefined> {
+  public async nextUndoMessageAccepted(variables: QueryNextUndoMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
+    if (!variables.msgHashes.length) {
+      return this.nextMessageAccepted({messageIndex: -1});
+    }
+    const query = `
+    query QueryNextMessageAccepted($msgHashes: [String!]!) {
+      ormpProtocolMessageAccepteds(
+        first: 1
+        orderBy: message_index
+        orderDirection: asc
+        where: {
+          msgHash_not_in: $msgHashes
+        }
+      ) {
+        id
+        blockNumber
+        blockTimestamp
+        transactionHash
+
+        msgHash
+        root
+        message_channel
+        message_index
+        message_fromChainId
+        message_from
+        message_toChainId
+        message_to
+        message_encoded
+      }
+    }
+    `;
+    return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
+  }
+
+  public async nextMessageAccepted(variables: QueryNextMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
     const query = `
     query QueryNextMessageAccepted($messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
         first: 1
-        orderBy: blockNumber
+        orderBy: message_index
         orderDirection: asc
         where: {
           message_index_gt: $messageIndex
@@ -98,12 +130,12 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
 
-  public async lastMessageAccepted(): Promise<OrmpChannelMessageAccepted | undefined> {
+  public async lastMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
     const query = `
     query QueryNextMessageAccepted {
       ormpProtocolMessageAccepteds(
         first: 1
-        orderBy: blockNumber
+        orderBy: message_index
         orderDirection: desc
       ) {
         id
