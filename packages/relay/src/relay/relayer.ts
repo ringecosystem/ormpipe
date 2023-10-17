@@ -54,7 +54,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
 
 
-    let nextMessageIndex;
+    let currentMessageIndex;
     if (cachedLastDeliveriedIndex) {
       sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
         messageIndex: +cachedLastDeliveriedIndex,
@@ -65,22 +65,22 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
           super.meta('ormpipe-relay', ['relayer:relay'])
         );
       }
-      nextMessageIndex = sourceNextMessageAccepted?.message_index ?? -1;
+      currentMessageIndex = sourceNextMessageAccepted?.message_index ?? -1;
     } else {
       const allAssignedList = await this.sourceIndexerRelayer.allAssignedList();
       const msgHashes = allAssignedList.map(item => item.msgHash);
       sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
-      nextMessageIndex = sourceNextMessageAccepted?.message_index ?? -1;
+      currentMessageIndex = sourceNextMessageAccepted?.message_index ?? -1;
       // save cache, if all message deliveried
       if (!sourceNextMessageAccepted && sourceLastMessageAccepted) {
-        await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, +sourceLastMessageAccepted.message_index ?? -1);
-        nextMessageIndex = +(sourceLastMessageAccepted.message_index) ?? -1;
+        await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, +sourceLastMessageAccepted.message_index);
+        currentMessageIndex = +(sourceLastMessageAccepted.message_index) ?? -1;
       }
     }
 
     logger.info(
       'sync status [%s,%s] (%s)',
-      nextMessageIndex,
+      currentMessageIndex,
       sourceLastMessageAccepted?.message_index ?? -1,
       super.sourceName,
       super.meta('ormpipe-relay', ['relayer:relay']),
