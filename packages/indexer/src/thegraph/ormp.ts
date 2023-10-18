@@ -1,5 +1,5 @@
 import {
-  OrmpChannelMessageDispatched,
+  OrmpMessageDispatched,
   OrmpMessageAccepted,
   QueryChannelMessageAccepted,
   QueryNextMessageAccepted,
@@ -70,33 +70,26 @@ export class ThegraphIndexOrmp extends GraphCommon {
       return this.nextMessageAccepted({messageIndex: -1});
     }
     const query = `
-    query QueryNextMessageAccepted($msgHashes: [String!]!) {
-      ormpProtocolMessageAccepteds(
-        first: 1
-        orderBy: message_index
-        orderDirection: asc
+    query QueryRelayedMessageDispatched($msgHashes: [String!]!) {
+      ormpProtocolMessageDispatcheds(
         where: {
-          msgHash_not_in: $msgHashes
+          msgHash_in: $msgHashes
         }
       ) {
-        id
-        blockNumber
-        blockTimestamp
-        transactionHash
-
         msgHash
-        root
-        message_channel
-        message_index
-        message_fromChainId
-        message_from
-        message_toChainId
-        message_to
-        message_encoded
       }
     }
     `;
-    return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
+    const relayedDispatcheds: OrmpMessageDispatched[] = await super.list({query, variables, schema: 'ormpProtocolMessageDispatcheds'});
+    const relayedHashes = relayedDispatcheds.map(item => item.msgHash);
+    const unrelayeds = [...variables.msgHashes]
+      .filter(item => !relayedHashes.includes(item));
+    if (!unrelayeds.length) {
+      return;
+    }
+
+    const unRelayedMessageHash = unrelayeds[0];
+    return await this.inspectMessageAccepted({msgHash: unRelayedMessageHash});
   }
 
   public async nextMessageAccepted(variables: QueryNextMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
@@ -158,7 +151,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return await super.single({query, schema: 'ormpProtocolMessageAccepteds'});
   }
 
-  public async lastMessageDispatched(): Promise<OrmpChannelMessageDispatched | undefined> {
+  public async lastMessageDispatched(): Promise<OrmpMessageDispatched | undefined> {
     const query = `
     query QueryLastMessageDispatched {
       ormpProtocolMessageDispatcheds(
