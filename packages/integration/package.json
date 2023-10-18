@@ -17,7 +17,9 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@stdlib/string-pad": "^0"
+    "async": "^3",
+    "chalk": "^4",
+    "ethers": "^6"
   },
   "devDependencies": {
     "@types/jest": "^29",
