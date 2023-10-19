@@ -21,6 +21,7 @@
   ],
   "dependencies": {
     "@darwinia/ormpipe-relay": "^0.0.2",
+    "@darwinia/ormpipe-integration": "^0.0.2",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "camelize": "^1",
