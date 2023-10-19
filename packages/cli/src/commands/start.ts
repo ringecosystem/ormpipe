@@ -253,7 +253,7 @@ export default class Start extends Command {
       title: 'please type target signer',
       default: process.env.ORMPIPE_TARGET_SIGNER,
     });
-    const targetSignerSubapi = CommandHelper.interactiveValue({
+    const targetSignerSubapi = await CommandHelper.interactiveValue({
       required: false,
       enable: !!relayConfig.targetSignerSubapi,
       type: 'password',
@@ -262,7 +262,7 @@ export default class Start extends Command {
       title: 'please type target signer for subapi contract',
       default: process.env.ORMPIPE_TARGET_SIGNER_SUBAPI,
     });
-    const targetSignerRelayer = CommandHelper.interactiveValue({
+    const targetSignerRelayer = await CommandHelper.interactiveValue({
       required: false,
       enable: !!relayConfig.targetSignerRelayer,
       type: 'password',

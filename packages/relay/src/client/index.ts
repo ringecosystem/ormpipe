@@ -64,7 +64,7 @@ export class RelayClient {
     return this._evm
   }
 
-  public airnode(address: string): SubapiContractClient {
+  public subapi(address: string): SubapiContractClient {
     return new SubapiContractClient({
       chainName: this.config.chainName,
       signer: this.config.signerSubapi ?? this.config.signer,

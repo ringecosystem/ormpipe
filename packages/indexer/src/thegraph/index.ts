@@ -13,7 +13,7 @@ export class ThegraphIndexer {
   private readonly graphAirnode: ThegraphIndexerSubapi;
 
   constructor(input: IndexerInput) {
-    const {endpoint, oracleEndpoint, relayerEndpoint, ormpEndpoint, airnodeEndpoint} = input;
+    const {endpoint, oracleEndpoint, relayerEndpoint, ormpEndpoint, subapiEndpoint} = input;
     this.graphOracle = new ThegraphIndexerOracle(input, new Gqlc({
       timeout: input.timeout,
       endpoint: oracleEndpoint ?? endpoint
@@ -28,7 +28,7 @@ export class ThegraphIndexer {
     }));
     this.graphAirnode = new ThegraphIndexerSubapi(input, new Gqlc({
       timeout: input.timeout,
-      endpoint: airnodeEndpoint ?? endpoint,
+      endpoint: subapiEndpoint ?? endpoint,
     }));
   }
 
@@ -44,7 +44,7 @@ export class ThegraphIndexer {
     return this.graphOrmp;
   }
 
-  public airnode(): ThegraphIndexerSubapi {
+  public subapi(): ThegraphIndexerSubapi {
     return this.graphAirnode;
   }
 
