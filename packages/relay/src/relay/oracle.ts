@@ -107,7 +107,6 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     if (sourceLastMessageAccepted) {
       await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastMessageAccepted.message_index);
     }
-    return sourceNextMessageAccepted;
   }
 
   private async delivery() {
@@ -259,7 +258,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     }
 
     const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
-    if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.msgRoot === completedData) {
+    if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.ormpData_root === completedData) {
       logger.warn(
         'the message root %s already aggregated (queried by indexer)',
         completedData,

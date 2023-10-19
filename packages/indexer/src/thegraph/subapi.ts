@@ -2,7 +2,7 @@ import {GraphCommon} from "./_common";
 import {
   AirnodeAggregatedMessageRoot,
   SubapiBeacon,
-  AirnodeBeaconBase,
+  SubapiBeaconBase,
   AirnodeBeaconCompletedDistruibution,
   AirnodeComplted,
   QueryNextAirnodeCompleted
@@ -24,7 +24,7 @@ export class ThegraphIndexerSubapi extends GraphCommon {
   public async beacons(): Promise<SubapiBeacon[]> {
     const query = `
     query QueryBeacons {
-      airnodeDapiAddBeacons(
+      subapiAddBeacons(
         orderBy: blockNumber
         orderDirection: asc
       ) {
@@ -40,7 +40,7 @@ export class ThegraphIndexerSubapi extends GraphCommon {
         beacon_sponsorWallet
 
       }
-      airnodeDapiRemoveBeacons(
+      subapiRemoveBeacons(
         orderBy: blockNumber
         orderDirection: asc
       ) {
@@ -54,8 +54,8 @@ export class ThegraphIndexerSubapi extends GraphCommon {
     }
     `;
     const gdata = await super.query({query});
-    const addeds: SubapiBeacon[] = gdata.list('airnodeDapiAddBeacons');
-    const removeds: AirnodeBeaconBase[] = gdata.list('airnodeDapiRemoveBeacons');
+    const addeds: SubapiBeacon[] = gdata.list('subapiAddBeacons');
+    const removeds: SubapiBeaconBase[] = gdata.list('subapiRemoveBeacons');
     const beaconsSortables: BeaconSortable[] = [
       ...removeds.map(item => {
         return {beaconId: item.beaconId, blockNumber: +item.blockNumber, operation: BeaconOperation.remove};
@@ -89,8 +89,8 @@ export class ThegraphIndexerSubapi extends GraphCommon {
 
   public async lastAirnodeCompleted(variables: QueryNextAirnodeCompleted): Promise<AirnodeComplted | undefined> {
     const query = `
-    query QueryNextAirnodeCompleted($beaconId: Bytes!) {
-      airnodeDapiAirnodeRrpCompleteds(
+    query QueryLastAirnodeCompleted($beaconId: Bytes!) {
+      subapiAirnodeRrpCompleteds(
         first: 1
         orderBy: blockNumber
         orderDirection: desc
@@ -109,7 +109,7 @@ export class ThegraphIndexerSubapi extends GraphCommon {
       }
     }
     `;
-    return await super.single({query, variables, schema: 'airnodeDapiAirnodeRrpCompleteds'})
+    return await super.single({query, variables, schema: 'subapiAirnodeRrpCompleteds'})
   }
 
   public async beaconAirnodeCompletedDistribution(beacons: string[]): Promise<AirnodeBeaconCompletedDistruibution[]> {
@@ -125,7 +125,7 @@ export class ThegraphIndexerSubapi extends GraphCommon {
   public async lastAggregatedMessageRoot(): Promise<AirnodeAggregatedMessageRoot | undefined> {
     const query = `
     query QueryLastAggregatedMessageRoot {
-      airnodeDapiAggregatedMessageRoots(
+      subapiAggregatedORMPDatas(
         first: 1
         orderBy: blockNumber
         orderDirection: desc
@@ -135,11 +135,12 @@ export class ThegraphIndexerSubapi extends GraphCommon {
         blockTimestamp
         transactionHash
 
-        msgRoot
+        ormpData_root
+        ormpData_count
       }
     }
     `;
-    return await super.single({query, schema: 'airnodeDapiAggregatedMessageRoots'});
+    return await super.single({query, schema: 'subapiAggregatedORMPDatas'});
   }
 
 }

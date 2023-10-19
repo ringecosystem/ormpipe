@@ -65,7 +65,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
           super.meta('ormpipe-relay', ['relayer:relay'])
         );
       }
-      currentMessageIndex = sourceNextMessageAccepted?.message_index ?? -1;
+      currentMessageIndex = sourceNextMessageAccepted?.message_index ?? cachedLastDeliveriedIndex;
     } else {
       const allAssignedList = await this.sourceIndexerRelayer.allAssignedList();
       const msgHashes = allAssignedList.map(item => item.msgHash);
@@ -74,7 +74,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       // save cache, if all message deliveried
       if (!sourceNextMessageAccepted && sourceLastMessageAccepted) {
         await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, +sourceLastMessageAccepted.message_index);
-        currentMessageIndex = +(sourceLastMessageAccepted.message_index) ?? -1;
+        currentMessageIndex = +(sourceLastMessageAccepted.message_index);
       }
     }
 
@@ -157,14 +157,14 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return;
     }
     const sourceLastAggregatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
-      root: targetLastAggregatedMessageRoot.msgRoot,
+      root: targetLastAggregatedMessageRoot.ormpData_root,
     });
     if (!sourceLastAggregatedMessageAccepted) {
       logger.warn(
         'can not query message accepted from %s use aggregated message %s %s',
         super.sourceName,
         super.targetName,
-        targetLastAggregatedMessageRoot.msgRoot,
+        targetLastAggregatedMessageRoot.ormpData_root,
         super.meta('ormpipe-relay', ['relayer:relay'])
       );
       return;

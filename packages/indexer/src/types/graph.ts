@@ -68,18 +68,18 @@ export interface OrmpMessageDispatched extends BaseGraphEntity {
   dispatchResult: string
 }
 
-export interface AirnodeBeaconBase extends BaseGraphEntity {
+export interface SubapiBeaconBase extends BaseGraphEntity {
   beaconId: string
 }
 
-export interface SubapiBeacon extends AirnodeBeaconBase {
+export interface SubapiBeacon extends SubapiBeaconBase {
   beacon_airnode: string
   beacon_endpointId: string
   beacon_sponsor: string
   beacon_sponsorWallet: string
 }
 
-export interface AirnodeComplted extends AirnodeBeaconBase {
+export interface AirnodeComplted extends SubapiBeaconBase {
   requestId: string
   data: string
 }
@@ -90,5 +90,6 @@ export interface AirnodeBeaconCompletedDistruibution {
 }
 
 export interface AirnodeAggregatedMessageRoot {
-  msgRoot: string
+  ormpData_root: string
+  ormpData_count: string
 }

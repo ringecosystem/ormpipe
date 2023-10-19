@@ -23,7 +23,8 @@ export class SubapiContractClient {
       this.config.chainName,
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
-    const resp = await this.contract['getRequestFee']();
+    const tx = await this.contract['getRequestFee']();
+    const resp = await tx.wait();
     return resp[1];
   }
 
