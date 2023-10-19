@@ -6,7 +6,7 @@ import {
   RelayFeature
 } from "@darwinia/ormpipe-relay"
 import {logger} from "@darwinia/ormpipe-logger";
-import * as enquirer from 'enquirer';
+import {CommandHelper} from "../common/commander";
 
 const homedir = require('os').homedir();
 const camelize = require('camelize')
@@ -217,7 +217,7 @@ export default class Start extends Command {
       targetIndexerOrmpEndpoint: rawRelayFlags.targetIndexerOrmpEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
       targetIndexerAirnodeEndpoint: rawRelayFlags.targetIndexerAirnodeEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
     };
-    const sourceSigner = await this.interactiveValue({
+    const sourceSigner = await CommandHelper.interactiveValue({
       required: false,
       enable: !!relayConfig.sourceSigner,
       type: 'password',
@@ -226,7 +226,7 @@ export default class Start extends Command {
       title: 'please type source signer',
       default: process.env.ORMPIPE_SOURCE_SIGNER,
     });
-    const sourceSignerAirnode = await this.interactiveValue({
+    const sourceSignerAirnode = await CommandHelper.interactiveValue({
       required: false,
       enable: !!relayConfig.sourceSignerAirnode,
       type: 'password',
@@ -235,7 +235,7 @@ export default class Start extends Command {
       title: 'please type source signer for airnode contract',
       default: process.env.ORMPIPE_SOURCE_SIGNER_AIRNODE,
     });
-    const sourceSignerRelayer = await this.interactiveValue({
+    const sourceSignerRelayer = await CommandHelper.interactiveValue({
       required: false,
       enable: !!relayConfig.sourceSignerRelayer,
       type: 'password',
@@ -244,7 +244,7 @@ export default class Start extends Command {
       title: 'please type source signer for relayer contract',
       default: process.env.ORMPIPE_SOURCE_SIGNER_RELAYER,
     });
-    const targetSigner = await this.interactiveValue({
+    const targetSigner = await CommandHelper.interactiveValue({
       required: false,
       enable: !!relayConfig.targetSigner,
       type: 'password',
@@ -253,7 +253,7 @@ export default class Start extends Command {
       title: 'please type target signer',
       default: process.env.ORMPIPE_TARGET_SIGNER,
     });
-    const targetSignerAirnode = await this.interactiveValue({
+    const targetSignerAirnode = await CommandHelper.interactiveValue({
       required: false,
       enable: !!relayConfig.targetSignerAirnode,
       type: 'password',
@@ -262,7 +262,7 @@ export default class Start extends Command {
       title: 'please type target signer for airnode contract',
       default: process.env.ORMPIPE_TARGET_SIGNER_AIRNODE,
     });
-    const targetSignerRelayer = await this.interactiveValue({
+    const targetSignerRelayer = await CommandHelper.interactiveValue({
       required: false,
       enable: !!relayConfig.targetSignerRelayer,
       type: 'password',
@@ -284,36 +284,4 @@ export default class Start extends Command {
     } as RelayConfig;
   }
 
-  private async interactiveValue(options: {
-    required: boolean,
-    enable: boolean,
-    type?: string,
-    name: string,
-    message?: string,
-    title: string,
-    default?: string,
-  }): Promise<string | undefined> {
-    let value = options.default;
-
-    if (options.enable) {
-      const response: { field: string } = await enquirer.prompt({
-        type: options.type ?? 'input',
-        name: 'field',
-        message: options.title,
-        validate: async input => {
-          if (!input) return options.title;
-          return true;
-        }
-      });
-      if (response.field) {
-        value = response.field;
-      }
-    }
-
-    if (!value && options.required) {
-      logger.error(options.message ?? `missing ${options.name}`);
-      process.exit(1);
-    }
-    return value;
-  }
 }
