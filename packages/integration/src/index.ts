@@ -29,7 +29,9 @@ export class OrmpIntegrationTestProgram {
   // send test message
   public async sendMessage() {
     const { wallet, contractOrmp } = this.lifecycle;
-    const message = '0x1235';
+    let t = Math.random().toString().replace('0.', '')
+    t = t.length % 2 == 0 ? t : t + '0';
+    const message = `0x${t}`;
     const params = '0x0000000000000000000000000000000000000000000000000000000000000001';
     const fee = await contractOrmp['fee'](
       this.config.targetChainId,
@@ -44,6 +46,7 @@ export class OrmpIntegrationTestProgram {
       params,
       {value: fee},
     );
-    console.log(tx);
+    const resp = await tx.wait();
+    console.log(resp.hash);
   }
 }
