@@ -1,7 +1,7 @@
 import {GraphCommon} from "./_common";
 import {
   AirnodeAggregatedMessageRoot,
-  AirnodeBeacon,
+  SubapiBeacon,
   AirnodeBeaconBase,
   AirnodeBeaconCompletedDistruibution,
   AirnodeComplted,
@@ -19,9 +19,9 @@ interface BeaconSortable {
   operation: BeaconOperation,
 }
 
-export class ThegraphIndexerAirnode extends GraphCommon {
+export class ThegraphIndexerSubapi extends GraphCommon {
 
-  public async beacons(): Promise<AirnodeBeacon[]> {
+  public async beacons(): Promise<SubapiBeacon[]> {
     const query = `
     query QueryBeacons {
       airnodeDapiAddBeacons(
@@ -54,7 +54,7 @@ export class ThegraphIndexerAirnode extends GraphCommon {
     }
     `;
     const gdata = await super.query({query});
-    const addeds: AirnodeBeacon[] = gdata.list('airnodeDapiAddBeacons');
+    const addeds: SubapiBeacon[] = gdata.list('airnodeDapiAddBeacons');
     const removeds: AirnodeBeaconBase[] = gdata.list('airnodeDapiRemoveBeacons');
     const beaconsSortables: BeaconSortable[] = [
       ...removeds.map(item => {
@@ -65,7 +65,7 @@ export class ThegraphIndexerAirnode extends GraphCommon {
       }),
     ];
     beaconsSortables.sort((a, b) => a.blockNumber - b.blockNumber);
-    const beacons: AirnodeBeacon[] = [];
+    const beacons: SubapiBeacon[] = [];
     for (const bsa of beaconsSortables) {
       switch (bsa.operation) {
         case BeaconOperation.add:

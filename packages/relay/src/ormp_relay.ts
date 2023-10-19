@@ -19,7 +19,7 @@ export class OrmpRelay {
   public async start() {
     if (!this.config.enableSourceToTarget && !this.config.enableTargetToSource) {
       logger.warn(
-        'not have pipe enabled, please add --enable-source-to-target or --enable-target-to-source to your command',
+        'please add --enable-source-to-target or --enable-target-to-source to your command',
         {target: 'ormpipe', breads: ['ormpipe', 'start']},
       );
       return;
@@ -59,21 +59,21 @@ export class OrmpRelay {
       sourceIndexerOracleEndpoint: this.config.targetIndexerOracleEndpoint,
       sourceIndexerRelayerEndpoint: this.config.targetIndexerRelayerEndpoint,
       sourceIndexerOrmpEndpoint: this.config.targetIndexerOrmpEndpoint,
-      sourceIndexerAirnodeEndpoint: this.config.targetIndexerAirnodeEndpoint,
+      sourceIndexerSubapiEndpoint: this.config.targetIndexerSubapiEndpoint,
       targetIndexerEndpoint: this.config.sourceIndexerEndpoint,
       targetIndexerOracleEndpoint: this.config.sourceIndexerOracleEndpoint,
       targetIndexerRelayerEndpoint: this.config.sourceIndexerRelayerEndpoint,
       targetIndexerOrmpEndpoint: this.config.sourceIndexerOrmpEndpoint,
-      targetIndexerAirnodeEndpoint: this.config.sourceIndexerAirnodeEndpoint,
+      targetIndexerSubapiEndpoint: this.config.sourceIndexerSubapiEndpoint,
       sourceSigner: this.config.targetSigner,
-      sourceSignerAirnode: this.config.targetSignerAirnode,
+      sourceSignerSubapi: this.config.targetSignerSubapi,
       sourceSignerRelayer: this.config.targetSignerRelayer,
       targetSigner: this.config.sourceSigner,
-      targetSignerAirnode: this.config.sourceSignerAirnode,
+      targetSignerSubapi: this.config.sourceSignerSubapi,
       targetSignerRelayer: this.config.sourceSignerRelayer,
-      sourceAddressAirnode: this.config.targetAddressAirnode,
+      sourceAddressSubapi: this.config.targetAddressSubapi,
       sourceAddressRelayer: this.config.targetAddressRelayer,
-      targetAddressAirnode: this.config.sourceAddressAirnode,
+      targetAddressSubapi: this.config.sourceAddressSubapi,
       targetAddressRelayer: this.config.sourceAddressRelayer,
     };
 
@@ -151,12 +151,12 @@ export class OrmpRelay {
         )
       );
     }
-    if (!config.targetAddressAirnode) {
+    if (!config.targetAddressSubapi) {
       throw new Error(
         'missing ' + (
           direction == RelayDirection.SourceToTarget
-            ? '--target-address-airnode'
-            : '--source-address-airnode'
+            ? '--target-address-subapi'
+            : '--source-address-subapi'
         )
       );
     }
@@ -170,8 +170,8 @@ export class OrmpRelay {
       sourceIndexerOracle: sourceIndexer.oracle(),
       sourceIndexerOrmp: sourceIndexer.ormp(),
       targetIndexerOrmp: targetIndexer.ormp(),
-      targetIndexerAirnode: targetIndexer.airnode(),
-      targetAirnodeClient: baseLifecycle.targetClient.airnode(config.targetAddressAirnode),
+      targetIndexerSubapi: targetIndexer.subapi(),
+      targetSubapiClient: baseLifecycle.targetClient.subapi(config.targetAddressSubapi),
     };
   }
 
@@ -221,7 +221,7 @@ export class OrmpRelay {
       sourceIndexerOrmp: sourceIndexer.ormp(),
       sourceIndexerRelayer: sourceIndexer.relayer(),
       targetIndexerOrmp: targetIndexer.ormp(),
-      targetIndexerAirnode: targetIndexer.airnode(),
+      targetIndexerSubapi: targetIndexer.subapi(),
       targetRelayerClient: baseLifecycle.targetClient.relayer(config.targetAddressRelayer),
     };
   }
@@ -231,14 +231,14 @@ export class OrmpRelay {
       chainName: config.sourceName,
       endpoint: config.sourceEndpoint,
       signer: config.sourceSigner,
-      signerAirnode: config.sourceSignerAirnode,
+      signerSubapi: config.sourceSignerSubapi,
       signerRelayer: config.sourceSignerRelayer,
     });
     const targetClient = new RelayClient({
       chainName: config.targetName,
       endpoint: config.targetEndpoint,
       signer: config.targetSigner,
-      signerAirnode: config.targetSignerAirnode,
+      signerSubapi: config.targetSignerSubapi,
       signerRelayer: config.targetSignerRelayer,
     });
     const storage = new RelayStorage(config.dataPath, {
@@ -260,7 +260,7 @@ export class OrmpRelay {
       oracleEndpoint: config.sourceIndexerOracleEndpoint,
       relayerEndpoint: config.sourceIndexerRelayerEndpoint,
       ormpEndpoint: config.sourceIndexerOrmpEndpoint,
-      airnodeEndpoint: config.sourceIndexerAirnodeEndpoint,
+      subapiEndpoint: config.sourceIndexerSubapiEndpoint,
     }).thegraph();
   }
 
@@ -270,7 +270,7 @@ export class OrmpRelay {
       oracleEndpoint: config.targetIndexerOracleEndpoint,
       relayerEndpoint: config.targetIndexerRelayerEndpoint,
       ormpEndpoint: config.targetIndexerOrmpEndpoint,
-      airnodeEndpoint: config.targetIndexerAirnodeEndpoint,
+      subapiEndpoint: config.targetIndexerSubapiEndpoint,
     }).thegraph();
   }
 }

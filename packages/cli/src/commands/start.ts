@@ -92,10 +92,10 @@ export default class Start extends Command {
       description: '[source-chain] indexer for ormp endpoint, default use --source-indexer-endpoint',
       env: 'ORMPIPE_SOURCE_ORMP_ENDPOINT',
     }),
-    'source-indexer-airnode-endpoint': Flags.string({
+    'source-indexer-subapi-endpoint': Flags.string({
       required: false,
-      description: '[source-chain] indexer for airnode endpoint, default use --source-indexer-endpoint',
-      env: 'ORMPIPE_SOURCE_AIRNODE_ENDPOINT',
+      description: '[source-chain] indexer for subapi endpoint, default use --source-indexer-endpoint',
+      env: 'ORMPIPE_SOURCE_SUBAPI_ENDPOINT',
     }),
 
     'target-indexer-endpoint': Flags.string({
@@ -118,19 +118,19 @@ export default class Start extends Command {
       description: '[target-chain] indexer for ormp endpoint, default use --target-indexer-endpoint',
       env: 'ORMPIPE_TARGET_INDEXER_ORMP_ENDPOINT',
     }),
-    'target-indexer-airnode-endpoint': Flags.string({
+    'target-indexer-subapi-endpoint': Flags.string({
       required: false,
-      description: '[target-chain] indexer for airnode endpoint, default use --target-indexer-endpoint',
-      env: 'ORMPIPE_TARGET_INDEXER_AIRNODE_ENDPOINT',
+      description: '[target-chain] indexer for subapi endpoint, default use --target-indexer-endpoint',
+      env: 'ORMPIPE_TARGET_INDEXER_SUBAPI_ENDPOINT',
     }),
 
     'source-signer': Flags.boolean({
       required: false,
       description: '[source-chain] source signer interactively',
     }),
-    'source-signer-airnode': Flags.boolean({
+    'source-signer-subapi': Flags.boolean({
       required: false,
-      description: '[source-chain] source signer for airnode contract interactively',
+      description: '[source-chain] source signer for subapi contract interactively',
     }),
     'source-signer-relayer': Flags.boolean({
       required: false,
@@ -140,29 +140,29 @@ export default class Start extends Command {
       required: false,
       description: '[target-chain] target signer interactively',
     }),
-    'target-signer-airnode': Flags.boolean({
+    'target-signer-subapi': Flags.boolean({
       required: false,
-      description: '[target-chain] target signer for airnode contract interactively',
+      description: '[target-chain] target signer for subapi contract interactively',
     }),
     'target-signer-relayer': Flags.boolean({
       required: false,
       description: '[target-chain] target signer for relayer contract interactively',
     }),
 
-    'source-address-airnode': Flags.string({
+    'source-address-subapi': Flags.string({
       required: false,
-      description: '[source-chain] source chain airnode contract address',
-      env: 'ORMPIPE_SOURCE_ADDRESS_AIRNODE',
+      description: '[source-chain] source chain subapi contract address',
+      env: 'ORMPIPE_SOURCE_ADDRESS_SUBAPI',
     }),
     'source-address-relayer': Flags.string({
       required: false,
       description: '[source-chain] source chain relayer contract address',
       env: 'ORMPIPE_SOURCE_ADDRESS_RELAYER',
     }),
-    'target-address-airnode': Flags.string({
+    'target-address-subapi': Flags.string({
       required: false,
-      description: '[target-chain] target chain airnode contract address',
-      env: 'ORMPIPE_TARGET_ADDRESS_AIRNODE',
+      description: '[target-chain] target chain subapi contract address',
+      env: 'ORMPIPE_TARGET_ADDRESS_SUBAPI',
     }),
     'target-address-relayer': Flags.string({
       required: false,
@@ -210,12 +210,12 @@ export default class Start extends Command {
       sourceIndexerOracleEndpoint: rawRelayFlags.sourceIndexerOracleEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
       sourceIndexerRelayerEndpoint: rawRelayFlags.sourceIndexerRelayerEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
       sourceIndexerOrmpEndpoint: rawRelayFlags.sourceIndexerOrmpEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
-      sourceIndexerAirnodeEndpoint: rawRelayFlags.sourceIndexerAirnodeEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
+      sourceIndexerSubapiEndpoint: rawRelayFlags.sourceIndexerSubapiEndpoint ?? rawRelayFlags.sourceIndexerEndpoint,
 
       targetIndexerOracleEndpoint: rawRelayFlags.targetIndexerOracleEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
       targetIndexerRelayerEndpoint: rawRelayFlags.targetIndexerRelayerEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
       targetIndexerOrmpEndpoint: rawRelayFlags.targetIndexerOrmpEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
-      targetIndexerAirnodeEndpoint: rawRelayFlags.targetIndexerAirnodeEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
+      targetIndexerSubapiEndpoint: rawRelayFlags.targetIndexerSubapiEndpoint ?? rawRelayFlags.targetIndexerEndpoint,
     };
     const sourceSigner = await this.interactiveValue({
       required: false,
@@ -226,14 +226,14 @@ export default class Start extends Command {
       title: 'please type source signer',
       default: process.env.ORMPIPE_SOURCE_SIGNER,
     });
-    const sourceSignerAirnode = await this.interactiveValue({
+    const sourceSignerSubapi = await this.interactiveValue({
       required: false,
-      enable: !!relayConfig.sourceSignerAirnode,
+      enable: !!relayConfig.sourceSignerSubapi,
       type: 'password',
-      name: 'source-signer-airnode',
-      message: 'missing --source-signer-airnode or ORMPIPE_SOURCE_SIGNER_ORACLE',
-      title: 'please type source signer for airnode contract',
-      default: process.env.ORMPIPE_SOURCE_SIGNER_AIRNODE,
+      name: 'source-signer-subapi',
+      message: 'missing --source-signer-subapi or ORMPIPE_SOURCE_SIGNER_ORACLE',
+      title: 'please type source signer for subapi contract',
+      default: process.env.ORMPIPE_SOURCE_SIGNER_SUBAPI,
     });
     const sourceSignerRelayer = await this.interactiveValue({
       required: false,
@@ -253,14 +253,14 @@ export default class Start extends Command {
       title: 'please type target signer',
       default: process.env.ORMPIPE_TARGET_SIGNER,
     });
-    const targetSignerAirnode = await this.interactiveValue({
+    const targetSignerSubapi = await this.interactiveValue({
       required: false,
-      enable: !!relayConfig.targetSignerAirnode,
+      enable: !!relayConfig.targetSignerSubapi,
       type: 'password',
-      name: 'target-signer-airnode',
-      message: 'missing --target-signer-airnode or ORMPIPE_TARGET_SIGNER_ORACLE',
-      title: 'please type target signer for airnode contract',
-      default: process.env.ORMPIPE_TARGET_SIGNER_AIRNODE,
+      name: 'target-signer-subapi',
+      message: 'missing --target-signer-subapi or ORMPIPE_TARGET_SIGNER_ORACLE',
+      title: 'please type target signer for subapi contract',
+      default: process.env.ORMPIPE_TARGET_SIGNER_SUBAPI,
     });
     const targetSignerRelayer = await this.interactiveValue({
       required: false,
@@ -276,10 +276,10 @@ export default class Start extends Command {
     return {
       ...relayConfig,
       sourceSigner,
-      sourceSignerAirnode: sourceSignerAirnode ?? sourceSigner,
+      sourceSignerSubapi: sourceSignerSubapi ?? sourceSigner,
       sourceSignerRelayer: sourceSignerRelayer ?? sourceSigner,
       targetSigner,
-      targetSignerAirnode: targetSignerAirnode ?? targetSigner,
+      targetSignerSubapi: targetSignerSubapi ?? targetSigner,
       targetSignerRelayer: targetSignerRelayer ?? targetSigner,
     } as RelayConfig;
   }

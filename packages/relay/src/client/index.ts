@@ -1,5 +1,5 @@
 import {ethers} from "ethers";
-import {AirnodeContractClient} from "./contract_airnode";
+import {SubapiContractClient} from "./contract_subapi";
 import {RelayerContractClient} from "./contract_relayer";
 import {logger} from "@darwinia/ormpipe-logger";
 import chalk = require('chalk');
@@ -8,7 +8,7 @@ export interface RelayClientConfig {
   chainName: string
   endpoint: string
   signer: string
-  signerAirnode: string
+  signerSubapi: string
   signerRelayer: string
 }
 
@@ -64,10 +64,10 @@ export class RelayClient {
     return this._evm
   }
 
-  public airnode(address: string): AirnodeContractClient {
-    return new AirnodeContractClient({
+  public airnode(address: string): SubapiContractClient {
+    return new SubapiContractClient({
       chainName: this.config.chainName,
-      signer: this.config.signerAirnode ?? this.config.signer,
+      signer: this.config.signerSubapi ?? this.config.signer,
       address,
       evm: this.evm
     })

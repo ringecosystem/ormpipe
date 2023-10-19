@@ -2,7 +2,7 @@ import {RelayerLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {
   OrmpMessageAccepted,
-  ThegraphIndexerAirnode,
+  ThegraphIndexerSubapi,
   ThegraphIndexerRelayer,
   ThegraphIndexOrmp
 } from "@darwinia/ormpipe-indexer";
@@ -32,8 +32,8 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     return super.lifecycle.targetIndexerOrmp
   }
 
-  public get targetIndexerAirnode(): ThegraphIndexerAirnode {
-    return super.lifecycle.targetIndexerAirnode
+  public get targetIndexerSubapi(): ThegraphIndexerSubapi {
+    return super.lifecycle.targetIndexerSubapi
   }
 
   public get targetRelayerClient(): RelayerContractClient {
@@ -147,7 +147,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
-    const targetLastAggregatedMessageRoot = await this.targetIndexerAirnode.lastAggregatedMessageRoot();
+    const targetLastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
     if (!targetLastAggregatedMessageRoot) {
       logger.warn(
         'not have any aggregated message root from %s',

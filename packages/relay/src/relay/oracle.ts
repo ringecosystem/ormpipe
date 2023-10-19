@@ -3,11 +3,11 @@ import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {
   OrmpMessageAccepted,
-  ThegraphIndexerAirnode,
+  ThegraphIndexerSubapi,
   ThegraphIndexerOracle,
   ThegraphIndexOrmp
 } from "@darwinia/ormpipe-indexer";
-import {AirnodeContractClient} from "../client/contract_airnode";
+import {SubapiContractClient} from "../client/contract_subapi";
 import * as asyncx from "async";
 import {RelayFeature} from "../types/config";
 import chalk = require('chalk');
@@ -33,12 +33,12 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     return super.lifecycle.targetIndexerOrmp
   }
 
-  public get targetIndexerAirnode(): ThegraphIndexerAirnode {
-    return super.lifecycle.targetIndexerAirnode
+  public get targetIndexerSubapi(): ThegraphIndexerSubapi {
+    return super.lifecycle.targetIndexerSubapi
   }
 
-  public get targetAirnodeClient(): AirnodeContractClient {
-    return super.lifecycle.targetAirnodeClient
+  public get targetSubapiClient(): SubapiContractClient {
+    return super.lifecycle.targetSubapiClient
   }
 
   public async start(features: RelayFeature[]) {
@@ -181,7 +181,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
-    const beacons = await this.targetIndexerAirnode.beacons();
+    const beacons = await this.targetIndexerSubapi.beacons();
     logger.debug(
       'queried %s beacons from %s airnode-dapi contract, prepare to call %s (requestFinalizedHash)',
       beacons.length,
@@ -190,7 +190,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
-    const targetTxRequestFinalizedHash = await this.targetAirnodeClient.requestFinalizedHash(beacons);
+    const targetTxRequestFinalizedHash = await this.targetSubapiClient.requestFinalizedHash(beacons);
     logger.info(
       'called %s airnode contract requestFinalizedHash {tx: %s, block: %s}, wait aggregate',
       super.targetName,
@@ -205,7 +205,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   private async aggregate() {
     logger.debug('start oracle aggregate', super.meta('ormpipe-relay', ['oracle:aggregate']));
 
-    const beacons = await this.targetIndexerAirnode.beacons();
+    const beacons = await this.targetIndexerSubapi.beacons();
     const countBeacons = beacons.length;
     const beaconIds = beacons.map(item => item.beaconId);
     logger.debug(
@@ -216,7 +216,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const distruibutions = await this.targetIndexerAirnode.beaconAirnodeCompletedDistribution(beaconIds);
+    const distruibutions = await this.targetIndexerSubapi.beaconAirnodeCompletedDistribution(beaconIds);
     if (!distruibutions.length) {
       logger.warn(
         'not have anymore airnode completed events from %s',
@@ -258,7 +258,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       return;
     }
 
-    const lastAggregatedMessageRoot = await this.targetIndexerAirnode.lastAggregatedMessageRoot();
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
     if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.msgRoot === completedData) {
       logger.warn(
         'the message root %s already aggregated (queried by indexer)',
@@ -273,15 +273,15 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       .map(item => item.beaconId)
       .sort((one, two) => (one > two ? 1 : -1));
     logger.debug(
-      'aggregate beacons %s to %s airnode-api contract',
+      'aggregate beacons %s to %s subapi contract',
       chalk.gray(JSON.stringify(aggregateBeaconIds)),
       super.targetName,
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const targetTxAggregateBeacons = await this.targetAirnodeClient.aggregateBeacons(aggregateBeaconIds);
+    const targetTxAggregateBeacons = await this.targetSubapiClient.aggregateBeacons(aggregateBeaconIds);
     logger.info(
-      'aggregated beacons to %s airnode-api contract {tx: %s, block: %s}',
+      'aggregated beacons to %s subapi contract {tx: %s, block: %s}',
       super.targetName,
       chalk.magenta(targetTxAggregateBeacons.hash),
       chalk.cyan(targetTxAggregateBeacons.blockNumber),
