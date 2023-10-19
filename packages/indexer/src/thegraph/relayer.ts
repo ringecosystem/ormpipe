@@ -7,7 +7,7 @@ export class ThegraphIndexerRelayer extends GraphCommon {
     const query = `
     query QueryRelayerAssignedList {
       ormpRelayerAssigneds(
-        orderBy: blockNumber
+        orderBy: seq
         orderDirection: asc
       ) {
         id
@@ -17,6 +17,7 @@ export class ThegraphIndexerRelayer extends GraphCommon {
         blockNumber
         blockTimestamp
         transactionHash
+        seq
       }
     }
     `;
@@ -28,7 +29,7 @@ export class ThegraphIndexerRelayer extends GraphCommon {
     query QueryRelayerAssigned($msgHash: Bytes!) {
       ormpRelayerAssigneds(
         first: 1
-        orderBy: blockNumber
+        orderBy: seq
         orderDirection: asc
         where: {
           msgHash: $msgHash
@@ -41,10 +42,33 @@ export class ThegraphIndexerRelayer extends GraphCommon {
         blockNumber
         blockTimestamp
         transactionHash
+        seq
       }
     }
     `;
     return await super.single({query, variables, schema: 'ormpRelayerAssigneds'});
+  }
+
+  public async lastAssignedMessage(): Promise<OrmpRelayerAssigned | undefined> {
+    const query = `
+    query QueryRelayerAssignedList {
+      ormpRelayerAssigneds(
+        first: 1
+        orderBy: seq
+        orderDirection: desc
+      ) {
+        id
+        msgHash
+        fee
+        params
+        blockNumber
+        blockTimestamp
+        transactionHash
+        seq
+      }
+    }
+    `;
+    return await super.single({query, schema: 'ormpRelayerAssigneds'});
   }
 
 }

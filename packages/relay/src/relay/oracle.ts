@@ -3,8 +3,8 @@ import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {
   OrmpMessageAccepted,
-  ThegraphIndexerSubapi,
   ThegraphIndexerOracle,
+  ThegraphIndexerSubapi,
   ThegraphIndexOrmp
 } from "@darwinia/ormpipe-indexer";
 import {SubapiContractClient} from "../client/contract_subapi";
@@ -16,6 +16,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   private static CK_ORACLE_DELIVERIED: string = 'ormpipe.oracle.deliveried';
   private static CK_ORACLE_AGGREGATED: string = 'ormpipe.oracle.aggregated';
+  private static CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT: string = 'ormpipe.oracle.mark.aggregated_message_count';
 
   constructor(lifecycle: OracleLifecycle) {
     super(lifecycle);
@@ -71,8 +72,16 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
     const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
     if (cachedLastDeliveriedIndex) {
+      // query cached message count, start from last deliverd index + message count
+      const cachedMarkAggregatedMessageCount = await super.storage.get(
+        OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT
+      );
+      const nextMessageIndex = (+cachedLastDeliveriedIndex) + (+(cachedMarkAggregatedMessageCount ?? 0));
+      await super.storage.put(OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT, 0);
+      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, nextMessageIndex);
+
       const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-        messageIndex: +cachedLastDeliveriedIndex,
+        messageIndex: nextMessageIndex,
       });
       if (!sourceNextMessageAccepted) {
         logger.debug(
@@ -103,10 +112,16 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       return sourceNextMessageAccepted;
     }
     // save cache, if all message deliveried
-    const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
-    if (sourceLastMessageAccepted) {
-      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastMessageAccepted.message_index);
+    const sourceLastMessageAssigned = await this.sourceIndexerOracle.lastAssigned();
+    if (sourceLastMessageAssigned) {
+      const sourceLastMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+        msgHash: sourceLastMessageAssigned.msgHash,
+      });
+      if (sourceLastMessageAccepted) {
+        await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastMessageAccepted.message_index);
+      }
     }
+    // not have any message accepted
   }
 
   private async delivery() {
@@ -287,6 +302,10 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
+    await super.storage.put(
+      OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT,
+      +(lastAggregatedMessageRoot?.ormpData_count ?? 0)
+    );
     await super.storage.put(OracleRelay.CK_ORACLE_AGGREGATED, completedData);
   }
 

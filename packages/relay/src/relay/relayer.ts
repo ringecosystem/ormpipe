@@ -51,7 +51,12 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
     let sourceNextMessageAccepted;
     const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
-    const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
+    const sourceLastAssignedMessage = await this.sourceIndexerRelayer.lastAssignedMessage();
+    const sourceLastMessageAccepted = sourceLastAssignedMessage
+      ? await this.sourceIndexerOrmp.inspectMessageAccepted({
+          msgHash: sourceLastAssignedMessage.msgHash
+        })
+      : null;
 
 
     let currentMessageIndex;
