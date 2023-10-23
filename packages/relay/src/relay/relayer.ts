@@ -62,7 +62,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       root: lastAggregatedMessageRoot.ormpData_root
     });
     const sourceLastAssignedMessage = await this.sourceIndexerRelayer.lastAssignedMessage();
-    const sourceLastMessageAccepted = sourceLastAssignedMessage
+    const sourceLastMessageAssignedAccepted = sourceLastAssignedMessage
       ? await this.sourceIndexerOrmp.inspectMessageAccepted({
         msgHash: sourceLastAssignedMessage.msgHash
       })
@@ -82,7 +82,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     logger.info(
       'sync status [%s,%s] (%s)',
       currentMessageIndex,
-      sourceLastMessageAccepted?.message_index ?? -1,
+      sourceLastMessageAssignedAccepted?.message_index ?? -1,
       super.sourceName,
       super.meta('ormpipe-relay', ['relayer:relay']),
     );
@@ -90,7 +90,17 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
     if (currentMessageIndex == cachedLastDeliveriedIndex) {
       logger.debug(
-        `the message %s already relayed to %s`,
+        `the message %s already relayed to %s (queried by cache)`,
+        currentMessageIndex,
+        super.targetName,
+        super.meta('ormpipe-relay', ['relayer:relay'])
+      );
+      return;
+    }
+    const queriedDispatched = await this.targetIndexerOrmp.inspectMessageDispatched({msgHash: sourceNextMessageAccepted.msgHash});
+    if (queriedDispatched) {
+      logger.debug(
+        `the message %s already relayed to %s (queried by indexer dispatched event)`,
         currentMessageIndex,
         super.targetName,
         super.meta('ormpipe-relay', ['relayer:relay'])

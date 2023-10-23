@@ -11,6 +11,7 @@ import {SubapiContractClient} from "../client/contract_subapi";
 import * as asyncx from "async";
 import {RelayFeature} from "../types/config";
 import chalk = require('chalk');
+import {AbiCoder} from "ethers";
 
 export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
@@ -76,7 +77,9 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       const cachedMarkAggregatedMessageCount = await super.storage.get(
         OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT
       );
-      const nextMessageIndex = (+cachedLastDeliveriedIndex) + (+(cachedMarkAggregatedMessageCount ?? 0));
+      const nextMessageIndex = +cachedMarkAggregatedMessageCount
+        ? (+cachedMarkAggregatedMessageCount) - 1
+        : +cachedLastDeliveriedIndex;
       await super.storage.put(OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT, 0);
       await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, nextMessageIndex);
 
@@ -181,8 +184,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     if (sourceFinalizedBLock.number < +(sourceNextMessageAccepted.blockNumber)) {
       logger.warn(
         'message block not finalized %s/%s(%s)',
-        sourceNextMessageAccepted.blockNumber,
         sourceFinalizedBLock.number,
+        sourceNextMessageAccepted.blockNumber,
         super.sourceName,
         super.meta('ormpipe-relay', ['oracle:delivery']),
       )
@@ -262,12 +265,31 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       return;
     }
     const completedData = completedDatas[0];
-
     const cachedLastAggregatedMessageRoot = await super.storage.get(OracleRelay.CK_ORACLE_AGGREGATED);
     if (cachedLastAggregatedMessageRoot && cachedLastAggregatedMessageRoot == completedData) {
       logger.warn(
         'last completed data %s already aggregated (queried by cache)',
-        completedData,
+        chalk.gray(completedData),
+        super.meta('ormpipe-relay', ['oracle:aggregate']),
+      );
+      return;
+    }
+
+    const abiCoder = AbiCoder.defaultAbiCoder();
+    const rawDecodedCompletedData = abiCoder.decode(['bytes'], completedData);
+    const [decodedCompletedMessageCount, decodedCompletedMessageRoot] = abiCoder.decode(['uint', 'bytes32'], rawDecodedCompletedData[0]);
+    logger.debug(
+      'current completed message root is %s and message count is %s',
+      chalk.gray(decodedCompletedMessageRoot),
+      chalk.gray(decodedCompletedMessageCount),
+      super.meta('ormpipe-relay', ['oracle:aggregate']),
+    );
+
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
+    if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.ormpData_root == decodedCompletedMessageRoot) {
+      logger.warn(
+        'last completed data %s already aggregated (queried by completed events)',
+        chalk.gray(completedData),
         super.meta('ormpipe-relay', ['oracle:aggregate']),
       );
       return;
@@ -293,8 +315,6 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
     await super.storage.put(
       OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT,
       +(lastAggregatedMessageRoot?.ormpData_count ?? 0)

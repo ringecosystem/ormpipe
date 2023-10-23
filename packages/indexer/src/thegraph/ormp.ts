@@ -3,7 +3,7 @@ import {
   OrmpMessageAccepted,
   QueryChannelMessageAccepted,
   QueryNextMessageAccepted,
-  QueryNextUndoMessageAccepted, QueryMessageHashes
+  QueryNextUndoMessageAccepted, QueryMessageHashes, QueryInspectMessageDispatched
 } from "../types/graph";
 import {GraphCommon} from "./_common";
 
@@ -155,13 +155,16 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return await super.single({query, schema: 'ormpProtocolMessageAccepteds'});
   }
 
-  public async lastMessageDispatched(): Promise<OrmpMessageDispatched | undefined> {
+  public async inspectMessageDispatched(variables: QueryInspectMessageDispatched): Promise<OrmpMessageDispatched | undefined> {
     const query = `
-    query QueryLastMessageDispatched {
+    query QueryLastMessageDispatched($msgHash: String!) {
       ormpProtocolMessageDispatcheds(
         first: 1
         orderBy: blockNumber
         orderDirection: desc
+        where: {
+          msgHash: $msgHash
+        }
       ) {
         id
         blockNumber
@@ -173,7 +176,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
     }
     `;
-    return await super.single({query, schema: 'ormpProtocolMessageDispatcheds'});
+    return await super.single({query, variables, schema: 'ormpProtocolMessageDispatcheds'});
   }
 
 }

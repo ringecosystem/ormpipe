@@ -32,6 +32,10 @@ export interface QueryChannelMessageAccepted {
   root?: string
 }
 
+export interface QueryInspectMessageDispatched {
+  msgHash: string
+}
+
 
 export type QueryNextOracleAssigned = QueryNextRelayerAssigned
 
