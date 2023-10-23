@@ -10,8 +10,8 @@ import {
 import {SubapiContractClient} from "../client/contract_subapi";
 import * as asyncx from "async";
 import {RelayFeature} from "../types/config";
-import chalk = require('chalk');
 import {AbiCoder} from "ethers";
+import chalk = require('chalk');
 
 export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
@@ -77,10 +77,11 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       const cachedMarkAggregatedMessageCount = await super.storage.get(
         OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT
       );
-      const nextMessageIndex = +cachedMarkAggregatedMessageCount
-        ? (+cachedMarkAggregatedMessageCount) - 1
+      // console.log(cachedLastDeliveriedIndex, cachedMarkAggregatedMessageCount);
+      const nextMessageIndex = cachedMarkAggregatedMessageCount
+        ? Math.max(+cachedMarkAggregatedMessageCount, +cachedLastDeliveriedIndex)
         : +cachedLastDeliveriedIndex;
-      await super.storage.put(OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT, 0);
+      await super.storage.rm(OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT);
       await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, nextMessageIndex);
 
       const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
@@ -111,7 +112,25 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
     const allAssignedList = await this.sourceIndexerOracle.allAssignedList();
     const msgHashes = allAssignedList.map(item => item.msgHash);
-    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+    let sourceNextMessageAccepted;
+    if (msgHashes.length) {
+      const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.otherThanDispatchedList({
+        msgHashes,
+      });
+      if (!unRelayedMessagesQueriedFromTarget.length) {
+        logger.debug(
+          'not have any unrelayed messages from %s',
+          super.sourceName,
+          super.meta('ormpipe-relay', ['oracle:delivery'])
+        );
+        return undefined;
+      }
+      sourceNextMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+        msgHash: unRelayedMessagesQueriedFromTarget[0].msgHash,
+      });
+    } else {
+      sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({messageIndex: -1});
+    }
     if (sourceNextMessageAccepted) {
       return sourceNextMessageAccepted;
     }
@@ -193,8 +212,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     }
     logger.debug(
       'message block finalized %s/%s(%s)',
-      sourceNextMessageAccepted.blockNumber,
       sourceFinalizedBLock.number,
+      sourceNextMessageAccepted.blockNumber,
       super.sourceName,
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
@@ -217,6 +236,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
+    // console.log(sourceNextMessageAccepted.message_index);
     await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
   }
 
@@ -315,10 +335,14 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    await super.storage.put(
-      OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT,
-      +(lastAggregatedMessageRoot?.ormpData_count ?? 0)
-    );
+    if (lastAggregatedMessageRoot) {
+      await super.storage.put(
+        OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT,
+        +lastAggregatedMessageRoot.ormpData_count
+      );
+    } else {
+      await super.storage.rm(OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT);
+    }
     await super.storage.put(OracleRelay.CK_ORACLE_AGGREGATED, completedData);
   }
 

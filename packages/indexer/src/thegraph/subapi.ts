@@ -117,11 +117,11 @@ export class ThegraphIndexerSubapi extends GraphCommon {
     const completeds = [] as AirnodeBeaconCompletedDistruibution[];
     for (const beaconId of beacons) {
       const c = await this.lastAirnodeCompleted({beaconId});
-      logger.debug(
-        'queried completed events %s by %s',
-        JSON.stringify(c),
-        beaconId,
-      );
+      // logger.debug(
+      //   'queried completed events %s by %s',
+      //   JSON.stringify(c),
+      //   beaconId,
+      // );
       if (!c) continue;
       completeds.push(c);
     }

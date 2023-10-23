@@ -58,17 +58,11 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return undefined;
     }
-    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
-      root: lastAggregatedMessageRoot.ormpData_root
+    const lastAggreatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+      root: lastAggregatedMessageRoot.ormpData_root,
     });
-    const sourceLastAssignedMessage = await this.sourceIndexerRelayer.lastAssignedMessage();
-    const sourceLastMessageAssignedAccepted = sourceLastAssignedMessage
-      ? await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: sourceLastAssignedMessage.msgHash
-      })
-      : null;
 
-    if (!sourceNextMessageAccepted) {
+    if (!lastAggreatedMessageAccepted) {
       logger.debug(
         'found new message root %s from %s but not found this message from accepted.',
         lastAggregatedMessageRoot.ormpData_root,
@@ -78,7 +72,35 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return undefined;
     }
 
-    let currentMessageIndex = sourceNextMessageAccepted.message_index;
+    const preparedMessageAcceptedHashes = await this.sourceIndexerOrmp.queryPreparedMessageAcceptedHashes({
+      messageIndex: +lastAggreatedMessageAccepted.message_index,
+    });
+    const pickedPreparedAssignedMessageHashes = await this.sourceIndexerRelayer.pickAssignedMessageHashes(
+      preparedMessageAcceptedHashes
+    );
+    const pickedUnRelayedMessageHashes = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
+      pickedPreparedAssignedMessageHashes
+    );
+    const unRelayMessageAcceptedList = await this.sourceIndexerOrmp.queryMessageAcceptedListByHashes({
+      msgHashes: pickedUnRelayedMessageHashes,
+    });
+    if (!unRelayMessageAcceptedList.length) {
+      logger.debug(
+        'not found wait relay messages from %s',
+        super.sourceName,
+        super.meta('ormpipe-relay', ['relayer:relay']),
+      );
+      return undefined;
+    }
+    const nextUnRelayMessageAccepted = unRelayMessageAcceptedList[0];
+
+    const sourceLastAssignedMessage = await this.sourceIndexerRelayer.lastAssignedMessage();
+    const sourceLastMessageAssignedAccepted = sourceLastAssignedMessage
+      ? await this.sourceIndexerOrmp.inspectMessageAccepted({
+        msgHash: sourceLastAssignedMessage.msgHash,
+      })
+      : null;
+    const currentMessageIndex = nextUnRelayMessageAccepted.message_index;
     logger.info(
       'sync status [%s,%s] (%s)',
       currentMessageIndex,
@@ -97,26 +119,28 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return;
     }
-    const queriedDispatched = await this.targetIndexerOrmp.inspectMessageDispatched({msgHash: sourceNextMessageAccepted.msgHash});
-    if (queriedDispatched) {
-      logger.debug(
-        `the message %s already relayed to %s (queried by indexer dispatched event)`,
-        currentMessageIndex,
-        super.targetName,
-        super.meta('ormpipe-relay', ['relayer:relay'])
-      );
-      return;
-    }
+    // const queriedDispatched = await this.targetIndexerOrmp.inspectMessageDispatched({
+    //   msgHash: nextUnRelayMessageAccepted.msgHash,
+    // });
+    // if (queriedDispatched) {
+    //   logger.debug(
+    //     `the message %s already relayed to %s (queried by indexer dispatched event)`,
+    //     currentMessageIndex,
+    //     super.targetName,
+    //     super.meta('ormpipe-relay', ['relayer:relay'])
+    //   );
+    //   return;
+    // }
 
     logger.info(
       `new message accepted %s in %s(%s) prepared`,
-      sourceNextMessageAccepted.msgHash,
-      sourceNextMessageAccepted.blockNumber,
+      nextUnRelayMessageAccepted.msgHash,
+      nextUnRelayMessageAccepted.blockNumber,
       super.sourceName,
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
-    return sourceNextMessageAccepted;
+    return nextUnRelayMessageAccepted;
   }
 
   private async run() {
@@ -181,8 +205,13 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       encoded: sourceNextMessageAccepted.message_encoded,
     };
 
+
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
+    const lastAggreatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+      root: lastAggregatedMessageRoot!.ormpData_root,
+    });
     const rawMsgHashes = await this.sourceIndexerOrmp.messageHashes({
-      messageIndex: +sourceNextMessageAccepted.message_index,
+      messageIndex: +lastAggreatedMessageAccepted!.message_index,
     });
     const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
     const imt = new IncrementalMerkleTree(msgHashes);

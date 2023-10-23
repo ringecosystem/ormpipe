@@ -55,6 +55,10 @@ export class RelayStorage {
     await this.cache.put(this.cachePath, this.key(key), JSON.stringify(schema))
   }
 
+  public async rm(key: string) {
+    await this.cache.rm.content(this.cachePath, this.key(key));
+  }
+
   public async get<T>(key: string): Promise<T | undefined> {
     try {
       const cacheResp = await this.cache.get(this.cachePath, this.key(key));

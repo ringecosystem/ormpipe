@@ -11,11 +11,23 @@ export interface QueryNextRelayerAssigned {
   msgHash: string
 }
 
+export interface QueryPreparedMessages {
+  messageIndex: number
+}
+
 export interface QueryNextMessageAccepted {
   messageIndex: number
 }
 
 export interface QueryNextUndoMessageAccepted {
+  unrealyeds: OrmpMessageDispatched[]
+}
+
+export interface QueryOtherThanDispatchedList {
+  msgHashes: string[]
+}
+
+export interface QueryMessageAcceptedListByHashes {
   msgHashes: string[]
 }
 
