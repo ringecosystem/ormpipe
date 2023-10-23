@@ -114,9 +114,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     const msgHashes = allAssignedList.map(item => item.msgHash);
     let sourceNextMessageAccepted;
     if (msgHashes.length) {
-      const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.otherThanDispatchedList({
-        msgHashes,
-      });
+      const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(msgHashes);
       if (!unRelayedMessagesQueriedFromTarget.length) {
         logger.debug(
           'not have any unrelayed messages from %s',
@@ -126,7 +124,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
         return undefined;
       }
       sourceNextMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: unRelayedMessagesQueriedFromTarget[0].msgHash,
+        msgHash: unRelayedMessagesQueriedFromTarget[0],
       });
     } else {
       sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({messageIndex: -1});

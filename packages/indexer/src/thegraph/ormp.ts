@@ -5,7 +5,6 @@ import {
   QueryInspectMessageDispatched, QueryMessageAcceptedListByHashes,
   QueryMessageHashes,
   QueryNextMessageAccepted,
-  QueryOtherThanDispatchedList,
   QueryPreparedMessages
 } from "../types/graph";
 import {GraphCommon} from "./_common";
@@ -100,25 +99,6 @@ export class ThegraphIndexOrmp extends GraphCommon {
       schema: 'ormpProtocolMessageAccepteds',
     });
     return resp.map(item => item.msgHash)
-  }
-
-  public async otherThanDispatchedList(variables: QueryOtherThanDispatchedList): Promise<OrmpMessageDispatched[]> {
-    const query = `
-    query QueryRelayedMessageDispatched($msgHashes: [String!]!) {
-      ormpProtocolMessageDispatcheds(
-        where: {
-          msgHash_not_in: $msgHashes
-        }
-      ) {
-        msgHash
-      }
-    }
-    `;
-    return await super.list({
-      query,
-      variables,
-      schema: 'ormpProtocolMessageDispatcheds'
-    });
   }
 
   public async nextMessageAccepted(variables: QueryNextMessageAccepted): Promise<OrmpMessageAccepted | undefined> {

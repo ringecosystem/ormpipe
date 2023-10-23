@@ -23,10 +23,6 @@ export interface QueryNextUndoMessageAccepted {
   unrealyeds: OrmpMessageDispatched[]
 }
 
-export interface QueryOtherThanDispatchedList {
-  msgHashes: string[]
-}
-
 export interface QueryMessageAcceptedListByHashes {
   msgHashes: string[]
 }
