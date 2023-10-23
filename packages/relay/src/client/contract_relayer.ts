@@ -42,7 +42,7 @@ export class RelayerContractClient {
       proof,
       gasLimit,
       {
-        gasLimit: gasLimit + 200000n,
+        gasLimit: gasLimit + 220000n,
       }
     );
     return await tx.wait();

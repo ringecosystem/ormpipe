@@ -85,7 +85,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       });
       if (!sourceNextMessageAccepted) {
         logger.debug(
-          `no new assigned message accepted`,
+          `no new assigned message accepted queried by from message index %s`,
+          nextMessageIndex,
           super.meta('ormpipe-relay', ['oracle:delivery'])
         );
         return;
@@ -265,17 +266,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     const cachedLastAggregatedMessageRoot = await super.storage.get(OracleRelay.CK_ORACLE_AGGREGATED);
     if (cachedLastAggregatedMessageRoot && cachedLastAggregatedMessageRoot == completedData) {
       logger.warn(
-        'the message root %s already aggregated (queried by cache)',
-        completedData,
-        super.meta('ormpipe-relay', ['oracle:aggregate']),
-      );
-      return;
-    }
-
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
-    if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.ormpData_root === completedData) {
-      logger.warn(
-        'the message root %s already aggregated (queried by indexer)',
+        'last completed data %s already aggregated (queried by cache)',
         completedData,
         super.meta('ormpipe-relay', ['oracle:aggregate']),
       );
@@ -302,6 +293,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
+
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
     await super.storage.put(
       OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT,
       +(lastAggregatedMessageRoot?.ormpData_count ?? 0)

@@ -44,7 +44,7 @@ export class RelayStorage {
   }
 
   public async put(key: string, value: any | undefined) {
-    if (!value) return;
+    if (value == undefined) return;
     if (!this.initialized) {
       await this.initialize();
     }

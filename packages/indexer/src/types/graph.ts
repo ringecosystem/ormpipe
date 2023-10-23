@@ -19,6 +19,10 @@ export interface QueryNextUndoMessageAccepted {
   msgHashes: string[]
 }
 
+export interface QueryMessageHashes {
+  messageIndex: number
+}
+
 export interface QueryNextAirnodeCompleted {
   beaconId: string
 }
