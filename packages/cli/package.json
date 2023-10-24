@@ -1,6 +1,6 @@
 {
   "name": "@darwinia/ormpipe-cli",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "ormp relay cli",
   "author": "Darwinia Netowrk",
   "bin": {
