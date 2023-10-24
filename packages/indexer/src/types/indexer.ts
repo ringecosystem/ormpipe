@@ -7,5 +7,5 @@ export interface IndexerInput extends IndexerHttpConfig {
   oracleEndpoint?: string
   relayerEndpoint?: string
   ormpEndpoint?: string
-  airnodeEndpoint?: string
+  subapiEndpoint?: string
 }

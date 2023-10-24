@@ -11,12 +11,24 @@ export interface QueryNextRelayerAssigned {
   msgHash: string
 }
 
+export interface QueryPreparedMessages {
+  messageIndex: number
+}
+
 export interface QueryNextMessageAccepted {
   messageIndex: number
 }
 
 export interface QueryNextUndoMessageAccepted {
+  unrealyeds: OrmpMessageDispatched[]
+}
+
+export interface QueryMessageAcceptedListByHashes {
   msgHashes: string[]
+}
+
+export interface QueryMessageHashes {
+  messageIndex: number
 }
 
 export interface QueryNextAirnodeCompleted {
@@ -26,6 +38,10 @@ export interface QueryNextAirnodeCompleted {
 export interface QueryChannelMessageAccepted {
   msgHash?: string
   root?: string
+}
+
+export interface QueryInspectMessageDispatched {
+  msgHash: string
 }
 
 
@@ -63,23 +79,23 @@ export interface OrmpMessageAccepted extends BaseGraphEntity {
   message_encoded: string
 }
 
-export interface OrmpChannelMessageDispatched extends BaseGraphEntity {
+export interface OrmpMessageDispatched extends BaseGraphEntity {
   msgHash: string
   dispatchResult: string
 }
 
-export interface AirnodeBeaconBase extends BaseGraphEntity {
+export interface SubapiBeaconBase extends BaseGraphEntity {
   beaconId: string
 }
 
-export interface AirnodeBeacon extends AirnodeBeaconBase {
+export interface SubapiBeacon extends SubapiBeaconBase {
   beacon_airnode: string
   beacon_endpointId: string
   beacon_sponsor: string
   beacon_sponsorWallet: string
 }
 
-export interface AirnodeComplted extends AirnodeBeaconBase {
+export interface AirnodeComplted extends SubapiBeaconBase {
   requestId: string
   data: string
 }
@@ -90,5 +106,6 @@ export interface AirnodeBeaconCompletedDistruibution {
 }
 
 export interface AirnodeAggregatedMessageRoot {
-  msgRoot: string
+  ormpData_root: string
+  ormpData_count: string
 }

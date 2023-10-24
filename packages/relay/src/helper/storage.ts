@@ -44,7 +44,7 @@ export class RelayStorage {
   }
 
   public async put(key: string, value: any | undefined) {
-    if (!value) return;
+    if (value == undefined) return;
     if (!this.initialized) {
       await this.initialize();
     }
@@ -53,6 +53,10 @@ export class RelayStorage {
       dataType: typeof value,
     };
     await this.cache.put(this.cachePath, this.key(key), JSON.stringify(schema))
+  }
+
+  public async rm(key: string) {
+    await this.cache.rm.content(this.cachePath, this.key(key));
   }
 
   public async get<T>(key: string): Promise<T | undefined> {

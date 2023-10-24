@@ -1,12 +1,12 @@
 import {ContractClientConfig, TransactionResponse} from "./index";
 import {ethers} from "ethers";
-import {AirnodeBeacon} from "@darwinia/ormpipe-indexer";
+import {SubapiBeacon} from "@darwinia/ormpipe-indexer";
 import {logger} from "@darwinia/ormpipe-logger";
-const abi = require('../abis/AirnodeDapi.json');
+const abi = require('../abis/Subapi.json');
 import chalk = require('chalk');
 
 
-export class AirnodeContractClient {
+export class SubapiContractClient {
 
   private readonly config: ContractClientConfig;
   private readonly contract: ethers.Contract;
@@ -19,7 +19,7 @@ export class AirnodeContractClient {
 
   public async getRequestFee(): Promise<bigint> {
     logger.debug(
-      'call %s -> airnode.getRequestFee',
+      'call %s -> subapi.getRequestFee',
       this.config.chainName,
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
@@ -27,7 +27,7 @@ export class AirnodeContractClient {
     return resp[1];
   }
 
-  public async requestFinalizedHash(beacons: AirnodeBeacon[]): Promise<TransactionResponse> {
+  public async requestFinalizedHash(beacons: SubapiBeacon[]): Promise<TransactionResponse> {
     const requestFee = await this.getRequestFee();
     const bcs = beacons.map(item => {
       return {
@@ -38,7 +38,7 @@ export class AirnodeContractClient {
       };
     });
     logger.debug(
-      'call %s -> airnode.requestFinalizedHash %s, {value: %s}',
+      'call %s -> subapi.requestFinalizedHash %s, {value: %s}',
       this.config.chainName,
       chalk.gray(JSON.stringify(bcs)),
       requestFee,
@@ -53,7 +53,7 @@ export class AirnodeContractClient {
 
   public async aggregateBeacons(beaconIds: string[]): Promise<TransactionResponse> {
     logger.debug(
-      'call %s -> airnode.aggregateBeacons %s',
+      'call %s -> subapi.aggregateBeacons %s',
       this.config.chainName,
       chalk.gray(JSON.stringify(beaconIds)),
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}

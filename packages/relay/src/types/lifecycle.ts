@@ -1,12 +1,12 @@
 import {
   ThegraphIndexOrmp,
-  ThegraphIndexerAirnode,
+  ThegraphIndexerSubapi,
   ThegraphIndexerOracle,
   ThegraphIndexerRelayer
 } from "@darwinia/ormpipe-indexer";
 import {RelayDirection} from "./mark";
 import {RelayClient} from "../client";
-import {AirnodeContractClient} from "../client/contract_airnode";
+import {SubapiContractClient} from "../client/contract_subapi";
 import {RelayerContractClient} from "../client/contract_relayer";
 import {RelayStorage} from "../helper/storage";
 
@@ -23,14 +23,14 @@ export interface OracleLifecycle extends BaseLifecycle {
   sourceIndexerOracle: ThegraphIndexerOracle,
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
-  targetIndexerAirnode: ThegraphIndexerAirnode,
-  targetAirnodeClient: AirnodeContractClient,
+  targetIndexerSubapi: ThegraphIndexerSubapi,
+  targetSubapiClient: SubapiContractClient,
 }
 
 export interface RelayerLifecycle extends BaseLifecycle {
   sourceIndexerRelayer: ThegraphIndexerRelayer,
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
-  targetIndexerAirnode: ThegraphIndexerAirnode,
+  targetIndexerSubapi: ThegraphIndexerSubapi,
   targetRelayerClient: RelayerContractClient,
 }

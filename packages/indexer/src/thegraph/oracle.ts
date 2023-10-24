@@ -8,7 +8,7 @@ export class ThegraphIndexerOracle extends GraphCommon {
     const query = `
     query QueryNextOracleAssignedList {
       ormpOracleAssigneds(
-        orderBy: blockNumber
+        orderBy: seq
         orderDirection: asc
       ) {
         id
@@ -17,6 +17,7 @@ export class ThegraphIndexerOracle extends GraphCommon {
         blockNumber
         blockTimestamp
         transactionHash
+        seq
       }
     }
     `;
@@ -28,7 +29,7 @@ export class ThegraphIndexerOracle extends GraphCommon {
     query QueryNextOracleAssigned($msgHash: Bytes!) {
       ormpOracleAssigneds(
         first: 1
-        orderBy: blockNumber
+        orderBy: seq
         orderDirection: asc
         where: {
           msgHash: $msgHash
@@ -40,10 +41,32 @@ export class ThegraphIndexerOracle extends GraphCommon {
         blockNumber
         blockTimestamp
         transactionHash
+        seq
       }
     }
     `;
-    return await super.single({query, variables, schema: 'ormpOracleAssigneds'})
+    return await super.single({query, variables, schema: 'ormpOracleAssigneds'});
+  }
+
+  public async lastAssigned(): Promise<OrmpOracleAssigned | undefined> {
+    const query = `
+    query QueryLastOracleAssigned {
+      ormpOracleAssigneds(
+        first: 1
+        orderBy: seq
+        orderDirection: desc
+      ) {
+        id
+        msgHash
+        fee
+        blockNumber
+        blockTimestamp
+        transactionHash
+        seq
+      }
+    }
+    `;
+    return await super.single({query, schema: 'ormpOracleAssigneds'});
   }
 
 }

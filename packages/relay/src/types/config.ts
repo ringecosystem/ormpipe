@@ -25,24 +25,24 @@ export interface RelayConfig {
   sourceIndexerOracleEndpoint: string
   sourceIndexerRelayerEndpoint: string
   sourceIndexerOrmpEndpoint: string
-  sourceIndexerAirnodeEndpoint: string
+  sourceIndexerSubapiEndpoint: string
 
   targetIndexerEndpoint: string
   targetIndexerOracleEndpoint: string
   targetIndexerRelayerEndpoint: string
   targetIndexerOrmpEndpoint: string
-  targetIndexerAirnodeEndpoint: string
+  targetIndexerSubapiEndpoint: string
 
   sourceSigner: string
-  sourceSignerAirnode: string
+  sourceSignerSubapi: string
   sourceSignerRelayer: string
   targetSigner: string
-  targetSignerAirnode: string
+  targetSignerSubapi: string
   targetSignerRelayer: string
 
-  sourceAddressAirnode: string
+  sourceAddressSubapi: string
   sourceAddressRelayer: string
-  targetAddressAirnode: string
+  targetAddressSubapi: string
   targetAddressRelayer: string
 
 }

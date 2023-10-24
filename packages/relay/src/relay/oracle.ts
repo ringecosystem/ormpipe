@@ -3,19 +3,21 @@ import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {
   OrmpMessageAccepted,
-  ThegraphIndexerAirnode,
   ThegraphIndexerOracle,
+  ThegraphIndexerSubapi,
   ThegraphIndexOrmp
 } from "@darwinia/ormpipe-indexer";
-import {AirnodeContractClient} from "../client/contract_airnode";
+import {SubapiContractClient} from "../client/contract_subapi";
 import * as asyncx from "async";
 import {RelayFeature} from "../types/config";
+import {AbiCoder} from "ethers";
 import chalk = require('chalk');
 
 export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   private static CK_ORACLE_DELIVERIED: string = 'ormpipe.oracle.deliveried';
   private static CK_ORACLE_AGGREGATED: string = 'ormpipe.oracle.aggregated';
+  private static CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT: string = 'ormpipe.oracle.mark.aggregated_message_count';
 
   constructor(lifecycle: OracleLifecycle) {
     super(lifecycle);
@@ -33,12 +35,12 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     return super.lifecycle.targetIndexerOrmp
   }
 
-  public get targetIndexerAirnode(): ThegraphIndexerAirnode {
-    return super.lifecycle.targetIndexerAirnode
+  public get targetIndexerSubapi(): ThegraphIndexerSubapi {
+    return super.lifecycle.targetIndexerSubapi
   }
 
-  public get targetAirnodeClient(): AirnodeContractClient {
-    return super.lifecycle.targetAirnodeClient
+  public get targetSubapiClient(): SubapiContractClient {
+    return super.lifecycle.targetSubapiClient
   }
 
   public async start(features: RelayFeature[]) {
@@ -71,12 +73,24 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
     const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
     if (cachedLastDeliveriedIndex) {
+      // query cached message count, start from last deliverd index + message count
+      const cachedMarkAggregatedMessageCount = await super.storage.get(
+        OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT
+      );
+      // console.log(cachedLastDeliveriedIndex, cachedMarkAggregatedMessageCount);
+      const nextMessageIndex = cachedMarkAggregatedMessageCount
+        ? Math.max(+cachedMarkAggregatedMessageCount, +cachedLastDeliveriedIndex)
+        : +cachedLastDeliveriedIndex;
+      await super.storage.rm(OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT);
+      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, nextMessageIndex);
+
       const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-        messageIndex: +cachedLastDeliveriedIndex,
+        messageIndex: nextMessageIndex,
       });
       if (!sourceNextMessageAccepted) {
         logger.debug(
-          `no new assigned message accepted`,
+          `no new assigned message accepted queried by from message index %s`,
+          nextMessageIndex,
           super.meta('ormpipe-relay', ['oracle:delivery'])
         );
         return;
@@ -98,16 +112,37 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
     const allAssignedList = await this.sourceIndexerOracle.allAssignedList();
     const msgHashes = allAssignedList.map(item => item.msgHash);
-    const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextUndoMessageAccepted({msgHashes});
+    let sourceNextMessageAccepted;
+    if (msgHashes.length) {
+      const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(msgHashes);
+      if (!unRelayedMessagesQueriedFromTarget.length) {
+        logger.debug(
+          'not have any unrelayed messages from %s',
+          super.sourceName,
+          super.meta('ormpipe-relay', ['oracle:delivery'])
+        );
+        return undefined;
+      }
+      sourceNextMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+        msgHash: unRelayedMessagesQueriedFromTarget[0],
+      });
+    } else {
+      sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({messageIndex: -1});
+    }
     if (sourceNextMessageAccepted) {
       return sourceNextMessageAccepted;
     }
     // save cache, if all message deliveried
-    const sourceLastMessageAccepted = await this.sourceIndexerOrmp.lastMessageAccepted();
-    if (sourceLastMessageAccepted) {
-      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastMessageAccepted.message_index);
+    const sourceLastMessageAssigned = await this.sourceIndexerOracle.lastAssigned();
+    if (sourceLastMessageAssigned) {
+      const sourceLastMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+        msgHash: sourceLastMessageAssigned.msgHash,
+      });
+      if (sourceLastMessageAccepted) {
+        await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastMessageAccepted.message_index);
+      }
     }
-    return sourceNextMessageAccepted;
+    // not have any message accepted
   }
 
   private async delivery() {
@@ -166,8 +201,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     if (sourceFinalizedBLock.number < +(sourceNextMessageAccepted.blockNumber)) {
       logger.warn(
         'message block not finalized %s/%s(%s)',
-        sourceNextMessageAccepted.blockNumber,
         sourceFinalizedBLock.number,
+        sourceNextMessageAccepted.blockNumber,
         super.sourceName,
         super.meta('ormpipe-relay', ['oracle:delivery']),
       )
@@ -175,13 +210,13 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     }
     logger.debug(
       'message block finalized %s/%s(%s)',
-      sourceNextMessageAccepted.blockNumber,
       sourceFinalizedBLock.number,
+      sourceNextMessageAccepted.blockNumber,
       super.sourceName,
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
-    const beacons = await this.targetIndexerAirnode.beacons();
+    const beacons = await this.targetIndexerSubapi.beacons();
     logger.debug(
       'queried %s beacons from %s airnode-dapi contract, prepare to call %s (requestFinalizedHash)',
       beacons.length,
@@ -190,7 +225,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
-    const targetTxRequestFinalizedHash = await this.targetAirnodeClient.requestFinalizedHash(beacons);
+    const targetTxRequestFinalizedHash = await this.targetSubapiClient.requestFinalizedHash(beacons);
     logger.info(
       'called %s airnode contract requestFinalizedHash {tx: %s, block: %s}, wait aggregate',
       super.targetName,
@@ -199,13 +234,14 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
+    // console.log(sourceNextMessageAccepted.message_index);
     await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
   }
 
   private async aggregate() {
     logger.debug('start oracle aggregate', super.meta('ormpipe-relay', ['oracle:aggregate']));
 
-    const beacons = await this.targetIndexerAirnode.beacons();
+    const beacons = await this.targetIndexerSubapi.beacons();
     const countBeacons = beacons.length;
     const beaconIds = beacons.map(item => item.beaconId);
     logger.debug(
@@ -216,7 +252,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const distruibutions = await this.targetIndexerAirnode.beaconAirnodeCompletedDistribution(beaconIds);
+    const distruibutions = await this.targetIndexerSubapi.beaconAirnodeCompletedDistribution(beaconIds);
     if (!distruibutions.length) {
       logger.warn(
         'not have anymore airnode completed events from %s',
@@ -247,22 +283,31 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       return;
     }
     const completedData = completedDatas[0];
-
     const cachedLastAggregatedMessageRoot = await super.storage.get(OracleRelay.CK_ORACLE_AGGREGATED);
     if (cachedLastAggregatedMessageRoot && cachedLastAggregatedMessageRoot == completedData) {
       logger.warn(
-        'the message root %s already aggregated (queried by cache)',
-        completedData,
+        'last completed data %s already aggregated (queried by cache)',
+        chalk.gray(completedData),
         super.meta('ormpipe-relay', ['oracle:aggregate']),
       );
       return;
     }
 
-    const lastAggregatedMessageRoot = await this.targetIndexerAirnode.lastAggregatedMessageRoot();
-    if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.msgRoot === completedData) {
+    const abiCoder = AbiCoder.defaultAbiCoder();
+    const rawDecodedCompletedData = abiCoder.decode(['bytes'], completedData);
+    const [decodedCompletedMessageCount, decodedCompletedMessageRoot] = abiCoder.decode(['uint', 'bytes32'], rawDecodedCompletedData[0]);
+    logger.debug(
+      'current completed message root is %s and message count is %s',
+      chalk.gray(decodedCompletedMessageRoot),
+      chalk.gray(decodedCompletedMessageCount),
+      super.meta('ormpipe-relay', ['oracle:aggregate']),
+    );
+
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
+    if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.ormpData_root == decodedCompletedMessageRoot) {
       logger.warn(
-        'the message root %s already aggregated (queried by indexer)',
-        completedData,
+        'last completed data %s already aggregated (queried by completed events)',
+        chalk.gray(completedData),
         super.meta('ormpipe-relay', ['oracle:aggregate']),
       );
       return;
@@ -273,21 +318,29 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       .map(item => item.beaconId)
       .sort((one, two) => (one > two ? 1 : -1));
     logger.debug(
-      'aggregate beacons %s to %s airnode-api contract',
+      'aggregate beacons %s to %s subapi contract',
       chalk.gray(JSON.stringify(aggregateBeaconIds)),
       super.targetName,
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const targetTxAggregateBeacons = await this.targetAirnodeClient.aggregateBeacons(aggregateBeaconIds);
+    const targetTxAggregateBeacons = await this.targetSubapiClient.aggregateBeacons(aggregateBeaconIds);
     logger.info(
-      'aggregated beacons to %s airnode-api contract {tx: %s, block: %s}',
+      'aggregated beacons to %s subapi contract {tx: %s, block: %s}',
       super.targetName,
       chalk.magenta(targetTxAggregateBeacons.hash),
       chalk.cyan(targetTxAggregateBeacons.blockNumber),
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
+    if (lastAggregatedMessageRoot) {
+      await super.storage.put(
+        OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT,
+        +lastAggregatedMessageRoot.ormpData_count
+      );
+    } else {
+      await super.storage.rm(OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT);
+    }
     await super.storage.put(OracleRelay.CK_ORACLE_AGGREGATED, completedData);
   }
 
