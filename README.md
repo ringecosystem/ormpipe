@@ -44,16 +44,16 @@ Ready for these, next, you can execute ormpipe to run oracle relay.
 ```bash
 ormpipe start \
   --tasks=oracle \
-  --source-name=arbitrum-goerli \
-  --target-name=pangolin \
-  --source-endpoint=https://endpoints.omniatech.io/v1/arbitrum/goerli/public \
-  --target-endpoint=https://pangolin-rpc.darwinia.network \
-  --source-indexer-oracle-endpoint=https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest \
-  --source-indexer-ormp-endpoint=https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest \
-  --target-indexer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-pangolin \
-  --source-address-airnode=0xa681492DBAd5a3999cFCE2d72196d5784dd08D0c \
-  --target-address-airnode=0x770713580e5c618A4D29D7E8c0d7604276B63832 \
-  --source-signer-airnode \
+  --source-name=arbitrum-sepolia \
+  --target-name=crab \
+  --source-endpoint=https://sepolia-rollup.arbitrum.io/rpc \
+  --target-endpoint=https://crab-rpc.darwinia.network \
+  --source-indexer-oracle-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-arbitrum-sepolia \
+  --source-indexer-ormp-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-arbitrum-sepolia \
+  --target-indexer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-crab \
+  --source-address-subapi=0x00945C032A37454333d7044a52a5A42Aa0f6c608 \
+  --target-address-subapi=0x00945C032A37454333d7044a52a5A42Aa0f6c608 \
+  --source-signer-subapi \
   --target-signer \
   --enable-source-to-target \
   --enable-target-to-source
@@ -88,22 +88,22 @@ and target chain ormp contract indexer.
 > you can use `*-indexer-ormp-endpoint` or `*-indexer-endpoint` these are
 > same, `*-indexer-ormp-endpoint` has higher priority
 
-**airnode contract address**
+**subapi contract address**
 
-`--source-address-airnode` and `--target-address-airnode` source chain and
-target chain deployed airnode contract address
+`--source-address-subapi` and `--target-address-subapi` source chain and
+target chain deployed subapi contract address
 
-> deployed airnode contract address you can
+> deployed subapi contract address you can
 > check
-> there [airnode-dapi](https://github.com/darwinia-oracle-dao/airnode-dapi/blob/main/bin/addr.json)
+> there [subapi-dapi](https://github.com/subapidao/subapi/blob/main/abi/SubAPI.abi)
 
 **signer**
 
-`--source-signer-airnode` and `--target-signer` your account private key in
-source and target chain or use env `ORMPIPE_SOURCE_SIGNER_AIRNODE` and `ORMPIPE_TARGET_SIGNER`
+`--source-signer-subapi` and `--target-signer` your account private key in
+source and target chain or use env `ORMPIPE_SOURCE_SIGNER_SUBAPI` and `ORMPIPE_TARGET_SIGNER`
 
-> you can use `*-signer-airnode` or `*-signer` these are
-> same, `*-signer-airnode` has higher priority
+> you can use `*-signer-subapi` or `*-signer` these are
+> same, `*-signer-subapi` has higher priority
 
 **enable**
 
@@ -124,13 +124,13 @@ Ready for these, next, you can execute ormpipe to run relayer relay.
 ```bash
 ormpipe start \
   --tasks=relayer \
-  --source-name=arbitrum-goerli \
-  --target-name=pangolin \
-  --source-endpoint=https://endpoints.omniatech.io/v1/arbitrum/goerli/public \
-  --target-endpoint=https://pangolin-rpc.darwinia.network \
-  --source-indexer-relayer-endpoint=https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest \
-  --source-indexer-ormp-endpoint=https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest \
-  --target-indexer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-pangolin \
+  --source-name=arbitrum-sepolia \
+  --target-name=crab \
+  --source-endpoint=https://sepolia-rollup.arbitrum.io/rpc \
+  --target-endpoint=https://crab-rpc.darwinia.network \
+  --source-indexer-relayer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-arbitrum-sepolia \
+  --source-indexer-ormp-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-arbitrum-sepolia \
+  --target-indexer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-crab \
   --source-address-relayer=0x000000007e24Da6666c773280804d8021E12e13F \
   --target-address-relayer=0x000000007e24Da6666c773280804d8021E12e13F \
   --source-signer-relayer \
@@ -176,11 +176,11 @@ target chain deployed relayer contract address
 
 **signer**
 
-`--source-signer-airnode` and `--target-signer` your account private key in
-source and target chain or use env `ORMPIPE_SOURCE_SIGNER_AIRNODE` and `ORMPIPE_TARGET_SIGNER`
+`--source-signer-subapi` and `--target-signer` your account private key in
+source and target chain or use env `ORMPIPE_SOURCE_SIGNER_SUBAPI` and `ORMPIPE_TARGET_SIGNER`
 
-> you can use `*-signer-airnode` or `*-signer` these are
-> same, `*-signer-airnode` has higher priority
+> you can use `*-signer-subapi` or `*-signer` these are
+> same, `*-signer-subapi` has higher priority
 
 **enable**
 
@@ -194,16 +194,16 @@ direction.
 ```bash
 ormpipe start \
   --task=oracle relayer \
-  --source-name=arbitrum-goerli \
-  --target-name=pangolin \
-  --source-endpoint=https://endpoints.omniatech.io/v1/arbitrum/goerli/public \
-  --target-endpoint=https://pangolin-rpc.darwinia.network \
-  --source-indexer-endpoint=https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest \
-  --target-indexer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-pangolin \
-  --source-address-airnode=0xa681492DBAd5a3999cFCE2d72196d5784dd08D0c \
-  --source-address-relayer=0x000000fbfBc6954C8CBba3130b5Aee7f3Ea5108e \
-  --target-address-airnode=0x770713580e5c618A4D29D7E8c0d7604276B63832 \
-  --target-address-relayer=0x000000fbfBc6954C8CBba3130b5Aee7f3Ea5108e \
+  --source-name=arbitrum-sepolia \
+  --target-name=crab \
+  --source-endpoint=https://sepolia-rollup.arbitrum.io/rpc \
+  --target-endpoint=https://crab-rpc.darwinia.network \
+  --source-indexer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-arbitrum-sepolia \
+  --target-indexer-endpoint=https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-crab \
+  --source-address-subapi=0x00945C032A37454333d7044a52a5A42Aa0f6c608 \
+  --source-address-relayer=0x007EED6207c9AF3715964Fb7f8B5f44E002a3498 \
+  --target-address-subapi=0x00945C032A37454333d7044a52a5A42Aa0f6c608 \
+  --target-address-relayer=0x007EED6207c9AF3715964Fb7f8B5f44E002a3498 \
   --source-signer \
   --target-signer \
   --enable-source-to-target \

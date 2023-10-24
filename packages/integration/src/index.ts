@@ -1,12 +1,14 @@
 import {IntegrationTestConfig} from "./types/config";
 import {ethers} from "ethers";
 
-const abi = require('./abis/Ormp.json');
+const abiOrmp = require('./abis/Ormp.json');
+const abiMsgline = require('./abis/Msgline.json');
 
 interface Lifecycle {
   evm: ethers.JsonRpcProvider,
   wallet: ethers.Wallet,
   contractOrmp: ethers.Contract,
+  contractMsgline: ethers.Contract,
 }
 
 export class OrmpIntegrationTestProgram {
@@ -18,20 +20,26 @@ export class OrmpIntegrationTestProgram {
   ) {
     const evm = new ethers.JsonRpcProvider(config.endpoint);
     const wallet = new ethers.Wallet(config.signer, evm);
-    const contractOrmp = new ethers.Contract(config.ormpAddress, abi, wallet);
+    const contractOrmp = new ethers.Contract(config.ormpAddress, abiOrmp, wallet);
+    const contractMsgline = new ethers.Contract(config.msglineAddress, abiMsgline, wallet);
     this.lifecycle = {
       evm,
       wallet,
       contractOrmp,
+      contractMsgline: contractMsgline,
     };
   }
 
-  // send test message
-  public async sendMessage() {
-    const { wallet, contractOrmp } = this.lifecycle;
+  private _randomMessage(): string {
     let t = Math.random().toString().replace('0.', '')
     t = t.length % 2 == 0 ? t : t + '0';
-    const message = `0x${t}`;
+    return `0x${t}`
+  }
+
+  // send test message
+  public async sendOrmpMessage() {
+    const { wallet, contractOrmp } = this.lifecycle;
+    const message = this._randomMessage();
     const params = '0x0000000000000000000000000000000000000000000000000000000000000001';
     const fee = await contractOrmp['fee'](
       this.config.targetChainId,
@@ -49,4 +57,27 @@ export class OrmpIntegrationTestProgram {
     const resp = await tx.wait();
     console.log(resp.hash);
   }
+
+
+  public async sendMsglineMessage() {
+    const { wallet, contractMsgline } = this.lifecycle;
+    const message = this._randomMessage();
+    const params = '0x00000000000000000000000000000000000000000000000000000000000493e0';
+    const fee = await contractMsgline['fee'](
+      this.config.targetChainId,
+      wallet.getAddress(),
+      message,
+      params,
+    );
+    const tx = await contractMsgline['send'](
+      this.config.targetChainId,
+      wallet.getAddress(),
+      message,
+      params,
+      {value: fee},
+    );
+    const resp = await tx.wait();
+    console.log(resp.hash);
+  }
+
 }
