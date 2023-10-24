@@ -27,6 +27,13 @@ export default class Integration extends Command {
       required: true,
       description: 'ormp contract address',
       env: 'ORMPIPE_ADDRESS_ORMP',
+      default: '0x0034607daf9c1dc6628f6e09E81bB232B6603A89',
+    }),
+    'msgline-address': Flags.string({
+      required: true,
+      description: 'message line contract address',
+      env: 'ORMPIPE_ADDRESS_MSGLINE',
+      default: '0x000c61ca18583c9504691f43ea43c2c638772487',
     }),
     'target-chain-id': Flags.integer({
       required: true,
@@ -39,7 +46,11 @@ export default class Integration extends Command {
     name: Args.string({
       required: true,
       description: 'integration test name',
-      options: ['send-message'],
+      options: [
+        'send-message',
+        'send-message-ormp',
+        'send-message-msgline',
+      ],
     }),
   };
 
@@ -53,7 +64,11 @@ export default class Integration extends Command {
     const name = args.name;
     switch (name) {
       case 'send-message':
-        await itp.sendMessage();
+      case 'send-message-ormp':
+        await itp.sendOrmpMessage();
+        break;
+      case 'send-message-msgline':
+        await itp.sendMsglineMessage();
         break;
       default:
         logger.warn('not support this test name');
