@@ -1,6 +1,6 @@
 {
   "name": "@darwinia/ormpipe-integration",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "ormpipe integration",
   "main": "dist/index.js",
   "author": "Darwinia Netowrk",

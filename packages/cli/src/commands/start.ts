@@ -101,7 +101,7 @@ export default class Start extends Command {
     'target-indexer-endpoint': Flags.string({
       required: false,
       description: '[target-chain] indexer endpoint',
-      env: 'ORMPIPE_TARGET_ENDPOINT',
+      env: 'ORMPIPE_TARGET_INDEXER_ENDPOINT',
     }),
     'target-indexer-oracle-endpoint': Flags.string({
       required: false,
