@@ -2,7 +2,7 @@ import {IntegrationTestConfig} from "./types/config";
 import {ethers} from "ethers";
 
 const abiOrmp = require('./abis/Ormp.json');
-const abiLine = require('./abis/Line.json');
+const abiMsgline = require('./abis/Msgline.json');
 
 interface Lifecycle {
   evm: ethers.JsonRpcProvider,
@@ -21,7 +21,7 @@ export class OrmpIntegrationTestProgram {
     const evm = new ethers.JsonRpcProvider(config.endpoint);
     const wallet = new ethers.Wallet(config.signer, evm);
     const contractOrmp = new ethers.Contract(config.ormpAddress, abiOrmp, wallet);
-    const contractMsgline = new ethers.Contract(config.msglineAddress, abiLine, wallet);
+    const contractMsgline = new ethers.Contract(config.msglineAddress, abiMsgline, wallet);
     this.lifecycle = {
       evm,
       wallet,
