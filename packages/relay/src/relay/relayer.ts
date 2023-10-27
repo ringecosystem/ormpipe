@@ -92,7 +92,6 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return undefined;
     }
-    const nextUnRelayMessageAccepted = unRelayMessageAcceptedList[0];
 
     const sourceLastAssignedMessage = await this.sourceIndexerRelayer.lastAssignedMessage();
     const sourceLastMessageAssignedAccepted = sourceLastAssignedMessage
@@ -100,47 +99,57 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         msgHash: sourceLastAssignedMessage.msgHash,
       })
       : null;
-    const currentMessageIndex = nextUnRelayMessageAccepted.message_index;
-    logger.info(
-      'sync status [%s,%s] (%s)',
-      currentMessageIndex,
-      sourceLastMessageAssignedAccepted?.message_index ?? -1,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['relayer:relay']),
-    );
 
-    const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
-    if (currentMessageIndex == cachedLastDeliveriedIndex) {
-      logger.debug(
-        `the message %s already relayed to %s (queried by cache)`,
+    let unRelayedIndex = -1;
+    while (true) {
+      unRelayedIndex += 1;
+      if (unRelayMessageAcceptedList.length - 1 < unRelayedIndex) {
+        return;
+      }
+      const nextUnRelayMessageAccepted = unRelayMessageAcceptedList[unRelayedIndex];
+
+      const currentMessageIndex = nextUnRelayMessageAccepted.message_index;
+      logger.info(
+        'sync status [%s,%s] (%s)',
         currentMessageIndex,
-        super.targetName,
+        sourceLastMessageAssignedAccepted?.message_index ?? -1,
+        super.sourceName,
+        super.meta('ormpipe-relay', ['relayer:relay']),
+      );
+
+      const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
+      if (currentMessageIndex == cachedLastDeliveriedIndex) {
+        logger.debug(
+          `the message %s already relayed to %s (queried by cache)`,
+          currentMessageIndex,
+          super.targetName,
+          super.meta('ormpipe-relay', ['relayer:relay'])
+        );
+        continue;
+      }
+      // const queriedDispatched = await this.targetIndexerOrmp.inspectMessageDispatched({
+      //   msgHash: nextUnRelayMessageAccepted.msgHash,
+      // });
+      // if (queriedDispatched) {
+      //   logger.debug(
+      //     `the message %s already relayed to %s (queried by indexer dispatched event)`,
+      //     currentMessageIndex,
+      //     super.targetName,
+      //     super.meta('ormpipe-relay', ['relayer:relay'])
+      //   );
+      //   return;
+      // }
+
+      logger.info(
+        `new message accepted %s in %s(%s) prepared`,
+        nextUnRelayMessageAccepted.msgHash,
+        nextUnRelayMessageAccepted.blockNumber,
+        super.sourceName,
         super.meta('ormpipe-relay', ['relayer:relay'])
       );
-      return;
+
+      return nextUnRelayMessageAccepted;
     }
-    // const queriedDispatched = await this.targetIndexerOrmp.inspectMessageDispatched({
-    //   msgHash: nextUnRelayMessageAccepted.msgHash,
-    // });
-    // if (queriedDispatched) {
-    //   logger.debug(
-    //     `the message %s already relayed to %s (queried by indexer dispatched event)`,
-    //     currentMessageIndex,
-    //     super.targetName,
-    //     super.meta('ormpipe-relay', ['relayer:relay'])
-    //   );
-    //   return;
-    // }
-
-    logger.info(
-      `new message accepted %s in %s(%s) prepared`,
-      nextUnRelayMessageAccepted.msgHash,
-      nextUnRelayMessageAccepted.blockNumber,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['relayer:relay'])
-    );
-
-    return nextUnRelayMessageAccepted;
   }
 
   private async run() {
