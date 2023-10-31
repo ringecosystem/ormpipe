@@ -21,7 +21,18 @@ export class ThegraphIndexerOracle extends GraphCommon {
       }
     }
     `;
-    return await super.list({query, schema: 'ormpOracleAssigneds'});
+    const assignedList: OrmpOracleAssigned[] = [];
+    let skip = 0;
+    while (true) {
+      const variables = {skip};
+      const parts: OrmpOracleAssigned[] = await super.list({query, variables, schema: 'ormpOracleAssigneds'});
+      const length = parts.length;
+      if (length == 0) {
+        return assignedList;
+      }
+      assignedList.push(...parts);
+      skip += length;
+    }
   }
 
   public async inspectAssigned(variables: QueryNextOracleAssigned): Promise<OrmpOracleAssigned | undefined> {
