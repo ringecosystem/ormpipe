@@ -104,6 +104,11 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     while (true) {
       unRelayedIndex += 1;
       if (unRelayMessageAcceptedList.length - 1 < unRelayedIndex) {
+        logger.debug(
+          'not have more unrelayed message acceipte list from %s',
+          super.sourceName,
+          super.meta('ormpipe-relay', ['relayer:relay']),
+        );
         return;
       }
       const nextUnRelayMessageAccepted = unRelayMessageAcceptedList[unRelayedIndex];
