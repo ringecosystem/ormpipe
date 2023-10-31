@@ -1,5 +1,5 @@
 export class CollectionKit {
-  public static parts<T>(array: T[], part = 1): T[] {
+  public static parts<T>(array: T[], part = 1): T[][] {
     const rets = [];
     const length = array.length;
     const size = Math.floor(length / part);
@@ -20,7 +20,7 @@ export class CollectionKit {
     return rets;
   }
 
-  public static split<T>(array: T[], size = 10): T[] {
+  public static split<T>(array: T[], size = 10): T[][] {
     const rets = [];
     const length = array.length;
     let start = 0, end = size;
