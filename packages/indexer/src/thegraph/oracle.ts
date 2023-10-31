@@ -6,8 +6,9 @@ export class ThegraphIndexerOracle extends GraphCommon {
 
   public async allAssignedList(): Promise<OrmpOracleAssigned[]> {
     const query = `
-    query QueryNextOracleAssignedList {
+    query QueryNextOracleAssignedList($skip: BigInt!) {
       ormpOracleAssigneds(
+        skip: $skip
         orderBy: seq
         orderDirection: asc
       ) {
