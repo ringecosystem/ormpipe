@@ -92,7 +92,7 @@ export class ThegraphIndexerRelayer extends GraphCommon {
       return [];
     }
 
-    const msgHashesParts: string[] = CollectionKit.split(msgHashes, 100);
+    const msgHashesParts: string[][] = CollectionKit.split(msgHashes, 100);
     const query = `
     query QueryRelayerAssigned($msgHashes: [String!]!) {
       ormpRelayerAssigneds(

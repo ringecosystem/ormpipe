@@ -51,7 +51,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
   }
 
   public async queryMessageAcceptedListByHashes(variables: QueryMessageAcceptedListByHashes): Promise<OrmpMessageAccepted[]> {
-    const msgHashesParts: string[] = CollectionKit.split(variables.msgHashes, 100);
+    const msgHashesParts: string[][] = CollectionKit.split(variables.msgHashes, 100);
     const query = `
     query QueryMessageAcceptedList($msgHashes: [String!]!) {
       ormpProtocolMessageAccepteds(
@@ -225,7 +225,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     if (!msgHashes.length) {
       return [];
     }
-    const msgHashesParts: string[] = CollectionKit.split(msgHashes, 100);
+    const msgHashesParts: string[][] = CollectionKit.split(msgHashes, 100);
     const query = `
     query QueryLastMessageDispatched($msgHashes: [String!]!) {
       ormpProtocolMessageDispatcheds(
