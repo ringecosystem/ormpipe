@@ -2,12 +2,14 @@ import {
   OrmpMessageAccepted,
   OrmpMessageDispatched,
   QueryChannelMessageAccepted,
-  QueryInspectMessageDispatched, QueryMessageAcceptedListByHashes,
+  QueryInspectMessageDispatched,
+  QueryMessageAcceptedListByHashes,
   QueryMessageHashes,
   QueryNextMessageAccepted,
   QueryPreparedMessages
 } from "../types/graph";
 import {GraphCommon} from "./_common";
+import {CollectionKit} from "../toolkit/collection";
 
 export class ThegraphIndexOrmp extends GraphCommon {
 
@@ -41,6 +43,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_from
         message_toChainId
         message_to
+        message_gasLimit
         message_encoded
       }
     }
@@ -49,6 +52,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
   }
 
   public async queryMessageAcceptedListByHashes(variables: QueryMessageAcceptedListByHashes): Promise<OrmpMessageAccepted[]> {
+    const msgHashesParts: string[][] = CollectionKit.split(variables.msgHashes, 100);
     const query = `
     query QueryMessageAcceptedList($msgHashes: [String!]!) {
       ormpProtocolMessageAccepteds(
@@ -71,17 +75,29 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_from
         message_toChainId
         message_to
+        message_gasLimit
         message_encoded
       }
     }
     `;
-    return await super.list({query, variables, schema: 'ormpProtocolMessageAccepteds'});
+    const rets: OrmpMessageAccepted[] = [];
+    for (const parts of msgHashesParts) {
+      const _variables = {msgHashes: parts};
+      const pickedAssignedMessages: OrmpMessageAccepted[] = await super.list({
+        query,
+        variables: _variables,
+        schema: 'ormpProtocolMessageAccepteds',
+      });
+      rets.push(...pickedAssignedMessages);
+    }
+    return rets;
   }
 
   public async messageHashes(variables: QueryMessageHashes): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($messageIndex: BigInt!) {
+    query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
+        skip: $skip
         orderBy: message_index
         orderDirection: asc
         where: {
@@ -93,12 +109,26 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
     }
     `;
-    const resp: OrmpMessageAccepted[] = await super.list({
-      query,
-      variables,
-      schema: 'ormpProtocolMessageAccepteds',
-    });
-    return resp.map(item => item.msgHash)
+    let skip = 0;
+    const rets: string[] = [];
+    while (true) {
+      const _variables = {
+        ...variables,
+        skip,
+      };
+      const parts: OrmpMessageAccepted[] = await super.list({
+        query,
+        variables: _variables,
+        schema: 'ormpProtocolMessageAccepteds',
+      });
+      const length = parts.length;
+      if (length == 0) {
+        return rets;
+      }
+      const hashes = parts.map(item => item.msgHash);
+      rets.push(...hashes);
+      skip += length;
+    }
   }
 
   public async nextMessageAccepted(variables: QueryNextMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
@@ -125,6 +155,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_from
         message_toChainId
         message_to
+        message_gasLimit
         message_encoded
       }
     }
@@ -158,8 +189,9 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async queryPreparedMessageAcceptedHashes(variables: QueryPreparedMessages): Promise<string[]> {
     const query = `
-    query QueryNextMessageAccepted($messageIndex: BigInt!) {
+    query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
+        skip: $skip
         orderBy: message_index
         orderDirection: asc
         where: {
@@ -170,18 +202,34 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
     }
     `;
-    const preparedMessageAcceptedHashes: OrmpMessageAccepted[] = await super.list({
-      query,
-      variables,
-      schema: 'ormpProtocolMessageAccepteds',
-    });
-    return preparedMessageAcceptedHashes.map(item => item.msgHash);
+
+    const rets: string[] = [];
+    let skip = 0;
+    while (true) {
+      const _variable = {
+        ...variables,
+        skip,
+      };
+      const parts: OrmpMessageAccepted[] = await super.list({
+        query,
+        variables: _variable,
+        schema: 'ormpProtocolMessageAccepteds',
+      });
+      const length = parts.length;
+      if (length == 0) {
+        return rets;
+      }
+      const hashes = parts.map(item => item.msgHash);
+      rets.push(...hashes);
+      skip += length;
+    }
   }
 
   public async pickUnRelayedMessageHashes(msgHashes: string[]): Promise<string[]> {
     if (!msgHashes.length) {
       return [];
     }
+    const msgHashesParts: string[][] = CollectionKit.split(msgHashes, 100);
     const query = `
     query QueryLastMessageDispatched($msgHashes: [String!]!) {
       ormpProtocolMessageDispatcheds(
@@ -195,13 +243,17 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
     }
     `;
-    const variables = {msgHashes};
-    const unRelayMessages: OrmpMessageDispatched[] = await super.list({
-      query,
-      variables,
-      schema: 'ormpProtocolMessageDispatcheds',
-    });
-    const unRelayMessageHashes = unRelayMessages.map(item => item.msgHash);
+    const unRelayMessageHashes: string[] = [];
+    for (const parts of msgHashesParts) {
+      const variables = {msgHashes: parts};
+      const unRelayMessages: OrmpMessageDispatched[] = await super.list({
+        query,
+        variables,
+        schema: 'ormpProtocolMessageDispatcheds',
+      });
+      const hashes = unRelayMessages.map(item => item.msgHash);
+      unRelayMessageHashes.push(...hashes);
+    }
     return msgHashes.filter(item => unRelayMessageHashes.indexOf(item) == -1);
   }
 

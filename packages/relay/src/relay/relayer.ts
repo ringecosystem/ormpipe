@@ -92,7 +92,6 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return undefined;
     }
-    const nextUnRelayMessageAccepted = unRelayMessageAcceptedList[0];
 
     const sourceLastAssignedMessage = await this.sourceIndexerRelayer.lastAssignedMessage();
     const sourceLastMessageAssignedAccepted = sourceLastAssignedMessage
@@ -100,47 +99,62 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         msgHash: sourceLastAssignedMessage.msgHash,
       })
       : null;
-    const currentMessageIndex = nextUnRelayMessageAccepted.message_index;
-    logger.info(
-      'sync status [%s,%s] (%s)',
-      currentMessageIndex,
-      sourceLastMessageAssignedAccepted?.message_index ?? -1,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['relayer:relay']),
-    );
 
-    const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
-    if (currentMessageIndex == cachedLastDeliveriedIndex) {
-      logger.debug(
-        `the message %s already relayed to %s (queried by cache)`,
+    let unRelayedIndex = -1;
+    while (true) {
+      unRelayedIndex += 1;
+      if (unRelayMessageAcceptedList.length - 1 < unRelayedIndex) {
+        logger.debug(
+          'not have more unrelayed message acceipte list from %s',
+          super.sourceName,
+          super.meta('ormpipe-relay', ['relayer:relay']),
+        );
+        return;
+      }
+      const nextUnRelayMessageAccepted = unRelayMessageAcceptedList[unRelayedIndex];
+
+      const currentMessageIndex = nextUnRelayMessageAccepted.message_index;
+      logger.info(
+        'sync status [%s,%s] (%s)',
         currentMessageIndex,
-        super.targetName,
+        sourceLastMessageAssignedAccepted?.message_index ?? -1,
+        super.sourceName,
+        super.meta('ormpipe-relay', ['relayer:relay']),
+      );
+
+      const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
+      if (currentMessageIndex == cachedLastDeliveriedIndex) {
+        logger.debug(
+          `the message %s already relayed to %s (queried by cache)`,
+          currentMessageIndex,
+          super.targetName,
+          super.meta('ormpipe-relay', ['relayer:relay'])
+        );
+        continue;
+      }
+      // const queriedDispatched = await this.targetIndexerOrmp.inspectMessageDispatched({
+      //   msgHash: nextUnRelayMessageAccepted.msgHash,
+      // });
+      // if (queriedDispatched) {
+      //   logger.debug(
+      //     `the message %s already relayed to %s (queried by indexer dispatched event)`,
+      //     currentMessageIndex,
+      //     super.targetName,
+      //     super.meta('ormpipe-relay', ['relayer:relay'])
+      //   );
+      //   return;
+      // }
+
+      logger.info(
+        `new message accepted %s in %s(%s) prepared`,
+        nextUnRelayMessageAccepted.msgHash,
+        nextUnRelayMessageAccepted.blockNumber,
+        super.sourceName,
         super.meta('ormpipe-relay', ['relayer:relay'])
       );
-      return;
+
+      return nextUnRelayMessageAccepted;
     }
-    // const queriedDispatched = await this.targetIndexerOrmp.inspectMessageDispatched({
-    //   msgHash: nextUnRelayMessageAccepted.msgHash,
-    // });
-    // if (queriedDispatched) {
-    //   logger.debug(
-    //     `the message %s already relayed to %s (queried by indexer dispatched event)`,
-    //     currentMessageIndex,
-    //     super.targetName,
-    //     super.meta('ormpipe-relay', ['relayer:relay'])
-    //   );
-    //   return;
-    // }
-
-    logger.info(
-      `new message accepted %s in %s(%s) prepared`,
-      nextUnRelayMessageAccepted.msgHash,
-      nextUnRelayMessageAccepted.blockNumber,
-      super.sourceName,
-      super.meta('ormpipe-relay', ['relayer:relay'])
-    );
-
-    return nextUnRelayMessageAccepted;
   }
 
   private async run() {
@@ -180,19 +194,19 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return;
     }
 
-    const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.inspectAssigned({
-      msgHash: sourceNextMessageAccepted.msgHash,
-    });
-    if (!sourceNextRelayerAssigned) {
-      logger.debug(
-        `found new message %s(%s), but not assigned to myself, skip this message`,
-        sourceNextMessageAccepted.msgHash,
-        sourceNextMessageAccepted.message_index,
-        super.meta('ormpipe-relay', ['relayer:relay'])
-      );
-      await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
-      return;
-    }
+    // const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.inspectAssigned({
+    //   msgHash: sourceNextMessageAccepted.msgHash,
+    // });
+    // if (!sourceNextRelayerAssigned) {
+    //   logger.debug(
+    //     `found new message %s(%s), but not assigned to myself, skip this message`,
+    //     sourceNextMessageAccepted.msgHash,
+    //     sourceNextMessageAccepted.message_index,
+    //     super.meta('ormpipe-relay', ['relayer:relay'])
+    //   );
+    //   await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
+    //   return;
+    // }
 
 
     const message: OrmpProtocolMessage = {
@@ -202,6 +216,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       from: sourceNextMessageAccepted.message_from,
       toChainId: +sourceNextMessageAccepted.message_toChainId,
       to: sourceNextMessageAccepted.message_to,
+      gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + BigInt('0'),
       encoded: sourceNextMessageAccepted.message_encoded,
     };
 
@@ -218,9 +233,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     const messageProof = imt.getSingleHexProof(message.index);
 
     const abiCoder = AbiCoder.defaultAbiCoder();
-    const params = sourceNextRelayerAssigned.params;
-    const decodedGasLimit = abiCoder.decode(['uint'], params);
-    const gasLimit = decodedGasLimit[0];
+    // const params = sourceNextRelayerAssigned.params;
+    // const decodedGasLimit = abiCoder.decode(['uint'], params);
+    // const gasLimit = decodedGasLimit[0];
 
     const encodedProof = abiCoder.encode([
         'tuple(uint blockNumber, uint messageIndex, bytes32[32] messageProof)'
@@ -240,7 +255,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     // console.log(messageProof);
     //
     // console.log('------ relay');
-    const targetTxRelayMessage = await this.targetRelayerClient.relay(message, encodedProof, gasLimit);
+    const targetTxRelayMessage = await this.targetRelayerClient.relay(message, encodedProof);
     logger.info(
       'message relayed to %s {tx: %s, block: %s}',
       super.targetName,

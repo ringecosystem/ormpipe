@@ -77,6 +77,7 @@ export interface OrmpMessageAccepted extends BaseGraphEntity {
   message_toChainId: string
   message_to: string
   message_encoded: string
+  message_gasLimit: string
 }
 
 export interface OrmpMessageDispatched extends BaseGraphEntity {

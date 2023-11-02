@@ -72,7 +72,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
     const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
-    if (cachedLastDeliveriedIndex) {
+    if (cachedLastDeliveriedIndex != undefined) {
       // query cached message count, start from last deliverd index + message count
       const cachedMarkAggregatedMessageCount = await super.storage.get(
         OracleRelay.CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT
