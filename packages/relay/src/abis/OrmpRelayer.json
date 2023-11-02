@@ -154,8 +154,9 @@
     "inputs": [
       { "internalType": "uint256", "name": "toChainId", "type": "uint256" },
       { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "uint256", "name": "size", "type": "uint256" },
-      { "internalType": "bytes", "name": "params", "type": "bytes" }
+      { "internalType": "uint256", "name": "gasLimit", "type": "uint256" },
+      { "internalType": "bytes", "name": "encoded", "type": "bytes" },
+      { "internalType": "bytes", "name": "", "type": "bytes" }
     ],
     "name": "fee",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
@@ -206,14 +207,14 @@
           { "internalType": "address", "name": "from", "type": "address" },
           { "internalType": "uint256", "name": "toChainId", "type": "uint256" },
           { "internalType": "address", "name": "to", "type": "address" },
+          { "internalType": "uint256", "name": "gasLimit", "type": "uint256" },
           { "internalType": "bytes", "name": "encoded", "type": "bytes" }
         ],
         "internalType": "struct Message",
         "name": "message",
         "type": "tuple"
       },
-      { "internalType": "bytes", "name": "proof", "type": "bytes" },
-      { "internalType": "uint256", "name": "gasLimit", "type": "uint256" }
+      { "internalType": "bytes", "name": "proof", "type": "bytes" }
     ],
     "name": "relay",
     "outputs": [],

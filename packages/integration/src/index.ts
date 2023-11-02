@@ -41,17 +41,21 @@ export class OrmpIntegrationTestProgram {
     const { wallet, contractOrmp } = this.lifecycle;
     const message = this._randomMessage();
     const params = '0x0000000000000000000000000000000000000000000000000000000000000001';
+    const gasLimit = 10000;
     const fee = await contractOrmp['fee'](
-      this.config.targetChainId,
-      wallet.getAddress(),
-      message,
-      params,
+      this.config.targetChainId, // toChainId
+      wallet.getAddress(), // ua
+      gasLimit, // gasLimit
+      message, // encoded
+      params, // params
     );
     const tx = await contractOrmp['send'](
-      this.config.targetChainId,
-      wallet.getAddress(),
-      message,
-      params,
+      this.config.targetChainId, // toChainId
+      wallet.getAddress(), // to
+      gasLimit, // gasLimit
+      message, // encoded
+      wallet.getAddress(), // refund
+      params, // params
       {value: fee},
     );
     const resp = await tx.wait();

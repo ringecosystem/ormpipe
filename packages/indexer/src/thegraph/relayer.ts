@@ -9,7 +9,7 @@ export class ThegraphIndexerRelayer extends GraphCommon {
 
   public async allAssignedList(): Promise<OrmpRelayerAssigned[]> {
     const query = `
-    query QueryRelayerAssignedList($skip: BigInt!) {
+    query QueryRelayerAssignedList($skip: Int!) {
       ormpRelayerAssigneds(
         skip: $skip
         orderBy: seq

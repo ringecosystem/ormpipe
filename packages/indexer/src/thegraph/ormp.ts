@@ -43,6 +43,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_from
         message_toChainId
         message_to
+        message_gasLimit
         message_encoded
       }
     }
@@ -74,6 +75,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_from
         message_toChainId
         message_to
+        message_gasLimit
         message_encoded
       }
     }
@@ -93,7 +95,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async messageHashes(variables: QueryMessageHashes): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($skip: BigInt!, $messageIndex: BigInt!) {
+    query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
         skip: $skip
         orderBy: message_index
@@ -153,6 +155,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_from
         message_toChainId
         message_to
+        message_gasLimit
         message_encoded
       }
     }
@@ -186,7 +189,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async queryPreparedMessageAcceptedHashes(variables: QueryPreparedMessages): Promise<string[]> {
     const query = `
-    query QueryNextMessageAccepted($skip: BigInt!, $messageIndex: BigInt!) {
+    query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
         skip: $skip
         orderBy: message_index
@@ -218,6 +221,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
       }
       const hashes = parts.map(item => item.msgHash);
       rets.push(...hashes);
+      skip += length;
     }
   }
 

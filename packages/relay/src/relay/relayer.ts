@@ -194,19 +194,19 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return;
     }
 
-    const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.inspectAssigned({
-      msgHash: sourceNextMessageAccepted.msgHash,
-    });
-    if (!sourceNextRelayerAssigned) {
-      logger.debug(
-        `found new message %s(%s), but not assigned to myself, skip this message`,
-        sourceNextMessageAccepted.msgHash,
-        sourceNextMessageAccepted.message_index,
-        super.meta('ormpipe-relay', ['relayer:relay'])
-      );
-      await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
-      return;
-    }
+    // const sourceNextRelayerAssigned = await this.sourceIndexerRelayer.inspectAssigned({
+    //   msgHash: sourceNextMessageAccepted.msgHash,
+    // });
+    // if (!sourceNextRelayerAssigned) {
+    //   logger.debug(
+    //     `found new message %s(%s), but not assigned to myself, skip this message`,
+    //     sourceNextMessageAccepted.msgHash,
+    //     sourceNextMessageAccepted.message_index,
+    //     super.meta('ormpipe-relay', ['relayer:relay'])
+    //   );
+    //   await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
+    //   return;
+    // }
 
 
     const message: OrmpProtocolMessage = {
@@ -216,6 +216,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       from: sourceNextMessageAccepted.message_from,
       toChainId: +sourceNextMessageAccepted.message_toChainId,
       to: sourceNextMessageAccepted.message_to,
+      gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + BigInt('0'),
       encoded: sourceNextMessageAccepted.message_encoded,
     };
 
@@ -232,9 +233,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     const messageProof = imt.getSingleHexProof(message.index);
 
     const abiCoder = AbiCoder.defaultAbiCoder();
-    const params = sourceNextRelayerAssigned.params;
-    const decodedGasLimit = abiCoder.decode(['uint'], params);
-    const gasLimit = decodedGasLimit[0];
+    // const params = sourceNextRelayerAssigned.params;
+    // const decodedGasLimit = abiCoder.decode(['uint'], params);
+    // const gasLimit = decodedGasLimit[0];
 
     const encodedProof = abiCoder.encode([
         'tuple(uint blockNumber, uint messageIndex, bytes32[32] messageProof)'
@@ -254,7 +255,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     // console.log(messageProof);
     //
     // console.log('------ relay');
-    const targetTxRelayMessage = await this.targetRelayerClient.relay(message, encodedProof, gasLimit);
+    const targetTxRelayMessage = await this.targetRelayerClient.relay(message, encodedProof);
     logger.info(
       'message relayed to %s {tx: %s, block: %s}',
       super.targetName,
