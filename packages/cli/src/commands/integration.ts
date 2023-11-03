@@ -27,7 +27,7 @@ export default class Integration extends Command {
       required: true,
       description: 'ormp contract address',
       env: 'ORMPIPE_ADDRESS_ORMP',
-      default: '0x0034607daf9c1dc6628f6e09E81bB232B6603A89',
+      default: '0x009D223Aad560e72282db9c0438Ef1ef2bf7703D',
     }),
     'msgline-address': Flags.string({
       required: true,
