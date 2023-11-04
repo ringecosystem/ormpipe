@@ -32,5 +32,6 @@ export interface RelayerLifecycle extends BaseLifecycle {
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerSubapi: ThegraphIndexerSubapi,
+  sourceRelayerClient: RelayerContractClient,
   targetRelayerClient: RelayerContractClient,
 }
