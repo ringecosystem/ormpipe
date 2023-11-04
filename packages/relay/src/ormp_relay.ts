@@ -222,6 +222,7 @@ export class OrmpRelay {
       sourceIndexerRelayer: sourceIndexer.relayer(),
       targetIndexerOrmp: targetIndexer.ormp(),
       targetIndexerSubapi: targetIndexer.subapi(),
+      sourceRelayerClient: baseLifecycle.sourceClient.relayer(config.sourceAddressRelayer),
       targetRelayerClient: baseLifecycle.targetClient.relayer(config.targetAddressRelayer),
     };
   }
