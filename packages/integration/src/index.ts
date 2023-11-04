@@ -3,12 +3,17 @@ import {ethers} from "ethers";
 
 const abiOrmp = require('./abis/Ormp.json');
 const abiMsgline = require('./abis/Msgline.json');
+const abiOracle = require('./abis/OrmpOracle.json');
+const abiRelayer = require('./abis/OrmpRelayer.json');
 
 interface Lifecycle {
+  config: IntegrationTestConfig,
   evm: ethers.JsonRpcProvider,
   wallet: ethers.Wallet,
   contractOrmp: ethers.Contract,
   contractMsgline: ethers.Contract,
+  contractOracle: ethers.Contract,
+  contractRelayer: ethers.Contract,
 }
 
 export class OrmpIntegrationTestProgram {
@@ -20,13 +25,18 @@ export class OrmpIntegrationTestProgram {
   ) {
     const evm = new ethers.JsonRpcProvider(config.endpoint);
     const wallet = new ethers.Wallet(config.signer, evm);
-    const contractOrmp = new ethers.Contract(config.ormpAddress, abiOrmp, wallet);
-    const contractMsgline = new ethers.Contract(config.msglineAddress, abiMsgline, wallet);
+    const contractOrmp = new ethers.Contract(config.addressOrmp, abiOrmp, wallet);
+    const contractMsgline = new ethers.Contract(config.addressMsgline, abiMsgline, wallet);
+    const contractOracle = new ethers.Contract(config.addressOracle, abiOracle, wallet);
+    const contractRelayer = new ethers.Contract(config.addressRelayer, abiRelayer, wallet);
     this.lifecycle = {
+      config,
       evm,
       wallet,
       contractOrmp,
-      contractMsgline: contractMsgline,
+      contractMsgline,
+      contractOracle,
+      contractRelayer,
     };
   }
 
@@ -36,9 +46,41 @@ export class OrmpIntegrationTestProgram {
     return `0x${t}`
   }
 
+
+  private async _withdraw() {
+    const {wallet, evm, contractOracle, contractRelayer} = this.lifecycle;
+
+    const balanceOfSender = await evm.getBalance(wallet.getAddress());
+    if (balanceOfSender > (100n * (10n ** 18n))) {
+      return;
+    }
+
+    const balanceOfOracle = await evm.getBalance(this.config.addressOracle);
+    const keepBalance = (2n * (10n ** 18n));
+
+    if (balanceOfOracle > (keepBalance * 2n)) {
+      const withdraw = balanceOfOracle - keepBalance;
+      const tx = await contractOracle['withdraw'](
+        wallet.getAddress(),
+        withdraw
+      );
+      await tx.wait();
+    }
+    const balanceOfRelayer = await evm.getBalance(this.config.addressRelayer);
+    if (balanceOfRelayer > (keepBalance * 2n)) {
+      const withdraw = balanceOfRelayer - keepBalance;
+      const tx = await contractRelayer['withdraw'](
+        wallet.getAddress(),
+        withdraw
+      );
+      await tx.wait();
+    }
+  }
+
   // send test message
   public async sendOrmpMessage() {
-    const { wallet, contractOrmp } = this.lifecycle;
+    await this._withdraw();
+    const {wallet, contractOrmp} = this.lifecycle;
     const message = this._randomMessage();
     const params = '0x0000000000000000000000000000000000000000000000000000000000000001';
     const gasLimit = 10000;
@@ -64,7 +106,7 @@ export class OrmpIntegrationTestProgram {
 
 
   public async sendMsglineMessage() {
-    const { wallet, contractMsgline } = this.lifecycle;
+    const {wallet, contractMsgline} = this.lifecycle;
     const message = this._randomMessage();
     const params = '0x00000000000000000000000000000000000000000000000000000000000493e0';
     const fee = await contractMsgline['fee'](
