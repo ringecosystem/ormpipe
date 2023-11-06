@@ -198,7 +198,6 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return;
     }
 
-    const baseGas = await this.sourceRelayerClient.configOf(targetNetwork.chainId);
     const message: OrmpProtocolMessage = {
       channel: sourceNextMessageAccepted.message_channel,
       index: +sourceNextMessageAccepted.message_index,
@@ -206,7 +205,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       from: sourceNextMessageAccepted.message_from,
       toChainId: +sourceNextMessageAccepted.message_toChainId,
       to: sourceNextMessageAccepted.message_to,
-      gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
+      gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit),
       encoded: sourceNextMessageAccepted.message_encoded,
     };
 
@@ -245,7 +244,12 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     // console.log(messageProof);
     //
     // console.log('------ relay');
-    const targetTxRelayMessage = await this.targetRelayerClient.relay(message, encodedProof);
+    const baseGas = await this.sourceRelayerClient.configOf(targetNetwork.chainId);
+    const targetTxRelayMessage = await this.targetRelayerClient.relay(
+      message,
+      encodedProof,
+      BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
+    );
     logger.info(
       'message relayed to %s {tx: %s, block: %s}',
       super.targetName,

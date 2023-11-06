@@ -26,20 +26,23 @@ export class RelayerContractClient {
     this.contract = new ethers.Contract(config.address, abi, wallet);
   }
 
-  public async relay(message: OrmpProtocolMessage, proof: string): Promise<TransactionResponse> {
+  public async relay(message: OrmpProtocolMessage, proof: string, gasLimit: bigint): Promise<TransactionResponse> {
     logger.debug(
       'call %s -> relayer.relay',
       this.config.chainName,
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
 
-    const estimatedGas = await this.contract['relay'].estimateGas(
-      message,
-      proof,
-    );
+    // const estimatedGas = await this.contract['relay'].estimateGas(
+    //   message,
+    //   proof,
+    // );
     const tx = await this.contract['relay'](
       message,
       proof,
+      // {
+      //   gasLimit,
+      // }
     );
     return await tx.wait();
   }
