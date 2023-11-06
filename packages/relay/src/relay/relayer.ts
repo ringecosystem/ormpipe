@@ -15,6 +15,7 @@ import chalk = require('chalk');
 export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
   private static CK_RELAYER_RELAIED = 'ormpipe.relayer.relaied';
+  private static CK_RELAYER_SKIPPED=  'ormpipe.relayer.skipped';
 
   constructor(lifecycle: RelayerLifecycle) {
     super(lifecycle);
@@ -250,6 +251,15 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       encodedProof,
       BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
     );
+    if (!targetTxRelayMessage) {
+      logger.warn(
+        'gas increase rate is too high, skip message %s in %s',
+        message.index,
+        super.sourceName,
+        super.meta('ormpipe-relay', ['relayer:relay'])
+      );
+      return;
+    }
     logger.info(
       'message relayed to %s {tx: %s, block: %s}',
       super.targetName,
