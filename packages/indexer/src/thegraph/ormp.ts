@@ -15,7 +15,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async inspectMessageAccepted(variables: QueryOrmpProtocolMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
     if (!variables.msgHash && !variables.root && variables.messageIndex == undefined)
-      throw new Error('missing msghash or root');
+      throw new Error('missing msghash or root or messageIndex');
     const query = `
     query QueryMessageAccepted(
       ${variables.msgHash ? '$msgHash: Bytes!' : ''}
