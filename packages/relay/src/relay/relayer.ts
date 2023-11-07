@@ -335,7 +335,7 @@ class SkippedIndexManager {
   }
 
   public async load(): Promise<number[]> {
-    const rawSkipped = await this.storage.get(this.key);
+    const rawSkipped: string | undefined = await this.storage.get(this.key);
     if (!rawSkipped)
       return [];
     return rawSkipped.split(',')
