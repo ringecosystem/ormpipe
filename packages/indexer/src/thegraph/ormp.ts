@@ -14,7 +14,7 @@ import {CollectionKit} from "../toolkit/collection";
 export class ThegraphIndexOrmp extends GraphCommon {
 
   public async inspectMessageAccepted(variables: QueryOrmpProtocolMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
-    if (!variables.msgHash && !variables.root)
+    if (!variables.msgHash && !variables.root && variables.messageIndex == undefined)
       throw new Error('missing msghash or root');
     const query = `
     query QueryMessageAccepted(
