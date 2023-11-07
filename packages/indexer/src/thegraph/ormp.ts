@@ -1,7 +1,7 @@
 import {
   OrmpMessageAccepted,
   OrmpMessageDispatched,
-  QueryChannelMessageAccepted,
+  QueryOrmpProtocolMessageAccepted,
   QueryInspectMessageDispatched,
   QueryMessageAcceptedListByHashes,
   QueryMessageHashes,
@@ -13,13 +13,14 @@ import {CollectionKit} from "../toolkit/collection";
 
 export class ThegraphIndexOrmp extends GraphCommon {
 
-  public async inspectMessageAccepted(variables: QueryChannelMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
+  public async inspectMessageAccepted(variables: QueryOrmpProtocolMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
     if (!variables.msgHash && !variables.root)
       throw new Error('missing msghash or root');
     const query = `
     query QueryMessageAccepted(
       ${variables.msgHash ? '$msgHash: Bytes!' : ''}
       ${variables.root ? '$root: Bytes!' : ''}
+      ${variables.messageIndex ? '$messageIndex: BigInt!' : ''}
     ) {
       ormpProtocolMessageAccepteds(
         first: 1
@@ -28,6 +29,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         where: {
           ${variables.msgHash ? 'msgHash: $msgHash' : ''}
           ${variables.root ? 'root: $root' : ''}
+          ${variables.messageIndex ? 'message_index: $messageIndex' : ''}
         }
       ) {
         id
