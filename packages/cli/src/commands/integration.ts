@@ -59,6 +59,7 @@ export default class Integration extends Command {
       required: true,
       description: 'integration test name',
       options: [
+        'withdraw',
         'send-message',
         'send-message-ormp',
         'send-message-msgline',
@@ -75,6 +76,9 @@ export default class Integration extends Command {
 
     const name = args.name;
     switch (name) {
+      case 'withdraw':
+        await itp.withdraw({force: true});
+        break;
       case 'send-message':
       case 'send-message-ormp':
         await itp.sendOrmpMessage();

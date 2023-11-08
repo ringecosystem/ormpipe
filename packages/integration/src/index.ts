@@ -47,39 +47,44 @@ export class OrmpIntegrationTestProgram {
   }
 
 
-  private async _withdraw() {
+  public async withdraw(options?: {force?: boolean}) {
     const {wallet, evm, contractOracle, contractRelayer} = this.lifecycle;
 
-    const balanceOfSender = await evm.getBalance(wallet.getAddress());
-    if (balanceOfSender > (100n * (10n ** 18n))) {
-      return;
+    const force = options?.force ?? false;
+    if (!force) {
+      const balanceOfSender = await evm.getBalance(wallet.getAddress());
+      if (balanceOfSender > (100n * (10n ** 18n))) {
+        return;
+      }
     }
 
     const balanceOfOracle = await evm.getBalance(this.config.addressOracle);
     const keepBalance = (2n * (10n ** 18n));
 
-    if (balanceOfOracle > (keepBalance * 2n)) {
+    if (balanceOfOracle > (keepBalance * 2n) || (force && balanceOfOracle > keepBalance)) {
       const withdraw = balanceOfOracle - keepBalance;
       const tx = await contractOracle['withdraw'](
         wallet.getAddress(),
         withdraw
       );
-      await tx.wait();
+      const resp = await tx.wait();
+      console.log(`withdraw (oracle): ${resp.hash}`);
     }
     const balanceOfRelayer = await evm.getBalance(this.config.addressRelayer);
-    if (balanceOfRelayer > (keepBalance * 2n)) {
+    if (balanceOfRelayer > (keepBalance * 2n) || (force && balanceOfRelayer > keepBalance)) {
       const withdraw = balanceOfRelayer - keepBalance;
       const tx = await contractRelayer['withdraw'](
         wallet.getAddress(),
         withdraw
       );
-      await tx.wait();
+      const resp = await tx.wait();
+      console.log(`withdraw (relayer): ${resp.hash}`);
     }
   }
 
   // send test message
   public async sendOrmpMessage() {
-    await this._withdraw();
+    await this.withdraw();
     const {wallet, contractOrmp} = this.lifecycle;
     const message = this._randomMessage();
     const params = '0x0000000000000000000000000000000000000000000000000000000000000001';
@@ -101,7 +106,7 @@ export class OrmpIntegrationTestProgram {
       {value: fee},
     );
     const resp = await tx.wait();
-    console.log(resp.hash);
+    console.log(`send-ormp: ${resp.hash}`);
   }
 
 
@@ -123,7 +128,7 @@ export class OrmpIntegrationTestProgram {
       {value: fee},
     );
     const resp = await tx.wait();
-    console.log(resp.hash);
+    console.log(`send-msgline: ${resp.hash}`);
   }
 
 }
