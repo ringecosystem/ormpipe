@@ -27,19 +27,19 @@ export default class Integration extends Command {
       required: true,
       description: 'ormp contract address',
       env: 'ORMPIPE_ADDRESS_ORMP',
-      default: '0x009D223Aad560e72282db9c0438Ef1ef2bf7703D',
+      default: '0x00000000001523057a05d6293C1e5171eE33eE0A',
     }),
     'address-oracle': Flags.string({
       required: true,
       description: 'ormp oracle address',
       env: 'ORMPIPE_ADDRESS_ORACLE',
-      default: '0x00BD655DDfA7aFeF4BB109FE1F938724527B49D8',
+      default: '0x0000000000ba03146Cc235509E802873D418a6bc',
     }),
     'address-relayer': Flags.string({
       required: true,
       description: 'ormp relayer address',
       env: 'ORMPIPE_ADDRESS_RELAYER',
-      default: '0x003605167cd4C36063a7B63e604497e623Bb8B10',
+      default: '0x0000000000808fE9bDCc1d180EfbF5C53552a6b1',
     }),
     'address-msgline': Flags.string({
       required: true,
@@ -59,6 +59,7 @@ export default class Integration extends Command {
       required: true,
       description: 'integration test name',
       options: [
+        'withdraw',
         'send-message',
         'send-message-ormp',
         'send-message-msgline',
@@ -75,6 +76,9 @@ export default class Integration extends Command {
 
     const name = args.name;
     switch (name) {
+      case 'withdraw':
+        await itp.withdraw({force: true});
+        break;
       case 'send-message':
       case 'send-message-ormp':
         await itp.sendOrmpMessage();

@@ -178,7 +178,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     logger.debug('start relayer relay', super.meta('ormpipe-relay', ['relayer:relay']));
 
     logger.debug(
-      `query last message dispatched from ${super.targetName} indexer-channel contract`,
+      `query last message dispatched from ${super.targetName}`,
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
