@@ -149,7 +149,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     logger.debug('start oracle delivery', super.meta('ormpipe-relay', ['oracle:delivery']));
     // delivery start block
     logger.debug(
-      `query last message dispatched from ${super.targetName} indexer-channel contract`,
+      `query last message dispatched from ${super.targetName}`,
       super.meta('ormpipe-relay', ['oracle:delivery'])
     );
     const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted();
