@@ -45,7 +45,7 @@ export default class Integration extends Command {
       required: true,
       description: 'message line contract address',
       env: 'ORMPIPE_ADDRESS_MSGLINE',
-      default: '0x000c61ca18583c9504691f43ea43c2c638772487',
+      default: '0x0000000000D2de3e2444926c4577b0A59F1DD8BC',
     }),
     'target-chain-id': Flags.integer({
       required: true,
