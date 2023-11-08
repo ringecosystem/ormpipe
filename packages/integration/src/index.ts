@@ -1,5 +1,6 @@
 import {IntegrationTestConfig} from "./types/config";
 import {ethers} from "ethers";
+import axios, {AxiosResponse} from "axios";
 
 const abiOrmp = require('./abis/Ormp.json');
 const abiMsgline = require('./abis/Msgline.json');
@@ -111,18 +112,66 @@ export class OrmpIntegrationTestProgram {
 
 
   public async sendMsglineMessage() {
-    const {wallet, contractMsgline} = this.lifecycle;
-    const message = this._randomMessage();
-    const params = '0x00000000000000000000000000000000000000000000000000000000000493e0';
-    const fee = await contractMsgline['fee'](
-      this.config.targetChainId,
-      wallet.getAddress(),
-      message,
-      params,
-    );
+    await this.withdraw();
+    const {wallet, evm, contractMsgline} = this.lifecycle;
+
+    const enableRandomMessage = (+Math.random().toString().replace('0.', '')) % 2;
+    const network = await evm.getNetwork();
+    const accountAddress = await wallet.getAddress();
+
+    let message;
+    let toAddress = accountAddress;
+    if (enableRandomMessage) {
+      message = this._randomMessage();
+    } else {
+      message = '0xd8e68172000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000';
+      const chainId = network.chainId;
+      if (chainId === 44n) {
+        switch (this.config.targetChainId) {
+          case 421614: // crab -> arbsep
+            toAddress = '0x1837ff30801f1793563451101350a5f5e14a0a1a';
+            break;
+        }
+      }
+      if (chainId === 421614n) {
+        switch (this.config.targetChainId) {
+          case 44: // crab -> arbsep
+            toAddress = '0x50d97aaf16afb178cb81bfa6910a33b18fa911e3';
+            break;
+        }
+      }
+    }
+
+    let msgportFee;
+    try {
+      const ofee = await axios.get(
+        'https://msgport-api.darwinia.network/ormp/fee',
+        // 'https://httpbin.org/get',
+        {
+          params: {
+            from_chain_id: network.chainId,
+            to_chain_id: this.config.targetChainId,
+            payload: message,
+            from_address: accountAddress,
+            to_address: accountAddress,
+            refund_address: accountAddress,
+          }
+        }
+      );
+      msgportFee = ofee.data.data;
+    } catch (e: any) {
+      const response: AxiosResponse = e.response;
+      throw new Error(`[msgport-api] [${response.data.code}] ${response.data.error}`);
+    }
+    if (msgportFee.code){
+      console.log('can not get fee from msgport api.', msgportFee);
+      return;
+    }
+    const {fee, params} = msgportFee;
+
     const tx = await contractMsgline['send'](
       this.config.targetChainId,
-      wallet.getAddress(),
+      toAddress,
       message,
       params,
       {value: fee},

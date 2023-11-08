@@ -11,10 +11,12 @@ import {logger} from "@darwinia/ormpipe-logger";
 import {IncrementalMerkleTree} from '../helper/imt'
 import {AbiCoder} from "ethers";
 import chalk = require('chalk');
+import {RelayStorage} from "../helper/storage";
 
 export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
   private static CK_RELAYER_RELAIED = 'ormpipe.relayer.relaied';
+  private static CK_RELAYER_SKIPPED=  'ormpipe.relayer.skipped';
 
   constructor(lifecycle: RelayerLifecycle) {
     super(lifecycle);
@@ -46,7 +48,8 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
   public async start() {
     try {
-      await this.run();
+      await this.relay();
+      await this.retry();
     } catch (e: any) {
       logger.error(e, super.meta('ormpipe-relay', ['relayer:relay']));
     }
@@ -116,8 +119,8 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         return;
       }
       const nextUnRelayMessageAccepted = unRelayMessageAcceptedList[unRelayedIndex];
-
       const currentMessageIndex = nextUnRelayMessageAccepted.message_index;
+
       logger.info(
         'sync status [%s,%s] (%s)',
         currentMessageIndex,
@@ -125,6 +128,16 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         super.sourceName,
         super.meta('ormpipe-relay', ['relayer:relay']),
       );
+
+      const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
+      if (await sim.isSkipped(+currentMessageIndex)) {
+        logger.debug(
+          `the message %s skipped, will retry later`,
+          currentMessageIndex,
+          super.meta('ormpipe-relay', ['relayer:relay'])
+        );
+        continue;
+      }
 
       const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
       if (currentMessageIndex == cachedLastDeliveriedIndex) {
@@ -161,7 +174,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     }
   }
 
-  private async run() {
+  private async relay() {
     logger.debug('start relayer relay', super.meta('ormpipe-relay', ['relayer:relay']));
 
     logger.debug(
@@ -177,7 +190,38 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       );
       return;
     }
+    await this._relay(sourceNextMessageAccepted);
+  }
 
+  private async retry() {
+    logger.debug('retry relayer relay', super.meta('ormpipe-relay', ['relayer:relay']));
+    const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
+    const skippedList = await sim.load();
+    if (!skippedList.length) {
+      logger.debug(
+        'no more skipped message',
+        super.meta('ormpipe-relay', ['relayer:retry'])
+      );
+      return;
+    }
+    for (const skipped of skippedList) {
+      const sourceNextMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+        messageIndex: +skipped,
+      });
+      if (!sourceNextMessageAccepted) {
+        continue;
+      }
+      logger.debug(
+        'retry to relay message %s',
+        skipped,
+        super.meta('ormpipe-relay', ['relayer:retry'])
+      );
+      await this._relay(sourceNextMessageAccepted);
+    }
+  }
+
+
+  private async _relay(sourceNextMessageAccepted: OrmpMessageAccepted) {
     const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
     const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
     if (
@@ -250,6 +294,19 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       encodedProof,
       BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
     );
+
+    const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
+
+    if (!targetTxRelayMessage) {
+      logger.warn(
+        'gas increase rate is too high, skip message %s in %s',
+        message.index,
+        super.sourceName,
+        super.meta('ormpipe-relay', ['relayer:relay'])
+      );
+      await sim.put(message.index);
+      return;
+    }
     logger.info(
       'message relayed to %s {tx: %s, block: %s}',
       super.targetName,
@@ -258,7 +315,49 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
+    await sim.remove(message.index);
     await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, message.index);
   }
 
 }
+
+
+class SkippedIndexManager {
+  constructor(
+    private storage: RelayStorage,
+    private key: string
+  ) {
+  }
+
+  private async write(skippedList: number[]) {
+    const rawSkipped = skippedList.join(',');
+    await this.storage.put(this.key, rawSkipped);
+  }
+
+  public async load(): Promise<number[]> {
+    const rawSkipped: string | undefined = await this.storage.get(this.key);
+    if (!rawSkipped)
+      return [];
+    return rawSkipped.split(',')
+      .map(item => +item);
+  }
+
+  public async remove(index: number) {
+    const skippedList = await this.load();
+    const newSkippedList = skippedList.filter(item => item != index);
+    await this.write(newSkippedList);
+  }
+
+  public async put(index: number) {
+    await this.remove(index);
+    const skippedList = await this.load();
+    const newSkippedList = [...skippedList, index];
+    await this.write(newSkippedList);
+  }
+
+  public async isSkipped(index: number): Promise<boolean> {
+    const skippedList = await this.load();
+    return skippedList.indexOf(index) > -1;
+  }
+}
+

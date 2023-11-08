@@ -35,9 +35,10 @@ export interface QueryNextAirnodeCompleted {
   beaconId: string
 }
 
-export interface QueryChannelMessageAccepted {
+export interface QueryOrmpProtocolMessageAccepted {
   msgHash?: string
   root?: string
+  messageIndex?: number
 }
 
 export interface QueryInspectMessageDispatched {
