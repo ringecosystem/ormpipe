@@ -1,6 +1,6 @@
 {
   "name": "@darwinia/ormpipe-logger",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "ormpipe relay",
   "main": "dist/index.js",
   "author": "Darwinia Netowrk",
