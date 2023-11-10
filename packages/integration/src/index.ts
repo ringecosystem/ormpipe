@@ -115,7 +115,8 @@ export class OrmpIntegrationTestProgram {
     await this.withdraw();
     const {wallet, evm, contractMsgline} = this.lifecycle;
 
-    const enableRandomMessage = (+Math.random().toString().replace('0.', '')) % 2;
+    // const enableRandomMessage = (+Math.random().toString().replace('0.', '')) % 2;
+    const enableRandomMessage = 1;
     const network = await evm.getNetwork();
     const accountAddress = await wallet.getAddress();
 
