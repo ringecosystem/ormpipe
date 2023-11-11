@@ -209,6 +209,11 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
         messageIndex: +skipped,
       });
       if (!sourceNextMessageAccepted) {
+        logger.debug(
+          'not found message accepted by skipped message index %s',
+          skipped,
+          super.meta('ormpipe-relay', ['relayer:retry'])
+        );
         continue;
       }
       logger.debug(
