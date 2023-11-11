@@ -20,7 +20,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     query QueryMessageAccepted(
       ${variables.msgHash ? '$msgHash: Bytes!' : ''}
       ${variables.root ? '$root: Bytes!' : ''}
-      ${variables.messageIndex ? '$messageIndex: BigInt!' : ''}
+      ${variables.messageIndex != undefined ? '$messageIndex: BigInt!' : ''}
     ) {
       ormpProtocolMessageAccepteds(
         first: 1
@@ -29,7 +29,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         where: {
           ${variables.msgHash ? 'msgHash: $msgHash' : ''}
           ${variables.root ? 'root: $root' : ''}
-          ${variables.messageIndex ? 'message_index: $messageIndex' : ''}
+          ${variables.messageIndex != undefined ? 'message_index: $messageIndex' : ''}
         }
       ) {
         id
