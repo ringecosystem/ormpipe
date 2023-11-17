@@ -1,6 +1,6 @@
 {
   "name": "@darwinia/ormpipe-relay",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "ormpipe relay",
   "main": "dist/index.js",
   "author": "Darwinia Netowrk",
@@ -19,7 +19,7 @@
   "dependencies": {
     "@chainsafe/ssz": "^0.9",
     "@darwinia/contracts-verify": "^1",
-    "@darwinia/ormpipe-indexer": "^0.0.6",
+    "@darwinia/ormpipe-indexer": "^0.0.7",
     "async": "^3",
     "cacache": "^18",
     "chalk": "^4",
