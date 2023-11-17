@@ -37,25 +37,25 @@ export class RelayerContractClient {
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
 
-    const estimatedGas = await this.contract['relay'].estimateGas(
-      message,
-      proof,
-    );
-    if (estimatedGas / gasLimit > 1.5) {
-      logger.debug(
-        'estimated gas large than provide gaslimit 50%, [%s, %s]',
-        estimatedGas,
-        gasLimit,
-        {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
-      );
-      return;
-    }
+    // const estimatedGas = await this.contract['relay'].estimateGas(
+    //   message,
+    //   proof,
+    // );
+    // if (estimatedGas / gasLimit > 1.5) {
+    //   logger.debug(
+    //     'estimated gas large than provide gaslimit 50%, [%s, %s]',
+    //     estimatedGas,
+    //     gasLimit,
+    //     {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
+    //   );
+    //   return;
+    // }
     const tx = await this.contract['relay'](
       message,
       proof,
-      // {
-      //   gasLimit,
-      // }
+      {
+        gasLimit,
+      }
     );
     return await tx.wait();
   }
