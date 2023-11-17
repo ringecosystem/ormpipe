@@ -1,6 +1,6 @@
 {
   "name": "@darwinia/ormpipe-indexer",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "ormpipe indexer",
   "main": "dist/index.js",
   "author": "Darwinia Netowrk",
@@ -17,7 +17,7 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@darwinia/ormpipe-logger": "^0.0.6",
+    "@darwinia/ormpipe-logger": "^0.0.7",
     "axios": "^1"
   },
   "devDependencies": {
