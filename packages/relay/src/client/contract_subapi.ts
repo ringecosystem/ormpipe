@@ -45,7 +45,7 @@ export class SubapiContractClient {
       requestFee,
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
-    const tx = await this.contract['requestFinalizedHash'](bcs, {
+    const tx = await this.contract['requestFinalizedHash'](chainId, bcs, {
       value: requestFee,
       gasLimit: 60n * 100000n,
     });
