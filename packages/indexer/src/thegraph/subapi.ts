@@ -6,7 +6,7 @@ import {
   SubapiBeaconBase,
   AirnodeBeaconCompletedDistruibution,
   AirnodeComplted,
-  QueryNextAirnodeCompleted
+  QueryNextAirnodeCompleted, QueryBeacons, QueryAirnodeCompletedDistribution
 } from "../types/graph";
 
 enum BeaconOperation {
@@ -22,39 +22,46 @@ interface BeaconSortable {
 
 export class ThegraphIndexerSubapi extends GraphCommon {
 
-  public async beacons(): Promise<SubapiBeacon[]> {
+  public async beacons(variables: QueryBeacons): Promise<SubapiBeacon[]> {
     const query = `
-    query QueryBeacons {
+    query QueryBeacons($chainId: BigInt!) {
       subapiAddBeacons(
         orderBy: blockNumber
         orderDirection: asc
+        where: {
+          chainId: $chainId
+        }
       ) {
         id
         blockNumber
         blockTimestamp
         transactionHash
 
+        chainId
         beaconId
         beacon_airnode
         beacon_endpointId
         beacon_sponsor
         beacon_sponsorWallet
-
       }
       subapiRemoveBeacons(
         orderBy: blockNumber
         orderDirection: asc
+        where: {
+          chainId: $chainId
+        }
       ) {
         id
         blockNumber
         blockTimestamp
         transactionHash
 
+        chainId
         beaconId
       }
     }
     `;
-    const gdata = await super.query({query});
+    const gdata = await super.query({query, variables});
     const addeds: SubapiBeacon[] = gdata.list('subapiAddBeacons');
     const removeds: SubapiBeaconBase[] = gdata.list('subapiRemoveBeacons');
     const beaconsSortables: BeaconSortable[] = [
@@ -90,12 +97,13 @@ export class ThegraphIndexerSubapi extends GraphCommon {
 
   public async lastAirnodeCompleted(variables: QueryNextAirnodeCompleted): Promise<AirnodeComplted | undefined> {
     const query = `
-    query QueryLastAirnodeCompleted($beaconId: Bytes!) {
+    query QueryLastAirnodeCompleted($chainId: BigInt!, $beaconId: Bytes!) {
       subapiAirnodeRrpCompleteds(
         first: 1
         orderBy: blockNumber
         orderDirection: desc
         where: {
+          chainId: $chainId
           beaconId: $beaconId
         }
       ) {
@@ -104,6 +112,7 @@ export class ThegraphIndexerSubapi extends GraphCommon {
         blockTimestamp
         transactionHash
 
+        chainId
         beaconId
         requestId
         data
@@ -113,10 +122,10 @@ export class ThegraphIndexerSubapi extends GraphCommon {
     return await super.single({query, variables, schema: 'subapiAirnodeRrpCompleteds'})
   }
 
-  public async beaconAirnodeCompletedDistribution(beacons: string[]): Promise<AirnodeBeaconCompletedDistruibution[]> {
+  public async beaconAirnodeCompletedDistribution(variables: QueryAirnodeCompletedDistribution): Promise<AirnodeBeaconCompletedDistruibution[]> {
     const completeds = [] as AirnodeBeaconCompletedDistruibution[];
-    for (const beaconId of beacons) {
-      const c = await this.lastAirnodeCompleted({beaconId});
+    for (const beaconId of variables.beacons) {
+      const c = await this.lastAirnodeCompleted({chainId: variables.chainId, beaconId});
       logger.debug(
         'queried completed events %s by %s',
         JSON.stringify(c),
@@ -141,6 +150,7 @@ export class ThegraphIndexerSubapi extends GraphCommon {
         blockTimestamp
         transactionHash
 
+        chainId
         ormpData_root
         ormpData_count
       }

@@ -17,20 +17,21 @@ export class SubapiContractClient {
     this.contract = new ethers.Contract(config.address, abi, wallet);
   }
 
-  public async getRequestFee(): Promise<bigint> {
+  public async getRequestFeeOf(chainId: number): Promise<bigint> {
     logger.debug(
       'call %s -> subapi.getRequestFee',
       this.config.chainName,
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
-    const resp = await this.contract['getRequestFee']();
+    const resp = await this.contract['getRequestFeeOf'](chainId);
     return resp[1];
   }
 
-  public async requestFinalizedHash(beacons: SubapiBeacon[]): Promise<TransactionResponse> {
-    const requestFee = await this.getRequestFee();
+  public async requestFinalizedHash(chainId: number, beacons: SubapiBeacon[]): Promise<TransactionResponse> {
+    const requestFee = await this.getRequestFeeOf(chainId);
     const bcs = beacons.map(item => {
       return {
+        chainId: item.chainId,
         airnode: item.beacon_airnode,
         endpointId: item.beacon_endpointId,
         sponsor: item.beacon_sponsor,
@@ -51,14 +52,14 @@ export class SubapiContractClient {
     return await tx.wait();
   }
 
-  public async aggregateBeacons(beaconIds: string[]): Promise<TransactionResponse> {
+  public async aggregateBeacons(chainId: number, beaconIds: string[]): Promise<TransactionResponse> {
     logger.debug(
       'call %s -> subapi.aggregateBeacons %s',
       this.config.chainName,
       chalk.gray(JSON.stringify(beaconIds)),
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
-    const tx = await this.contract['aggregateBeacons'](beaconIds);
+    const tx = await this.contract['aggregateBeacons'](chainId, beaconIds);
     return await tx.wait();
   }
 

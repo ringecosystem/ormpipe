@@ -7,6 +7,10 @@ export interface QueryGraph {
   variables?: Record<string, any>
 }
 
+export interface QueryBeacons {
+  chainId: number
+}
+
 export interface QueryNextRelayerAssigned {
   msgHash: string
 }
@@ -19,10 +23,6 @@ export interface QueryNextMessageAccepted {
   messageIndex: number
 }
 
-export interface QueryNextUndoMessageAccepted {
-  unrealyeds: OrmpMessageDispatched[]
-}
-
 export interface QueryMessageAcceptedListByHashes {
   msgHashes: string[]
 }
@@ -32,7 +32,13 @@ export interface QueryMessageHashes {
 }
 
 export interface QueryNextAirnodeCompleted {
+  chainId: number
   beaconId: string
+}
+
+export interface QueryAirnodeCompletedDistribution {
+  chainId: number
+  beacons: string[]
 }
 
 export interface QueryOrmpProtocolMessageAccepted {
@@ -87,6 +93,7 @@ export interface OrmpMessageDispatched extends BaseGraphEntity {
 }
 
 export interface SubapiBeaconBase extends BaseGraphEntity {
+  chainId: string
   beaconId: string
 }
 
@@ -108,6 +115,7 @@ export interface AirnodeBeaconCompletedDistruibution {
 }
 
 export interface AirnodeAggregatedMessageRoot {
+  chainId: number
   ormpData_root: string
   ormpData_count: string
 }

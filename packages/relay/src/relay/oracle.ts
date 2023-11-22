@@ -162,6 +162,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     }
     const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
     const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
+    const sourceChainId = Number(sourceNetwork.chainId);
     if (
       sourceNetwork.chainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
       targetNetwork.chainId.toString() != sourceNextMessageAccepted.message_toChainId
@@ -216,7 +217,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
-    const beacons = await this.targetIndexerSubapi.beacons();
+    const beacons = await this.targetIndexerSubapi.beacons({chainId: sourceChainId});
     logger.debug(
       'queried %s beacons from %s airnode-dapi contract, prepare to call %s (requestFinalizedHash)',
       beacons.length,
@@ -225,7 +226,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:delivery']),
     );
 
-    const targetTxRequestFinalizedHash = await this.targetSubapiClient.requestFinalizedHash(beacons);
+    const targetTxRequestFinalizedHash = await this.targetSubapiClient.requestFinalizedHash(sourceChainId, beacons);
     logger.info(
       'called %s airnode contract requestFinalizedHash {tx: %s, block: %s}, wait aggregate',
       super.targetName,
@@ -241,7 +242,9 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   private async aggregate() {
     logger.debug('start oracle aggregate', super.meta('ormpipe-relay', ['oracle:aggregate']));
 
-    const beacons = await this.targetIndexerSubapi.beacons();
+    const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
+    const sourceChainId = Number(sourceNetwork.chainId);
+    const beacons = await this.targetIndexerSubapi.beacons({chainId: sourceChainId});
     const countBeacons = beacons.length;
     const beaconIds = beacons.map(item => item.beaconId);
     logger.debug(
@@ -252,7 +255,10 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const distruibutions = await this.targetIndexerSubapi.beaconAirnodeCompletedDistribution(beaconIds);
+    const distruibutions = await this.targetIndexerSubapi.beaconAirnodeCompletedDistribution({
+      chainId: sourceChainId,
+      beacons: beaconIds,
+    });
     if (!distruibutions.length) {
       logger.warn(
         'not have anymore airnode completed events from %s',
@@ -324,7 +330,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const targetTxAggregateBeacons = await this.targetSubapiClient.aggregateBeacons(aggregateBeaconIds);
+    const targetTxAggregateBeacons = await this.targetSubapiClient.aggregateBeacons(sourceChainId, aggregateBeaconIds);
     logger.info(
       'aggregated beacons to %s subapi contract {tx: %s, block: %s}',
       super.targetName,
