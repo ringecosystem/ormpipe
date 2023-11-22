@@ -56,7 +56,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
   }
 
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
+    const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
+    const sourceChainId = Number(sourceNetwork.chainId);
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({chainId: sourceChainId});
     if (!lastAggregatedMessageRoot) {
       logger.debug(
         'not have any aggregated message from %s',
@@ -259,7 +261,8 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     };
 
 
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
+    const sourceChainId = Number(sourceNetwork.chainId);
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({chainId: sourceChainId});
     const lastAggreatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
       root: lastAggregatedMessageRoot!.ormpData_root,
     });

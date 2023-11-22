@@ -6,7 +6,7 @@ import {
   SubapiBeaconBase,
   AirnodeBeaconCompletedDistruibution,
   AirnodeComplted,
-  QueryNextAirnodeCompleted, QueryBeacons, QueryAirnodeCompletedDistribution
+  QueryNextAirnodeCompleted, QueryBeacons, QueryAirnodeCompletedDistribution, QueryLastAggregatedMessageRoot
 } from "../types/graph";
 
 enum BeaconOperation {
@@ -97,13 +97,12 @@ export class ThegraphIndexerSubapi extends GraphCommon {
 
   public async lastAirnodeCompleted(variables: QueryNextAirnodeCompleted): Promise<AirnodeComplted | undefined> {
     const query = `
-    query QueryLastAirnodeCompleted($chainId: BigInt!, $beaconId: Bytes!) {
+    query QueryLastAirnodeCompleted($beaconId: Bytes!) {
       subapiAirnodeRrpCompleteds(
         first: 1
         orderBy: blockNumber
         orderDirection: desc
         where: {
-          chainId: $chainId
           beaconId: $beaconId
         }
       ) {
@@ -112,7 +111,6 @@ export class ThegraphIndexerSubapi extends GraphCommon {
         blockTimestamp
         transactionHash
 
-        chainId
         beaconId
         requestId
         data
@@ -125,7 +123,7 @@ export class ThegraphIndexerSubapi extends GraphCommon {
   public async beaconAirnodeCompletedDistribution(variables: QueryAirnodeCompletedDistribution): Promise<AirnodeBeaconCompletedDistruibution[]> {
     const completeds = [] as AirnodeBeaconCompletedDistruibution[];
     for (const beaconId of variables.beacons) {
-      const c = await this.lastAirnodeCompleted({chainId: variables.chainId, beaconId});
+      const c = await this.lastAirnodeCompleted({beaconId});
       logger.debug(
         'queried completed events %s by %s',
         JSON.stringify(c),
@@ -137,13 +135,16 @@ export class ThegraphIndexerSubapi extends GraphCommon {
     return completeds;
   }
 
-  public async lastAggregatedMessageRoot(): Promise<AirnodeAggregatedMessageRoot | undefined> {
+  public async lastAggregatedMessageRoot(variables: QueryLastAggregatedMessageRoot): Promise<AirnodeAggregatedMessageRoot | undefined> {
     const query = `
-    query QueryLastAggregatedMessageRoot {
+    query QueryLastAggregatedMessageRoot($chainId: BigInt!) {
       subapiAggregatedORMPDatas(
         first: 1
         orderBy: blockNumber
         orderDirection: desc
+        where: {
+          chainId: $chainId
+        }
       ) {
         id
         blockNumber
@@ -156,7 +157,7 @@ export class ThegraphIndexerSubapi extends GraphCommon {
       }
     }
     `;
-    return await super.single({query, schema: 'subapiAggregatedORMPDatas'});
+    return await super.single({query, variables, schema: 'subapiAggregatedORMPDatas'});
   }
 
 }

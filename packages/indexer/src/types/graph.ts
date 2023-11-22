@@ -11,6 +11,10 @@ export interface QueryBeacons {
   chainId: number
 }
 
+export interface QueryLastAggregatedMessageRoot {
+  chainId: number
+}
+
 export interface QueryNextRelayerAssigned {
   msgHash: string
 }
@@ -32,12 +36,10 @@ export interface QueryMessageHashes {
 }
 
 export interface QueryNextAirnodeCompleted {
-  chainId: number
   beaconId: string
 }
 
 export interface QueryAirnodeCompletedDistribution {
-  chainId: number
   beacons: string[]
 }
 

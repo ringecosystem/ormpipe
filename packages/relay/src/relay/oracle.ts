@@ -256,7 +256,6 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     );
 
     const distruibutions = await this.targetIndexerSubapi.beaconAirnodeCompletedDistribution({
-      chainId: sourceChainId,
       beacons: beaconIds,
     });
     if (!distruibutions.length) {
@@ -309,7 +308,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       super.meta('ormpipe-relay', ['oracle:aggregate']),
     );
 
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({chainId: sourceChainId});
     if (lastAggregatedMessageRoot && lastAggregatedMessageRoot.ormpData_root == decodedCompletedMessageRoot) {
       logger.warn(
         'last completed data %s already aggregated (queried by completed events)',
