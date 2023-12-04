@@ -71,6 +71,9 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   }
 
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
+    const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
+    const targetChainId = Number(targetNetwork.chainId);
+
     const cachedLastDeliveriedIndex = await super.storage.get(OracleRelay.CK_ORACLE_DELIVERIED);
     if (cachedLastDeliveriedIndex != undefined) {
       // query cached message count, start from last deliverd index + message count
@@ -86,6 +89,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
       const sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
         messageIndex: nextMessageIndex,
+        toChainId: targetChainId,
       });
       if (!sourceNextMessageAccepted) {
         logger.debug(
@@ -127,7 +131,10 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
         msgHash: unRelayedMessagesQueriedFromTarget[0],
       });
     } else {
-      sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({messageIndex: -1});
+      sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
+        messageIndex: -1,
+        toChainId: targetChainId,
+      });
     }
     if (sourceNextMessageAccepted) {
       return sourceNextMessageAccepted;
@@ -148,10 +155,6 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
   private async delivery() {
     logger.debug('start oracle delivery', super.meta('ormpipe-relay', ['oracle:delivery']));
     // delivery start block
-    logger.debug(
-      `query last message dispatched from ${super.targetName}`,
-      super.meta('ormpipe-relay', ['oracle:delivery'])
-    );
     const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted();
     if (!sourceNextMessageAccepted) {
       logger.info(

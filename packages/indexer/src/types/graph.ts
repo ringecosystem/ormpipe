@@ -25,6 +25,7 @@ export interface QueryPreparedMessages {
 
 export interface QueryNextMessageAccepted {
   messageIndex: number
+  toChainId: number
 }
 
 export interface QueryMessageAcceptedListByHashes {

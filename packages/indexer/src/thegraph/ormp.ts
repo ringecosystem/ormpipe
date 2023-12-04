@@ -135,13 +135,14 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async nextMessageAccepted(variables: QueryNextMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
     const query = `
-    query QueryNextMessageAccepted($messageIndex: BigInt!) {
+    query QueryNextMessageAccepted($messageIndex: BigInt!, $toChainId: Int!) {
       ormpProtocolMessageAccepteds(
         first: 1
         orderBy: message_index
         orderDirection: asc
         where: {
           message_index_gt: $messageIndex
+          message_toChainId: $toChainId
         }
       ) {
         id
