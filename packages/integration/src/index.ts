@@ -67,7 +67,8 @@ export class OrmpIntegrationTestProgram {
       const withdraw = balanceOfOracle - keepBalance;
       const tx = await contractOracle['withdraw'](
         wallet.getAddress(),
-        withdraw
+        withdraw,
+        // {gasLimit: 25n*10000n},
       );
       const resp = await tx.wait();
       console.log(`withdraw (oracle): ${resp.hash}`);
@@ -78,7 +79,8 @@ export class OrmpIntegrationTestProgram {
       const withdraw = balanceOfRelayer - keepBalance;
       const tx = await contractRelayer['withdraw'](
         wallet.getAddress(),
-        withdraw
+        withdraw,
+        // {gasLimit: 25n*10000n},
       );
       const resp = await tx.wait();
       console.log(`withdraw (relayer): ${resp.hash}`);
