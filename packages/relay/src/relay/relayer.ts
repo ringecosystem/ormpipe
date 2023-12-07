@@ -80,7 +80,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return undefined;
     }
 
-    const pickedRelayerMessageAcceptedHashes = await this.sourceIndexerOrmp.pickRealyerMessageAcceptedHashes({
+    const pickedRelayerMessageAcceptedHashes = await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
       messageIndex: +lastAggreatedMessageAccepted.message_index,
       toChainId: this.targetChainId,
     });
@@ -261,6 +261,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     });
     const rawMsgHashes = await this.sourceIndexerOrmp.messageHashes({
       messageIndex: +lastAggreatedMessageAccepted!.message_index,
+      toChainId: this.targetChainId,
     });
     const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
     const imt = new IncrementalMerkleTree(msgHashes);

@@ -34,7 +34,7 @@ export interface QueryMessageAcceptedListByHashes {
   msgHashes: string[]
 }
 
-export interface QueryMessageHashes {
+export interface QueryMessageHashes extends QueryBasicMessageAccepted{
   messageIndex: number
 }
 

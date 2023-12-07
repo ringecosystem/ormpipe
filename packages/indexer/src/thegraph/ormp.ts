@@ -97,13 +97,14 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async messageHashes(variables: QueryMessageHashes): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!) {
+    query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!, $toChainId: Int!) {
       ormpProtocolMessageAccepteds(
         skip: $skip
         orderBy: message_index
         orderDirection: asc
         where: {
           message_index_lte: $messageIndex
+          message_toChainId: $toChainId
         }
       ) {
         message_index
@@ -166,7 +167,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
 
-  public async pickRealyerMessageAcceptedHashes(variables: QueryRelayerMessageAccepted): Promise<string[]> {
+  public async pickRelayerMessageAcceptedHashes(variables: QueryRelayerMessageAccepted): Promise<string[]> {
     const query = `
     query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!, $toChainId: Int!) {
       ormpProtocolMessageAccepteds(
@@ -174,9 +175,9 @@ export class ThegraphIndexOrmp extends GraphCommon {
         orderBy: message_index
         orderDirection: asc
         where: {
+          relayerAssigned: true
           message_index_lte: $messageIndex
           message_toChainId: $toChainId
-          relayerAssigned: true
         }
       ) {
         msgHash
@@ -237,9 +238,6 @@ export class ThegraphIndexOrmp extends GraphCommon {
     }
     return msgHashes.filter(item => unRelayMessageHashes.indexOf(item) == -1);
   }
-
-
-  // ========================== #
 
   public async pickOracleAssignedMessageHashes(variables: QueryBasicMessageAccepted): Promise<string[]> {
     const query = `
