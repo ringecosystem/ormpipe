@@ -1,8 +1,6 @@
 import {
   ThegraphIndexOrmp,
   ThegraphIndexerSubapi,
-  ThegraphIndexerOracle,
-  ThegraphIndexerRelayer
 } from "@darwinia/ormpipe-indexer";
 import {RelayDirection} from "./mark";
 import {RelayClient} from "../client";

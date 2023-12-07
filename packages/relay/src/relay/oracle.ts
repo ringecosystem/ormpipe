@@ -34,8 +34,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     return super.lifecycle.targetSubapiClient
   }
 
-  private sourceChainId: number;
-  private targetChainId: number;
+  private sourceChainId: number = 0;
+  private targetChainId: number = 0;
 
   public async start(features: RelayFeature[]) {
     try {
