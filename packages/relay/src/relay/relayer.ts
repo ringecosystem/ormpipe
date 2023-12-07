@@ -1,17 +1,12 @@
 import {RelayerLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
-import {
-  OrmpMessageAccepted,
-  ThegraphIndexerSubapi,
-  ThegraphIndexerRelayer,
-  ThegraphIndexOrmp
-} from "@darwinia/ormpipe-indexer";
+import {OrmpMessageAccepted, ThegraphIndexerSubapi, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
 import {OrmpProtocolMessage, RelayerContractClient} from "../client/contract_relayer";
 import {logger} from "@darwinia/ormpipe-logger";
 import {IncrementalMerkleTree} from '../helper/imt'
 import {AbiCoder} from "ethers";
-import chalk = require('chalk');
 import {RelayStorage} from "../helper/storage";
+import chalk = require('chalk');
 
 export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
@@ -20,10 +15,6 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
   constructor(lifecycle: RelayerLifecycle) {
     super(lifecycle);
-  }
-
-  public get sourceIndexerRelayer(): ThegraphIndexerRelayer {
-    return super.lifecycle.sourceIndexerRelayer
   }
 
   public get sourceIndexerOrmp(): ThegraphIndexOrmp {
@@ -46,8 +37,16 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     return super.lifecycle.targetRelayerClient
   }
 
+  private sourceChainId: number;
+  private targetChainId: number;
+
   public async start() {
     try {
+      const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
+      const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
+      this.sourceChainId = Number(sourceNetwork.chainId);
+      this.targetChainId = Number(targetNetwork.chainId);
+
       await this.relay();
       await this.retry();
     } catch (e: any) {
@@ -56,9 +55,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
   }
 
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
-    const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
-    const sourceChainId = Number(sourceNetwork.chainId);
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({chainId: sourceChainId});
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({
+      chainId: this.sourceChainId,
+    });
     if (!lastAggregatedMessageRoot) {
       logger.debug(
         'not have any aggregated message from %s',
@@ -81,14 +80,12 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return undefined;
     }
 
-    const preparedMessageAcceptedHashes = await this.sourceIndexerOrmp.queryPreparedMessageAcceptedHashes({
+    const pickedRelayerMessageAcceptedHashes = await this.sourceIndexerOrmp.pickRealyerMessageAcceptedHashes({
       messageIndex: +lastAggreatedMessageAccepted.message_index,
+      toChainId: this.targetChainId,
     });
-    const pickedPreparedAssignedMessageHashes = await this.sourceIndexerRelayer.pickAssignedMessageHashes(
-      preparedMessageAcceptedHashes
-    );
     const pickedUnRelayedMessageHashes = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
-      pickedPreparedAssignedMessageHashes
+      pickedRelayerMessageAcceptedHashes
     );
     const unRelayMessageAcceptedList = await this.sourceIndexerOrmp.queryMessageAcceptedListByHashes({
       msgHashes: pickedUnRelayedMessageHashes,
@@ -102,12 +99,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return undefined;
     }
 
-    const sourceLastAssignedMessage = await this.sourceIndexerRelayer.lastAssignedMessage();
-    const sourceLastMessageAssignedAccepted = sourceLastAssignedMessage
-      ? await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: sourceLastAssignedMessage.msgHash,
-      })
-      : null;
+    const sourceLastMessageAssignedAccepted = await this.sourceIndexerOrmp.lastRelayerAssigned({
+      toChainId: this.targetChainId,
+    });
 
     let unRelayedIndex = -1;
     while (true) {
@@ -229,16 +223,14 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
 
   private async _relay(sourceNextMessageAccepted: OrmpMessageAccepted) {
-    const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
-    const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
     if (
-      sourceNetwork.chainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
-      targetNetwork.chainId.toString() != sourceNextMessageAccepted.message_toChainId
+      this.sourceChainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
+      this.targetChainId.toString() != sourceNextMessageAccepted.message_toChainId
     ) {
       logger.warn(
         `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
-        sourceNetwork.chainId.toString(),
-        targetNetwork.chainId.toString(),
+        this.sourceChainId.toString(),
+        this.targetChainId.toString(),
         sourceNextMessageAccepted.msgHash,
         sourceNextMessageAccepted.message_index,
         sourceNextMessageAccepted.message_fromChainId,
@@ -261,8 +253,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     };
 
 
-    const sourceChainId = Number(sourceNetwork.chainId);
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({chainId: sourceChainId});
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({
+      chainId: this.sourceChainId,
+    });
     const lastAggreatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
       root: lastAggregatedMessageRoot!.ormpData_root,
     });
@@ -296,7 +289,7 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     // console.log(messageProof);
     //
     // console.log('------ relay');
-    const baseGas = await this.sourceRelayerClient.configOf(targetNetwork.chainId);
+    const baseGas = await this.sourceRelayerClient.configOf(this.targetChainId);
     const targetTxRelayMessage = await this.targetRelayerClient.relay(
       message,
       encodedProof,

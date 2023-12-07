@@ -18,15 +18,15 @@ export interface QueryNextRelayerAssigned {
   msgHash: string
 }
 
-export interface QueryPreparedMessages {
-  messageIndex: number
-}
-
 export interface QueryBasicMessageAccepted {
   toChainId: number
 }
 
-export interface QueryNextMessageAccepted extends QueryBasicMessageAccepted{
+export interface QueryRelayerMessageAccepted extends QueryBasicMessageAccepted {
+  messageIndex: number
+}
+
+export interface QueryNextMessageAccepted extends QueryBasicMessageAccepted {
   messageIndex: number
 }
 

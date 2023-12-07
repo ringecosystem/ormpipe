@@ -27,7 +27,6 @@ export interface OracleLifecycle extends BaseLifecycle {
 }
 
 export interface RelayerLifecycle extends BaseLifecycle {
-  sourceIndexerRelayer: ThegraphIndexerRelayer,
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerSubapi: ThegraphIndexerSubapi,

@@ -60,7 +60,7 @@ export class RelayerContractClient {
     return await tx.wait();
   }
 
-  public async configOf(chainId: bigint): Promise<bigint> {
+  public async configOf(chainId: number): Promise<bigint> {
     const configOf = await this.contract['configOf'](chainId);
     return configOf[0];
   }

@@ -4,8 +4,6 @@ export interface IndexerHttpConfig {
 
 export interface IndexerInput extends IndexerHttpConfig {
   endpoint: string;
-  oracleEndpoint?: string
-  relayerEndpoint?: string
   ormpEndpoint?: string
   subapiEndpoint?: string
 }

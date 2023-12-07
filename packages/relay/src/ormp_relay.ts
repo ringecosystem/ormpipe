@@ -38,6 +38,7 @@ export class OrmpRelay {
         if (!source || !target) {
           continue;
         }
+        logger.info('====== %s-%s ======', source, target, {target: 'ormpipe'});
         const sourceChain = this.config.chain[source];
         const targetChain = this.config.chain[target];
         if (!sourceChain.name) {
@@ -109,87 +110,6 @@ export class OrmpRelay {
     }
   }
 
-  // private async run(input: OrmpRelayStartInput) {
-  //
-  //   const pairs = this.config.enablePair;
-  //   // // source -> target
-  //   // const sourceToTargetConfig: RelayConfig = {...this.config};
-  //   // // target -> source
-  //   // const targetToSourceConfig: RelayConfig = {
-  // //     ...this.config,
-  // //     sourceName: this.config.targetName,
-  // //     sourceEndpoint: this.config.targetEndpoint,
-  // //     targetName: this.config.sourceName,
-  // //     targetEndpoint: this.config.sourceEndpoint,
-  // //     sourceIndexerEndpoint: this.config.targetIndexerEndpoint,
-  // //     sourceIndexerOracleEndpoint: this.config.targetIndexerOracleEndpoint,
-  // //     sourceIndexerRelayerEndpoint: this.config.targetIndexerRelayerEndpoint,
-  // //     sourceIndexerOrmpEndpoint: this.config.targetIndexerOrmpEndpoint,
-  // //     sourceIndexerSubapiEndpoint: this.config.targetIndexerSubapiEndpoint,
-  // //     targetIndexerEndpoint: this.config.sourceIndexerEndpoint,
-  // //     targetIndexerOracleEndpoint: this.config.sourceIndexerOracleEndpoint,
-  // //     targetIndexerRelayerEndpoint: this.config.sourceIndexerRelayerEndpoint,
-  // //     targetIndexerOrmpEndpoint: this.config.sourceIndexerOrmpEndpoint,
-  // //     targetIndexerSubapiEndpoint: this.config.sourceIndexerSubapiEndpoint,
-  // //     sourceSigner: this.config.targetSigner,
-  // //     sourceSignerSubapi: this.config.targetSignerSubapi,
-  // //     sourceSignerRelayer: this.config.targetSignerRelayer,
-  // //     targetSigner: this.config.sourceSigner,
-  // //     targetSignerSubapi: this.config.sourceSignerSubapi,
-  // //     targetSignerRelayer: this.config.sourceSignerRelayer,
-  // //     sourceAddressSubapi: this.config.targetAddressSubapi,
-  // //     sourceAddressRelayer: this.config.targetAddressRelayer,
-  // //     targetAddressSubapi: this.config.sourceAddressSubapi,
-  // //     targetAddressRelayer: this.config.sourceAddressRelayer,
-  // //   };
-  // //
-  // //   const features = input.features;
-  // //   switch (input.task) {
-  // //     case StartTask.oracle: {
-  // //       if (sourceToTargetConfig.enableSourceToTarget) {
-  // //         const sourceToTargetLifecycle = await this.initOracleLifecycle(
-  // //           sourceToTargetConfig,
-  // //           RelayDirection.SourceToTarget,
-  // //         );
-  // //         const sourceToTargetRelayer = new OracleRelay(sourceToTargetLifecycle);
-  // //         await sourceToTargetRelayer.start(features);
-  // //       }
-  // //
-  // //       if (targetToSourceConfig.enableTargetToSource) {
-  // //         const targetToSourceLifecycle = await this.initOracleLifecycle(
-  // //           targetToSourceConfig,
-  // //           RelayDirection.TargetToSource,
-  // //         );
-  // //         const targetToSourceRelayer = new OracleRelay(targetToSourceLifecycle);
-  // //         await targetToSourceRelayer.start(features);
-  // //       }
-  // //       break;
-  // //     }
-  // //     case StartTask.relayer: {
-  // //       if (sourceToTargetConfig.enableSourceToTarget) {
-  // //         const sourceToTargetLifecycle = await this.initRelayerLifecycle(
-  // //           sourceToTargetConfig,
-  // //           RelayDirection.TargetToSource,
-  // //         );
-  // //         const sourceToTargetRelayer = new RelayerRelay(sourceToTargetLifecycle);
-  // //         await sourceToTargetRelayer.start();
-  // //       }
-  // //
-  // //       if (targetToSourceConfig.enableTargetToSource) {
-  // //         const targetToSourceLifeCycle = await this.initRelayerLifecycle(
-  // //           targetToSourceConfig,
-  // //           RelayDirection.TargetToSource,
-  // //         );
-  // //         const targetToSourceRelayer = new RelayerRelay(targetToSourceLifeCycle);
-  // //         await targetToSourceRelayer.start();
-  // //       }
-  // //       break;
-  // //     }
-  // //   }
-  // //
-  // }
-  //
-
   private async initOracleLifecycle(config: OrmpRelayStartInput, direction: RelayDirection): Promise<OracleLifecycle> {
     if (!config.source.indexer) {
       throw new Error(`missing ${config.source.name} indexer endpoint`);
@@ -225,7 +145,6 @@ export class OrmpRelay {
     return {
       ...baseLifecycle,
       sourceIndexerOrmp: sourceIndexer.ormp(),
-      sourceIndexerRelayer: sourceIndexer.relayer(),
       targetIndexerOrmp: targetIndexer.ormp(),
       targetIndexerSubapi: targetIndexer.subapi(),
       sourceRelayerClient: baseLifecycle.sourceClient.relayer(config.source.contract.relayer),
@@ -264,8 +183,6 @@ export class OrmpRelay {
   private initSourceIndexer(config: OrmpRelayStartInput): ThegraphIndexer {
     return new OrmpipeIndexer({
       endpoint: config.source.indexer,
-      oracleEndpoint: config.source.indexer,
-      relayerEndpoint: config.source.indexer,
       ormpEndpoint: config.source.indexer,
       subapiEndpoint: config.source.indexer,
     }).thegraph();
@@ -274,8 +191,6 @@ export class OrmpRelay {
   private initTargetIndexer(config: OrmpRelayStartInput): ThegraphIndexer {
     return new OrmpipeIndexer({
       endpoint: config.target.indexer,
-      oracleEndpoint: config.target.indexer,
-      relayerEndpoint: config.target.indexer,
       ormpEndpoint: config.target.indexer,
       subapiEndpoint: config.target.indexer,
     }).thegraph();

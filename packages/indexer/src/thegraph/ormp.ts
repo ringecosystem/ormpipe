@@ -6,7 +6,7 @@ import {
   QueryMessageHashes,
   QueryNextMessageAccepted,
   QueryOrmpProtocolMessageAccepted,
-  QueryPreparedMessages
+  QueryRelayerMessageAccepted
 } from "../types/graph";
 import {GraphCommon} from "./_common";
 import {CollectionKit} from "../toolkit/collection";
@@ -166,15 +166,17 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
 
-  public async queryPreparedMessageAcceptedHashes(variables: QueryPreparedMessages): Promise<string[]> {
+  public async pickRealyerMessageAcceptedHashes(variables: QueryRelayerMessageAccepted): Promise<string[]> {
     const query = `
-    query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!) {
+    query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!, $toChainId: Int!) {
       ormpProtocolMessageAccepteds(
         skip: $skip
         orderBy: message_index
         orderDirection: asc
         where: {
           message_index_lte: $messageIndex
+          message_toChainId: $toChainId
+          relayerAssigned: true
         }
       ) {
         msgHash
@@ -239,7 +241,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   // ========================== #
 
-  public async allOracleAssignedMessageHashes(variables: QueryBasicMessageAccepted): Promise<string[]> {
+  public async pickOracleAssignedMessageHashes(variables: QueryBasicMessageAccepted): Promise<string[]> {
     const query = `
     query QueryAllOracleAssignedMessageAccepted($skip: Int!, $toChainId: Int!) {
       ormpProtocolMessageAccepteds(
@@ -285,9 +287,9 @@ export class ThegraphIndexOrmp extends GraphCommon {
       ormpProtocolMessageAccepteds(
         first: 1
         orderBy: message_index
-        orderDirection: asc
+        orderDirection: desc
         where: {
-          message_index_gt: $messageIndex
+          oracleAssigned: true
           message_toChainId: $toChainId
         }
       ) {
@@ -318,5 +320,47 @@ export class ThegraphIndexOrmp extends GraphCommon {
     `;
     return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
+
+
+  public async lastRelayerAssigned(variables: QueryBasicMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
+    const query = `
+    query QueryLastMessageAccepted($toChainId: Int!) {
+      ormpProtocolMessageAccepteds(
+        first: 1
+        orderBy: message_index
+        orderDirection: desc
+        where: {
+          relayerAssigned: true
+          message_toChainId: $toChainId
+        }
+      ) {
+        id
+        blockNumber
+        blockTimestamp
+        transactionHash
+
+        msgHash
+        root
+        message_channel
+        message_index
+        message_fromChainId
+        message_from
+        message_toChainId
+        message_to
+        message_gasLimit
+        message_encoded
+
+        oracleAssigned
+        oracleAssignedFee
+        relayerAssigned
+        relayerAssignedFee
+        relayerAssignedProof
+        relayerAssignedParams
+      }
+    }
+    `;
+    return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
+  }
+
 
 }
