@@ -8,46 +8,44 @@ export enum RelayFeature {
   oracle_aggregate = 'oracle.aggregate',
 }
 
-export interface RelayConfig {
+export interface CliStartConfig {
   tasks: StartTask[]
   features: RelayFeature[]
   dataPath: string
-  enableSourceToTarget: boolean
-  enableTargetToSource: boolean
+  config: string
+  enablePair: string[]
+  signer: string
+}
 
-  sourceName: string
-  sourceEndpoint: string
+export interface ChainInfoFlag {
+  name: string
+  endpoint: string
+  indexer: string
+  contract: ChainInfoFlagContract
+}
 
-  targetName: string
-  targetEndpoint: string
+export interface ChainInfoFlagContract {
+  subapi: string
+  relayer: string
+}
 
-  sourceIndexerEndpoint: string
-  sourceIndexerOracleEndpoint: string
-  sourceIndexerRelayerEndpoint: string
-  sourceIndexerOrmpEndpoint: string
-  sourceIndexerSubapiEndpoint: string
+export interface OrmpRelayConfig {
+  tasks: StartTask[]
+  features: RelayFeature[]
+  enablePair: string[]
+  dataPath: string
 
-  targetIndexerEndpoint: string
-  targetIndexerOracleEndpoint: string
-  targetIndexerRelayerEndpoint: string
-  targetIndexerOrmpEndpoint: string
-  targetIndexerSubapiEndpoint: string
+  chain: Record<string, ChainInfoFlag>,
 
-  sourceSigner: string
-  sourceSignerSubapi: string
-  sourceSignerRelayer: string
-  targetSigner: string
-  targetSignerSubapi: string
-  targetSignerRelayer: string
-
-  sourceAddressSubapi: string
-  sourceAddressRelayer: string
-  targetAddressSubapi: string
-  targetAddressRelayer: string
-
+  signer: string
 }
 
 export interface OrmpRelayStartInput {
   task: StartTask
   features: RelayFeature[]
+  dataPath: string
+  signer: string
+  source: ChainInfoFlag
+  target: ChainInfoFlag
 }
+

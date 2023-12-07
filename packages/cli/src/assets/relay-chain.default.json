@@ -1,0 +1,47 @@
+{
+  "crab": {
+    "name": "crab",
+    "endpoint": "https://crab-rpc.darwinia.network",
+    "indexer": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-crab",
+    "contract": {
+      "subapi": "0x00000000096c285629Fe3EAb3dd042c27b9dcBa6",
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+    }
+  },
+  "darwinia": {
+    "name": "darwinia",
+    "endpoint": "https://rpc.darwinia.network",
+    "indexer": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-darwinia",
+    "contract": {
+      "subapi": "0x00000000096c285629Fe3EAb3dd042c27b9dcBa6",
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+    }
+  },
+  "sepolia": {
+    "name": "sepolia",
+    "endpoint": "https://rpc.sepolia.org",
+    "indexer": "https://api.studio.thegraph.com/query/51152/ormpipe-sepolia/version/latest",
+    "contract": {
+      "subapi": "0x00000000096c285629Fe3EAb3dd042c27b9dcBa6",
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+    }
+  },
+  "arbitrumsepolia": {
+    "name": "arbitrumsepolia",
+    "endpoint": "https://sepolia-rollup.arbitrum.io/rpc",
+    "indexer": "https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-sepolia/version/latest",
+    "contract": {
+      "subapi": "0x00000000096c285629Fe3EAb3dd042c27b9dcBa6",
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+    }
+  },
+  "arbitrum": {
+    "name": "arbitrum",
+    "endpoint": "https://arbitrum-one.publicnode.com",
+    "indexer": "https://api.studio.thegraph.com/proxy/51152/ormpipe-arbitrum/version/latest",
+    "contract": {
+      "subapi": "0x00000000096c285629Fe3EAb3dd042c27b9dcBa6",
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+    }
+  }
+}
