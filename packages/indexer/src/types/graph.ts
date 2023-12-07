@@ -7,13 +7,12 @@ export interface QueryGraph {
   variables?: Record<string, any>
 }
 
-export interface QueryBeacons {
+export interface QueryWithChainId {
   chainId: number
 }
 
-export interface QueryLastAggregatedMessageRoot {
-  chainId: number
-}
+export type QueryBeacons = QueryWithChainId;
+export type QueryLastAggregatedMessageRoot = QueryWithChainId;
 
 export interface QueryNextRelayerAssigned {
   msgHash: string
@@ -23,9 +22,12 @@ export interface QueryPreparedMessages {
   messageIndex: number
 }
 
-export interface QueryNextMessageAccepted {
-  messageIndex: number
+export interface QueryBasicMessageAccepted {
   toChainId: number
+}
+
+export interface QueryNextMessageAccepted extends QueryBasicMessageAccepted{
+  messageIndex: number
 }
 
 export interface QueryMessageAcceptedListByHashes {
@@ -88,6 +90,13 @@ export interface OrmpMessageAccepted extends BaseGraphEntity {
   message_to: string
   message_encoded: string
   message_gasLimit: string
+
+  oracleAssigned?: string
+  oracleAssignedFee?: string
+  relayerAssigned?: string
+  relayerAssignedFee?: string
+  relayerAssignedProof?: string
+  relayerAssignedParams?: string
 }
 
 export interface OrmpMessageDispatched extends BaseGraphEntity {

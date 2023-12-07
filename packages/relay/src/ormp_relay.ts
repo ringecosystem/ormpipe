@@ -204,7 +204,6 @@ export class OrmpRelay {
     const baseLifecycle = await this.initBaseLifecycle(config, direction);
     return {
       ...baseLifecycle,
-      sourceIndexerOracle: sourceIndexer.oracle(),
       sourceIndexerOrmp: sourceIndexer.ormp(),
       targetIndexerOrmp: targetIndexer.ormp(),
       targetIndexerSubapi: targetIndexer.subapi(),

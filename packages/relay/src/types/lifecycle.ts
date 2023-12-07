@@ -20,7 +20,6 @@ export interface BaseLifecycle {
 }
 
 export interface OracleLifecycle extends BaseLifecycle {
-  sourceIndexerOracle: ThegraphIndexerOracle,
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerSubapi: ThegraphIndexerSubapi,

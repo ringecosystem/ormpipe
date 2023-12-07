@@ -3,7 +3,6 @@ import {OracleLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
 import {
   OrmpMessageAccepted,
-  ThegraphIndexerOracle,
   ThegraphIndexerSubapi,
   ThegraphIndexOrmp
 } from "@darwinia/ormpipe-indexer";
@@ -21,10 +20,6 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
   constructor(lifecycle: OracleLifecycle) {
     super(lifecycle);
-  }
-
-  public get sourceIndexerOracle(): ThegraphIndexerOracle {
-    return super.lifecycle.sourceIndexerOracle
   }
 
   public get sourceIndexerOrmp(): ThegraphIndexOrmp {
@@ -99,10 +94,7 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
         );
         return;
       }
-      const messageAssigned = await this.sourceIndexerOracle.inspectAssigned({
-        msgHash: sourceNextMessageAccepted.msgHash,
-      });
-      if (!messageAssigned) {
+      if (!sourceNextMessageAccepted.oracleAssigned) {
         logger.debug(
           `found new message %s(%s), but not assigned to myself`,
           sourceNextMessageAccepted.msgHash,
@@ -114,8 +106,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       return sourceNextMessageAccepted;
     }
 
-    const allAssignedList = await this.sourceIndexerOracle.allAssignedList();
-    const msgHashes = allAssignedList.map(item => item.msgHash);
+    // const allAssignedList = await this.sourceIndexerOracle.allAssignedList();
+    const msgHashes = await this.sourceIndexerOrmp.allOracleAssignedMessageHashes({toChainId: targetChainId});
     let sourceNextMessageAccepted;
     if (msgHashes.length) {
       const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(msgHashes);
@@ -140,14 +132,10 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
       return sourceNextMessageAccepted;
     }
     // save cache, if all message deliveried
-    const sourceLastMessageAssigned = await this.sourceIndexerOracle.lastAssigned();
-    if (sourceLastMessageAssigned) {
-      const sourceLastMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: sourceLastMessageAssigned.msgHash,
-      });
-      if (sourceLastMessageAccepted) {
-        await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastMessageAccepted.message_index);
-      }
+    // const sourceLastMessageAssigned = await this.sourceIndexerOracle.lastAssigned();
+    const sourceLastOracleMessageAssigned = await this.sourceIndexerOrmp.lastOracleAssigned({toChainId: targetChainId});
+    if (sourceLastOracleMessageAssigned) {
+      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastOracleMessageAssigned.message_index);
     }
     // not have any message accepted
   }
