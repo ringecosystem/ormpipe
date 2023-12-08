@@ -212,6 +212,14 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     );
 
     const beacons = await this.targetIndexerSubapi.beacons({chainId: this.sourceChainId});
+    if (!beacons.length) {
+      logger.debug(
+        'not have any beacons in %s, nothing to do.',
+        super.targetName,
+        super.meta('ormpipe-relay', ['oracle:delivery']),
+      );
+      return;
+    }
     logger.debug(
       'queried %s beacons from %s airnode-dapi contract, prepare to call %s (requestFinalizedHash)',
       beacons.length,
