@@ -71,18 +71,27 @@ export class OrmpRelay {
 
   private async run(input: OrmpRelayStartInput) {
     const features = input.features;
+    const sourceToTargetConfig: OrmpRelayStartInput = {...input};
+    const targetToSourceConfig: OrmpRelayStartInput = {
+      task: input.task,
+      features: input.features,
+      dataPath: input.dataPath,
+      signer: input.signer,
+      source: input.target,
+      target: input.source,
+    };
 
     switch (input.task) {
       case StartTask.oracle: {
         const sourceToTargetLifecycle = await this.initOracleLifecycle(
-          input,
+          sourceToTargetConfig,
           RelayDirection.SourceToTarget,
         );
         const sourceToTargetRelayer = new OracleRelay(sourceToTargetLifecycle);
         await sourceToTargetRelayer.start(features);
 
         const targetToSourceLifecycle = await this.initOracleLifecycle(
-          input,
+          targetToSourceConfig,
           RelayDirection.TargetToSource,
         );
         const targetToSourceRelayer = new OracleRelay(targetToSourceLifecycle);
@@ -92,14 +101,14 @@ export class OrmpRelay {
       }
       case StartTask.relayer: {
         const sourceToTargetLifecycle = await this.initRelayerLifecycle(
-          input,
-          RelayDirection.TargetToSource,
+          sourceToTargetConfig,
+          RelayDirection.SourceToTarget,
         );
         const sourceToTargetRelayer = new RelayerRelay(sourceToTargetLifecycle);
         await sourceToTargetRelayer.start();
 
         const targetToSourceLifeCycle = await this.initRelayerLifecycle(
-          input,
+          targetToSourceConfig,
           RelayDirection.TargetToSource,
         );
         const targetToSourceRelayer = new RelayerRelay(targetToSourceLifeCycle);
@@ -136,7 +145,7 @@ export class OrmpRelay {
       throw new Error(`missing ${config.source.name} indexer endpoint`);
     }
     if (!config.target.indexer) {
-      throw new Error(`missing ${config.target.name} indexder endpoint`);
+      throw new Error(`missing ${config.target.name} indexer endpoint`);
     }
     const sourceIndexer = this.initSourceIndexer(config);
     const targetIndexer = this.initTargetIndexer(config);

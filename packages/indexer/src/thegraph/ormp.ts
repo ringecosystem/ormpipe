@@ -95,16 +95,15 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return rets;
   }
 
-  public async messageHashes(variables: QueryMessageHashes): Promise<string[]> {
+  public async queryRelayerMessageHashes(variables: QueryMessageHashes): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!, $toChainId: Int!) {
+    query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
         skip: $skip
         orderBy: message_index
         orderDirection: asc
         where: {
           message_index_lte: $messageIndex
-          message_toChainId: $toChainId
         }
       ) {
         message_index

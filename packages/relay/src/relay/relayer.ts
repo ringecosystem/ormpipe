@@ -256,12 +256,11 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({
       chainId: this.sourceChainId,
     });
-    const lastAggreatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+    const lastAggregatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
       root: lastAggregatedMessageRoot!.ormpData_root,
     });
-    const rawMsgHashes = await this.sourceIndexerOrmp.messageHashes({
-      messageIndex: +lastAggreatedMessageAccepted!.message_index,
-      toChainId: this.targetChainId,
+    const rawMsgHashes = await this.sourceIndexerOrmp.queryRelayerMessageHashes({
+      messageIndex: +lastAggregatedMessageAccepted!.message_index,
     });
     const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
     const imt = new IncrementalMerkleTree(msgHashes);
@@ -284,11 +283,12 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       ]
     );
 
-    // console.log(imt.root());
-    // console.log(rawMsgHashes);
-    // console.log(message);
-    // console.log(messageProof);
-    //
+    // console.log('last aggregated message root', lastAggregatedMessageRoot);
+    // console.log('root', imt.root());
+    // console.log('msg hashes', rawMsgHashes);
+    // console.log('message', message);
+    // console.log('proof', messageProof);
+
     // console.log('------ relay');
     const baseGas = await this.sourceRelayerClient.configOf(this.targetChainId);
     const targetTxRelayMessage = await this.targetRelayerClient.relay(
