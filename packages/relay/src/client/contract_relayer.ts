@@ -45,7 +45,6 @@ export class RelayerContractClient {
         options.message,
         options.proof,
       );
-      console.log(estimatedGas, options.gasLimit);
       if (estimatedGas / options.gasLimit > 1.5) {
         logger.debug(
           'estimated gas large than provide gaslimit 50%, [%s, %s]',
