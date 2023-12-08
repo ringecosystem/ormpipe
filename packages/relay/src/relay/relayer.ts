@@ -11,7 +11,7 @@ import chalk = require('chalk');
 export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
   private static CK_RELAYER_RELAIED = 'ormpipe.relayer.relaied';
-  private static CK_RELAYER_SKIPPED=  'ormpipe.relayer.skipped';
+  private static CK_RELAYER_SKIPPED = 'ormpipe.relayer.skipped';
 
   constructor(lifecycle: RelayerLifecycle) {
     super(lifecycle);
@@ -290,12 +290,17 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     // console.log('proof', messageProof);
 
     // console.log('------ relay');
+    const enableGasCheck = [
+      421614, // arbitrum sepolia
+      42161, // arbitrum one
+    ].indexOf(this.targetChainId) > -1;
     const baseGas = await this.sourceRelayerClient.configOf(this.targetChainId);
-    const targetTxRelayMessage = await this.targetRelayerClient.relay(
+    const targetTxRelayMessage = await this.targetRelayerClient.relay({
       message,
-      encodedProof,
-      BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
-    );
+      proof: encodedProof,
+      gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
+      enableGasCheck,
+    });
 
     const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
 

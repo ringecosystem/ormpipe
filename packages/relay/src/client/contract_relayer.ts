@@ -15,6 +15,13 @@ export interface OrmpProtocolMessage {
   encoded: string
 }
 
+export interface RelayOptions {
+  message: OrmpProtocolMessage
+  proof: string
+  gasLimit: bigint
+  enableGasCheck: boolean
+}
+
 export class RelayerContractClient {
 
   private readonly config: ContractClientConfig;
@@ -26,36 +33,38 @@ export class RelayerContractClient {
     this.contract = new ethers.Contract(config.address, abi, wallet);
   }
 
-  public async relay(
-    message: OrmpProtocolMessage,
-    proof: string,
-    gasLimit: bigint
-  ): Promise<TransactionResponse | undefined> {
+  public async relay(options: RelayOptions): Promise<TransactionResponse | undefined> {
     logger.debug(
       'call %s -> relayer.relay',
       this.config.chainName,
       {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
     );
 
-    const estimatedGas = await this.contract['relay'].estimateGas(
-      message,
-      proof,
-    );
-    if (estimatedGas / gasLimit > 1.5) {
-      logger.debug(
-        'estimated gas large than provide gaslimit 50%, [%s, %s]',
-        estimatedGas,
-        gasLimit,
-        {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
+    if (options.enableGasCheck) {
+      const estimatedGas = await this.contract['relay'].estimateGas(
+        options.message,
+        options.proof,
       );
-      return;
-    }
-    const tx = await this.contract['relay'](
-      message,
-      proof,
-      {
-        gasLimit,
+      console.log(estimatedGas, options.gasLimit);
+      if (estimatedGas / options.gasLimit > 1.5) {
+        logger.debug(
+          'estimated gas large than provide gaslimit 50%, [%s, %s]',
+          estimatedGas,
+          options.gasLimit,
+          {target: 'ormpipe-relay', breads: ['contract', this.config.chainName]}
+        );
+        return;
       }
+    }
+    const contractOptions = options.enableGasCheck
+      ? {}
+      : {
+        gasLimit: options.gasLimit,
+      };
+    const tx = await this.contract['relay'](
+      options.message,
+      options.proof,
+      contractOptions,
     );
     return await tx.wait();
   }
