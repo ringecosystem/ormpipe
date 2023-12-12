@@ -60,23 +60,27 @@ export class OrmpIntegrationTestProgram {
     }
 
     const balanceOfOracle = await evm.getBalance(this.config.addressOracle);
+    console.log(`balance of oracle: ${balanceOfOracle}`);
     const keepBalance = (2n * (10n ** 18n));
 
     if (balanceOfOracle > (keepBalance * 2n) || (force && balanceOfOracle > keepBalance)) {
       const withdraw = balanceOfOracle - keepBalance;
       const tx = await contractOracle['withdraw'](
         wallet.getAddress(),
-        withdraw
+        withdraw,
+        {gasLimit: 10n*10000n},
       );
       const resp = await tx.wait();
       console.log(`withdraw (oracle): ${resp.hash}`);
     }
     const balanceOfRelayer = await evm.getBalance(this.config.addressRelayer);
+    console.log(`balance of relayer: ${balanceOfRelayer}`);
     if (balanceOfRelayer > (keepBalance * 2n) || (force && balanceOfRelayer > keepBalance)) {
       const withdraw = balanceOfRelayer - keepBalance;
       const tx = await contractRelayer['withdraw'](
         wallet.getAddress(),
-        withdraw
+        withdraw,
+        {gasLimit: 10n*10000n},
       );
       const resp = await tx.wait();
       console.log(`withdraw (relayer): ${resp.hash}`);

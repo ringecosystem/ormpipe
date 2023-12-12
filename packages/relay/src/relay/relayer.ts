@@ -1,29 +1,20 @@
 import {RelayerLifecycle} from "../types/lifecycle";
 import {CommonRelay} from "./_common";
-import {
-  OrmpMessageAccepted,
-  ThegraphIndexerSubapi,
-  ThegraphIndexerRelayer,
-  ThegraphIndexOrmp
-} from "@darwinia/ormpipe-indexer";
+import {OrmpMessageAccepted, ThegraphIndexerSubapi, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
 import {OrmpProtocolMessage, RelayerContractClient} from "../client/contract_relayer";
 import {logger} from "@darwinia/ormpipe-logger";
 import {IncrementalMerkleTree} from '../helper/imt'
 import {AbiCoder} from "ethers";
-import chalk = require('chalk');
 import {RelayStorage} from "../helper/storage";
+import chalk = require('chalk');
 
 export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
   private static CK_RELAYER_RELAIED = 'ormpipe.relayer.relaied';
-  private static CK_RELAYER_SKIPPED=  'ormpipe.relayer.skipped';
+  private static CK_RELAYER_SKIPPED = 'ormpipe.relayer.skipped';
 
   constructor(lifecycle: RelayerLifecycle) {
     super(lifecycle);
-  }
-
-  public get sourceIndexerRelayer(): ThegraphIndexerRelayer {
-    return super.lifecycle.sourceIndexerRelayer
   }
 
   public get sourceIndexerOrmp(): ThegraphIndexOrmp {
@@ -46,8 +37,16 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     return super.lifecycle.targetRelayerClient
   }
 
+  private sourceChainId: number = 0;
+  private targetChainId: number = 0;
+
   public async start() {
     try {
+      const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
+      const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
+      this.sourceChainId = Number(sourceNetwork.chainId);
+      this.targetChainId = Number(targetNetwork.chainId);
+
       await this.relay();
       await this.retry();
     } catch (e: any) {
@@ -56,7 +55,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
   }
 
   private async _lastAssignedMessageAccepted(): Promise<OrmpMessageAccepted | undefined> {
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({
+      chainId: this.sourceChainId,
+    });
     if (!lastAggregatedMessageRoot) {
       logger.debug(
         'not have any aggregated message from %s',
@@ -79,14 +80,12 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return undefined;
     }
 
-    const preparedMessageAcceptedHashes = await this.sourceIndexerOrmp.queryPreparedMessageAcceptedHashes({
+    const pickedRelayerMessageAcceptedHashes = await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
       messageIndex: +lastAggreatedMessageAccepted.message_index,
+      toChainId: this.targetChainId,
     });
-    const pickedPreparedAssignedMessageHashes = await this.sourceIndexerRelayer.pickAssignedMessageHashes(
-      preparedMessageAcceptedHashes
-    );
     const pickedUnRelayedMessageHashes = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
-      pickedPreparedAssignedMessageHashes
+      pickedRelayerMessageAcceptedHashes
     );
     const unRelayMessageAcceptedList = await this.sourceIndexerOrmp.queryMessageAcceptedListByHashes({
       msgHashes: pickedUnRelayedMessageHashes,
@@ -100,12 +99,9 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       return undefined;
     }
 
-    const sourceLastAssignedMessage = await this.sourceIndexerRelayer.lastAssignedMessage();
-    const sourceLastMessageAssignedAccepted = sourceLastAssignedMessage
-      ? await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: sourceLastAssignedMessage.msgHash,
-      })
-      : null;
+    const sourceLastMessageAssignedAccepted = await this.sourceIndexerOrmp.lastRelayerAssigned({
+      toChainId: this.targetChainId,
+    });
 
     let unRelayedIndex = -1;
     while (true) {
@@ -227,16 +223,14 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
 
 
   private async _relay(sourceNextMessageAccepted: OrmpMessageAccepted) {
-    const sourceNetwork = await super.lifecycle.sourceClient.evm.getNetwork();
-    const targetNetwork = await super.lifecycle.targetClient.evm.getNetwork();
     if (
-      sourceNetwork.chainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
-      targetNetwork.chainId.toString() != sourceNextMessageAccepted.message_toChainId
+      this.sourceChainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
+      this.targetChainId.toString() != sourceNextMessageAccepted.message_toChainId
     ) {
       logger.warn(
         `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
-        sourceNetwork.chainId.toString(),
-        targetNetwork.chainId.toString(),
+        this.sourceChainId.toString(),
+        this.targetChainId.toString(),
         sourceNextMessageAccepted.msgHash,
         sourceNextMessageAccepted.message_index,
         sourceNextMessageAccepted.message_fromChainId,
@@ -259,12 +253,14 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     };
 
 
-    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot();
-    const lastAggreatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+    const lastAggregatedMessageRoot = await this.targetIndexerSubapi.lastAggregatedMessageRoot({
+      chainId: this.sourceChainId,
+    });
+    const lastAggregatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
       root: lastAggregatedMessageRoot!.ormpData_root,
     });
-    const rawMsgHashes = await this.sourceIndexerOrmp.messageHashes({
-      messageIndex: +lastAggreatedMessageAccepted!.message_index,
+    const rawMsgHashes = await this.sourceIndexerOrmp.queryRelayerMessageHashes({
+      messageIndex: +lastAggregatedMessageAccepted!.message_index,
     });
     const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
     const imt = new IncrementalMerkleTree(msgHashes);
@@ -287,18 +283,24 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
       ]
     );
 
-    // console.log(imt.root());
-    // console.log(rawMsgHashes);
-    // console.log(message);
-    // console.log(messageProof);
-    //
+    // console.log('last aggregated message root', lastAggregatedMessageRoot);
+    // console.log('root', imt.root());
+    // console.log('msg hashes', rawMsgHashes);
+    // console.log('message', message);
+    // console.log('proof', messageProof);
+
     // console.log('------ relay');
-    const baseGas = await this.sourceRelayerClient.configOf(targetNetwork.chainId);
-    const targetTxRelayMessage = await this.targetRelayerClient.relay(
+    const enableGasCheck = [
+      421614, // arbitrum sepolia
+      42161, // arbitrum one
+    ].indexOf(this.targetChainId) > -1;
+    const baseGas = await this.sourceRelayerClient.configOf(this.targetChainId);
+    const targetTxRelayMessage = await this.targetRelayerClient.relay({
       message,
-      encodedProof,
-      BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
-    );
+      proof: encodedProof,
+      gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
+      enableGasCheck,
+    });
 
     const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
 

@@ -7,20 +7,27 @@ export interface QueryGraph {
   variables?: Record<string, any>
 }
 
+export interface QueryWithChainId {
+  chainId: number
+}
+
+export type QueryBeacons = QueryWithChainId;
+export type QueryLastAggregatedMessageRoot = QueryWithChainId;
+
 export interface QueryNextRelayerAssigned {
   msgHash: string
 }
 
-export interface QueryPreparedMessages {
+export interface QueryBasicMessageAccepted {
+  toChainId: number
+}
+
+export interface QueryRelayerMessageAccepted extends QueryBasicMessageAccepted {
   messageIndex: number
 }
 
-export interface QueryNextMessageAccepted {
+export interface QueryNextMessageAccepted extends QueryBasicMessageAccepted {
   messageIndex: number
-}
-
-export interface QueryNextUndoMessageAccepted {
-  unrealyeds: OrmpMessageDispatched[]
 }
 
 export interface QueryMessageAcceptedListByHashes {
@@ -33,6 +40,10 @@ export interface QueryMessageHashes {
 
 export interface QueryNextAirnodeCompleted {
   beaconId: string
+}
+
+export interface QueryAirnodeCompletedDistribution {
+  beacons: string[]
 }
 
 export interface QueryOrmpProtocolMessageAccepted {
@@ -79,6 +90,13 @@ export interface OrmpMessageAccepted extends BaseGraphEntity {
   message_to: string
   message_encoded: string
   message_gasLimit: string
+
+  oracleAssigned?: string
+  oracleAssignedFee?: string
+  relayerAssigned?: string
+  relayerAssignedFee?: string
+  relayerAssignedProof?: string
+  relayerAssignedParams?: string
 }
 
 export interface OrmpMessageDispatched extends BaseGraphEntity {
@@ -87,6 +105,7 @@ export interface OrmpMessageDispatched extends BaseGraphEntity {
 }
 
 export interface SubapiBeaconBase extends BaseGraphEntity {
+  chainId: string
   beaconId: string
 }
 
@@ -108,6 +127,7 @@ export interface AirnodeBeaconCompletedDistruibution {
 }
 
 export interface AirnodeAggregatedMessageRoot {
+  chainId: number
   ormpData_root: string
   ormpData_count: string
 }

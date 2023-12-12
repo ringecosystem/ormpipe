@@ -1,8 +1,6 @@
 import {
   ThegraphIndexOrmp,
   ThegraphIndexerSubapi,
-  ThegraphIndexerOracle,
-  ThegraphIndexerRelayer
 } from "@darwinia/ormpipe-indexer";
 import {RelayDirection} from "./mark";
 import {RelayClient} from "../client";
@@ -20,7 +18,6 @@ export interface BaseLifecycle {
 }
 
 export interface OracleLifecycle extends BaseLifecycle {
-  sourceIndexerOracle: ThegraphIndexerOracle,
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerSubapi: ThegraphIndexerSubapi,
@@ -28,7 +25,6 @@ export interface OracleLifecycle extends BaseLifecycle {
 }
 
 export interface RelayerLifecycle extends BaseLifecycle {
-  sourceIndexerRelayer: ThegraphIndexerRelayer,
   sourceIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerOrmp: ThegraphIndexOrmp,
   targetIndexerSubapi: ThegraphIndexerSubapi,

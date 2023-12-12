@@ -1,12 +1,12 @@
 import {
   OrmpMessageAccepted,
   OrmpMessageDispatched,
-  QueryOrmpProtocolMessageAccepted,
-  QueryInspectMessageDispatched,
+  QueryBasicMessageAccepted,
   QueryMessageAcceptedListByHashes,
   QueryMessageHashes,
   QueryNextMessageAccepted,
-  QueryPreparedMessages
+  QueryOrmpProtocolMessageAccepted,
+  QueryRelayerMessageAccepted
 } from "../types/graph";
 import {GraphCommon} from "./_common";
 import {CollectionKit} from "../toolkit/collection";
@@ -47,6 +47,13 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_to
         message_gasLimit
         message_encoded
+
+        oracleAssigned
+        oracleAssignedFee
+        relayerAssigned
+        relayerAssignedFee
+        relayerAssignedProof
+        relayerAssignedParams
       }
     }
     `;
@@ -79,6 +86,13 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_to
         message_gasLimit
         message_encoded
+
+        oracleAssigned
+        oracleAssignedFee
+        relayerAssigned
+        relayerAssignedFee
+        relayerAssignedProof
+        relayerAssignedParams
       }
     }
     `;
@@ -95,7 +109,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     return rets;
   }
 
-  public async messageHashes(variables: QueryMessageHashes): Promise<string[]> {
+  public async queryRelayerMessageHashes(variables: QueryMessageHashes): Promise<string[]> {
     const query = `
     query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!) {
       ormpProtocolMessageAccepteds(
@@ -135,13 +149,14 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async nextMessageAccepted(variables: QueryNextMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
     const query = `
-    query QueryNextMessageAccepted($messageIndex: BigInt!) {
+    query QueryNextMessageAccepted($messageIndex: BigInt!, $toChainId: Int!) {
       ormpProtocolMessageAccepteds(
         first: 1
         orderBy: message_index
         orderDirection: asc
         where: {
           message_index_gt: $messageIndex
+          message_toChainId: $toChainId
         }
       ) {
         id
@@ -159,45 +174,30 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_to
         message_gasLimit
         message_encoded
+
+        oracleAssigned
+        oracleAssignedFee
+        relayerAssigned
+        relayerAssignedFee
+        relayerAssignedProof
+        relayerAssignedParams
       }
     }
     `;
     return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
   }
 
-  public async inspectMessageDispatched(variables: QueryInspectMessageDispatched): Promise<OrmpMessageDispatched | undefined> {
+  public async pickRelayerMessageAcceptedHashes(variables: QueryRelayerMessageAccepted): Promise<string[]> {
     const query = `
-    query QueryLastMessageDispatched($msgHash: String!) {
-      ormpProtocolMessageDispatcheds(
-        first: 1
-        orderBy: blockNumber
-        orderDirection: desc
-        where: {
-          msgHash: $msgHash
-        }
-      ) {
-        id
-        blockNumber
-        blockTimestamp
-        transactionHash
-
-        msgHash
-        dispatchResult
-      }
-    }
-    `;
-    return await super.single({query, variables, schema: 'ormpProtocolMessageDispatcheds'});
-  }
-
-  public async queryPreparedMessageAcceptedHashes(variables: QueryPreparedMessages): Promise<string[]> {
-    const query = `
-    query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!) {
+    query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!, $toChainId: Int!) {
       ormpProtocolMessageAccepteds(
         skip: $skip
         orderBy: message_index
         orderDirection: asc
         where: {
+          relayerAssigned: true
           message_index_lte: $messageIndex
+          message_toChainId: $toChainId
         }
       ) {
         msgHash
@@ -258,5 +258,127 @@ export class ThegraphIndexOrmp extends GraphCommon {
     }
     return msgHashes.filter(item => unRelayMessageHashes.indexOf(item) == -1);
   }
+
+  public async pickOracleAssignedMessageHashes(variables: QueryBasicMessageAccepted): Promise<string[]> {
+    const query = `
+    query QueryAllOracleAssignedMessageAccepted($skip: Int!, $toChainId: Int!) {
+      ormpProtocolMessageAccepteds(
+        skip: $skip
+        first: 10
+        orderBy: message_index
+        orderDirection: asc
+        where: {
+          oracleAssigned: true
+          message_toChainId: $toChainId
+        }
+      ) {
+        msgHash
+      }
+    }
+    `;
+
+    let skip = 0;
+    const rets: string[] = [];
+    while (true) {
+      const _variables = {
+        ...variables,
+        skip,
+      };
+      const parts: OrmpMessageAccepted[] = await super.list({
+        query,
+        variables: _variables,
+        schema: 'ormpProtocolMessageAccepteds',
+      });
+      const length = parts.length;
+      if (length == 0) {
+        return rets;
+      }
+      const hashes = parts.map(item => item.msgHash);
+      rets.push(...hashes);
+      skip += length;
+    }
+  }
+
+  public async lastOracleAssigned(variables: QueryBasicMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
+    const query = `
+    query QueryLastMessageAccepted($toChainId: Int!) {
+      ormpProtocolMessageAccepteds(
+        first: 1
+        orderBy: message_index
+        orderDirection: desc
+        where: {
+          oracleAssigned: true
+          message_toChainId: $toChainId
+        }
+      ) {
+        id
+        blockNumber
+        blockTimestamp
+        transactionHash
+
+        msgHash
+        root
+        message_channel
+        message_index
+        message_fromChainId
+        message_from
+        message_toChainId
+        message_to
+        message_gasLimit
+        message_encoded
+
+        oracleAssigned
+        oracleAssignedFee
+        relayerAssigned
+        relayerAssignedFee
+        relayerAssignedProof
+        relayerAssignedParams
+      }
+    }
+    `;
+    return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
+  }
+
+
+  public async lastRelayerAssigned(variables: QueryBasicMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
+    const query = `
+    query QueryLastMessageAccepted($toChainId: Int!) {
+      ormpProtocolMessageAccepteds(
+        first: 1
+        orderBy: message_index
+        orderDirection: desc
+        where: {
+          relayerAssigned: true
+          message_toChainId: $toChainId
+        }
+      ) {
+        id
+        blockNumber
+        blockTimestamp
+        transactionHash
+
+        msgHash
+        root
+        message_channel
+        message_index
+        message_fromChainId
+        message_from
+        message_toChainId
+        message_to
+        message_gasLimit
+        message_encoded
+
+        oracleAssigned
+        oracleAssignedFee
+        relayerAssigned
+        relayerAssignedFee
+        relayerAssignedProof
+        relayerAssignedParams
+      }
+    }
+    `;
+    return await super.single({query, variables, schema: 'ormpProtocolMessageAccepteds'});
+  }
+
 
 }
