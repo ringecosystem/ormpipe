@@ -43,5 +43,14 @@
       "subapi": "0x00000000096c285629Fe3EAb3dd042c27b9dcBa6",
       "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
     }
+  },
+  "ethereum": {
+    "name": "ethereum",
+    "endpoint": "https://ethereum.publicnode.com",
+    "indexer": "https://api.studio.thegraph.com/proxy/51152/ormpipe-ethereum/version/latest",
+    "contract": {
+      "subapi": "0x00000000096c285629Fe3EAb3dd042c27b9dcBa6",
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+    }
   }
 }
