@@ -47,7 +47,7 @@ export class SubapiContractClient {
     );
     const tx = await this.contract['requestFinalizedHash'](chainId, bcs, {
       value: requestFee,
-      gasLimit: 30n * 100000n,
+      gasLimit: 50n * 100000n,
     });
     return await tx.wait();
   }
