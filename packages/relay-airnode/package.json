@@ -1,5 +1,5 @@
 {
-  "name": "@darwinia/ormpipe-relay",
+  "name": "@darwinia/ormpipe-relay-airnode",
   "version": "0.0.7",
   "description": "ormpipe relay",
   "main": "dist/index.js",

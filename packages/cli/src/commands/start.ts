@@ -5,7 +5,7 @@ import {
   OrmpRelay, OrmpRelayConfig,
   RelayFeature,
   StartTask
-} from "@darwinia/ormpipe-relay"
+} from "@darwinia/ormpipe-relay-airnode"
 import {CommandHelper} from "../common/commander";
 import * as fs from 'fs';
 import {logger} from "@darwinia/ormpipe-logger";
