@@ -37,8 +37,8 @@ export class RelayerRelay extends CommonRelay<RelayerLifecycle> {
     return super.lifecycle.targetRelayerClient
   }
 
-  private sourceChainId: number = 0;
-  private targetChainId: number = 0;
+  private sourceChainId = 0;
+  private targetChainId = 0;
 
   public async start() {
     try {

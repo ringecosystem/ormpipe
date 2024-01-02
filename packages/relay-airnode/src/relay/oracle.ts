@@ -10,9 +10,9 @@ import chalk = require('chalk');
 
 export class OracleRelay extends CommonRelay<OracleLifecycle> {
 
-  private static CK_ORACLE_DELIVERIED: string = 'ormpipe.oracle.deliveried';
-  private static CK_ORACLE_AGGREGATED: string = 'ormpipe.oracle.aggregated';
-  private static CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT: string = 'ormpipe.oracle.mark.aggregated_message_count';
+  private static CK_ORACLE_DELIVERIED = 'ormpipe.oracle.deliveried';
+  private static CK_ORACLE_AGGREGATED = 'ormpipe.oracle.aggregated';
+  private static CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT = 'ormpipe.oracle.mark.aggregated_message_count';
 
   constructor(lifecycle: OracleLifecycle) {
     super(lifecycle);
@@ -34,8 +34,8 @@ export class OracleRelay extends CommonRelay<OracleLifecycle> {
     return super.lifecycle.targetSubapiClient
   }
 
-  private sourceChainId: number = 0;
-  private targetChainId: number = 0;
+  private sourceChainId = 0;
+  private targetChainId = 0;
 
   public async start(features: RelayFeature[]) {
     try {
