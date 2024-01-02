@@ -21,6 +21,7 @@
   ],
   "dependencies": {
     "@darwinia/ormpipe-relay-airnode": "^0.0.7",
+    "@darwinia/ormpipe-relay-apinode": "^0.0.7",
     "@darwinia/ormpipe-integration": "^0.0.7",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
