@@ -2,7 +2,7 @@ import {Command, Flags} from '@oclif/core'
 import {
   ChainInfoFlag,
   CliStartConfig,
-  OrmpRelay, OrmpRelayConfig,
+  OrmpRelayAirnode, OrmpRelayConfig,
   RelayFeature,
   StartTask
 } from "@darwinia/ormpipe-relay-airnode"
@@ -75,7 +75,7 @@ export default class Start extends Command {
     const rawOrmpRelayChainInfo = await this.generateRelayChainInfo(cliStartConfig);
     const ormpRelayConfig = await this.buildFlag(cliStartConfig, rawOrmpRelayChainInfo);
 
-    const ormpRelay = new OrmpRelay(ormpRelayConfig);
+    const ormpRelay = new OrmpRelayAirnode(ormpRelayConfig);
     try {
       await ormpRelay.start();
     } catch (e: any) {

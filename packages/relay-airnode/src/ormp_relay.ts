@@ -10,7 +10,7 @@ import {setTimeout} from "timers/promises";
 import {logger} from "@darwinia/ormpipe-logger";
 import {RelayStorage} from "./helper/storage";
 
-export class OrmpRelay {
+export class OrmpRelayAirnode {
   constructor(
     private readonly config: OrmpRelayConfig,
   ) {
