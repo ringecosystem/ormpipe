@@ -1,22 +1,11 @@
 import {ethers} from "ethers";
-import {SubapiContractClient} from "./contract_subapi";
-import {RelayerContractClient} from "./contract_relayer";
-import {logger} from "@darwinia/ormpipe-logger";
 import chalk = require('chalk');
+import {logger} from "./logger/winston";
 
 export interface RelayClientConfig {
   chainName: string
   endpoint: string
   signer: string
-  signerSubapi: string
-  signerRelayer: string
-}
-
-export interface ContractClientConfig {
-  chainName: string
-  signer: string
-  address: string
-  evm: ethers.JsonRpcProvider
 }
 
 export interface TransactionResponse {
@@ -27,7 +16,7 @@ export interface TransactionResponse {
   blockNumber: string
 }
 
-export class RelayClient {
+export class RelayEVMClient {
 
   private readonly _config: RelayClientConfig;
   private readonly _evm: ethers.JsonRpcProvider;
@@ -49,7 +38,7 @@ export class RelayClient {
       logger.debug(
         chalk.gray(logText),
         {
-          target: 'ormpipe-relay',
+          target: 'ormpipe',
           breads: [`ethers:${this._config.chainName}`, `${action}`]
         }
       );
@@ -64,23 +53,23 @@ export class RelayClient {
     return this._evm
   }
 
-  public subapi(address: string): SubapiContractClient {
-    return new SubapiContractClient({
-      chainName: this.config.chainName,
-      signer: this.config.signerSubapi ?? this.config.signer,
-      address,
-      evm: this.evm
-    })
-  }
-
-  public relayer(address: string): RelayerContractClient {
-    return new RelayerContractClient({
-      chainName: this.config.chainName,
-      signer: this.config.signerRelayer ?? this.config.signer,
-      address,
-      evm: this.evm
-    });
-  }
+  // public subapi(address: string): SubapiContractClient {
+  //   return new SubapiContractClient({
+  //     chainName: this.config.chainName,
+  //     signer: this.config.signerSubapi ?? this.config.signer,
+  //     address,
+  //     evm: this.evm
+  //   })
+  // }
+  //
+  // public relayer(address: string): RelayerContractClient {
+  //   return new RelayerContractClient({
+  //     chainName: this.config.chainName,
+  //     signer: this.config.signerRelayer ?? this.config.signer,
+  //     address,
+  //     evm: this.evm
+  //   });
+  // }
 
 }
 

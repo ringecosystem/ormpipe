@@ -2,7 +2,7 @@ import {Args, Command, Flags} from '@oclif/core'
 import {IntegrationTestConfig} from "@darwinia/ormpipe-integration/dist/types/config";
 import {CommandHelper} from "../common/commander";
 import {OrmpIntegrationTestProgram} from "@darwinia/ormpipe-integration";
-import {logger} from "@darwinia/ormpipe-logger";
+import {logger} from "@darwinia/ormpipe-common";
 
 const camelize = require('camelize');
 

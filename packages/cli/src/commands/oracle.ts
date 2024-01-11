@@ -1,0 +1,71 @@
+import {Args, Command, Flags} from '@oclif/core'
+import {CommandHelper} from "../common/commander";
+import {CliOracleConfig, OracleRelay, OracleRelayConfig, OracleRelayLifecycle} from "@darwinia/ormpipe-relay-oracle";
+import {RelayEVMClient, RelayStorage} from "@darwinia/ormpipe-common";
+import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
+
+const camelize = require('camelize')
+
+export default class Oracle extends Command {
+  static description = 'ORMP oracle relay'
+
+  static examples = [
+    '<%= config.bin %> <%= command.id %>',
+  ]
+
+  static flags = {
+    ...CommandHelper.COMMON_FLAGS,
+  }
+
+  static args = {}
+
+  public async run(): Promise<void> {
+    const {args, flags} = await this.parse(Oracle)
+
+    const cliConfig = camelize(flags) as unknown as CliOracleConfig;
+    const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
+    for (const rc of relayConfigs) {
+      const lifecycle = await this.buildLifecycle(rc);
+      const relay = new OracleRelay(lifecycle);
+      await relay.start();
+    }
+  }
+
+
+  private async buildLifecycle(config: OracleRelayConfig): Promise<OracleRelayLifecycle> {
+    const sourceClient = new RelayEVMClient({
+      chainName: config.sourceChain.name,
+      endpoint: config.sourceChain.endpoint,
+      signer: config.sourceSigner,
+    });
+    const targetClient = new RelayEVMClient({
+      chainName: config.targetChain.name,
+      endpoint: config.targetChain.endpoint,
+      signer: config.targetSigner,
+    });
+    const sourceIndex = new OrmpipeIndexer({
+      endpoint: config.sourceChain.indexer,
+      ormpEndpoint: config.sourceChain.indexer,
+      subapiEndpoint: config.sourceChain.indexer,
+    }).thegraph();
+    const targetIndex = new OrmpipeIndexer({
+      endpoint: config.targetChain.indexer,
+      ormpEndpoint: config.targetChain.indexer,
+      subapiEndpoint: config.targetChain.indexer,
+    }).thegraph();
+    const storage = new RelayStorage(config.dataPath, {
+      keyPrefix: `${config.sourceChain.name}-${config.sourceChain.name}`,
+    });
+    return {
+      ...config,
+      storage,
+      sourceName: config.sourceChain.name,
+      targetName: config.targetChain.name,
+      sourceClient,
+      targetClient,
+      sourceIndexerOrmp: sourceIndex.ormp(),
+      targetIndexerOrmp: targetIndex.ormp(),
+    };
+  }
+
+}

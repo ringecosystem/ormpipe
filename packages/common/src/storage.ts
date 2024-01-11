@@ -1,4 +1,3 @@
-import {logger} from "@darwinia/ormpipe-logger";
 import * as fs from 'node:fs';
 
 const cacache = require('cacache')

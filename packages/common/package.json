@@ -1,5 +1,5 @@
 {
-  "name": "@darwinia/ormpipe-relay",
+  "name": "@darwinia/ormpipe-common",
   "version": "0.0.7",
   "description": "ormpipe relay",
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b && shx cp -r src/abis dist/",
+    "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts --fix",
     "posttest": "yarn lint",
     "test": "jest",
@@ -17,17 +17,13 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@chainsafe/ssz": "^0.9",
-    "@darwinia/contracts-verify": "^1",
-    "@darwinia/ormpipe-indexer": "^0.0.7",
-    "async": "^3",
+    "@stdlib/string-pad": "^0",
+    "winston": "^3",
     "cacache": "^18",
-    "chalk": "^4",
-    "ethers": "^6"
+    "ethers": "^6",
+    "chalk": "^4"
   },
   "devDependencies": {
-    "@types/async": "^3",
-    "@types/cacache": "^17",
     "@types/jest": "^29",
     "@types/node": "^20",
     "@typescript-eslint/eslint-plugin": "^5",

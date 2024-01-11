@@ -1,6 +1,5 @@
-import {ContractClientConfig, TransactionResponse} from "./index";
 import {ethers} from "ethers";
-import {logger} from "@darwinia/ormpipe-logger";
+import {logger, TransactionResponse} from "@darwinia/ormpipe-common";
 
 const abi = require("../abis/OrmpRelayer.json");
 
@@ -22,12 +21,19 @@ export interface RelayOptions {
   enableGasCheck: boolean
 }
 
+export interface ContractConfig {
+  chainName: string
+  signer: string
+  address: string
+  evm: ethers.JsonRpcProvider
+}
+
 export class RelayerContractClient {
 
-  private readonly config: ContractClientConfig;
+  private readonly config: ContractConfig;
   private readonly contract: ethers.Contract;
 
-  constructor(config: ContractClientConfig) {
+  constructor(config: ContractConfig) {
     this.config = config;
     const wallet = new ethers.Wallet(config.signer, config.evm);
     this.contract = new ethers.Contract(config.address, abi, wallet);

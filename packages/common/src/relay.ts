@@ -1,8 +1,8 @@
-import {BaseLifecycle} from "../types/lifecycle";
-import {RelayClient} from "../client";
-import {RelayStorage} from "../helper/storage";
+import {RelayBaseLifecycle} from "./types";
+import {RelayEVMClient} from "./evm";
+import {RelayStorage} from "./storage";
 
-export class CommonRelay<T extends BaseLifecycle> {
+export class CommonRelay<T extends RelayBaseLifecycle> {
 
   private readonly _lifecycle: T;
 
@@ -22,11 +22,11 @@ export class CommonRelay<T extends BaseLifecycle> {
     return this.lifecycle.targetName
   }
 
-  public get sourceClient(): RelayClient {
+  public get sourceClient(): RelayEVMClient {
     return this.lifecycle.sourceClient
   }
 
-  public get targetClient(): RelayClient {
+  public get targetClient(): RelayEVMClient {
     return this.lifecycle.targetClient
   }
 
@@ -44,4 +44,3 @@ export class CommonRelay<T extends BaseLifecycle> {
     }
   }
 }
-
