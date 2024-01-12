@@ -1,5 +1,5 @@
 import {ethers} from "ethers";
-import {logger, TransactionResponse} from "@darwinia/ormpipe-common";
+import {ContractConfig, logger, TransactionResponse} from "@darwinia/ormpipe-common";
 
 const abi = require("../abis/OrmpRelayer.json");
 
@@ -19,13 +19,6 @@ export interface RelayOptions {
   proof: string
   gasLimit: bigint
   enableGasCheck: boolean
-}
-
-export interface ContractConfig {
-  chainName: string
-  signer: string
-  address: string
-  evm: ethers.JsonRpcProvider
 }
 
 export class RelayerContractClient {

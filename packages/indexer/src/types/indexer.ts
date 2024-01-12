@@ -5,5 +5,5 @@ export interface IndexerHttpConfig {
 export interface IndexerInput extends IndexerHttpConfig {
   endpoint: string;
   ormpEndpoint?: string
-  subapiEndpoint?: string
+  signcribeEndpoint?: string
 }

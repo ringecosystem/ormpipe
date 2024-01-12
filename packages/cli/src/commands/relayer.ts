@@ -49,14 +49,12 @@ export default class Relayer extends Command {
       signer: config.targetSigner,
     });
     const sourceIndex = new OrmpipeIndexer({
-      endpoint: config.sourceChain.indexer,
-      ormpEndpoint: config.sourceChain.indexer,
-      subapiEndpoint: config.sourceChain.indexer,
+      endpoint: config.sourceChain.indexer.ormp,
+      signcribeEndpoint: config.sourceChain.indexer.signcribe,
     }).thegraph();
     const targetIndex = new OrmpipeIndexer({
-      endpoint: config.targetChain.indexer,
-      ormpEndpoint: config.targetChain.indexer,
-      subapiEndpoint: config.targetChain.indexer,
+      endpoint: config.targetChain.indexer.ormp,
+      signcribeEndpoint: config.targetChain.indexer.signcribe,
     }).thegraph();
     const storage = new RelayStorage(config.dataPath, {
       keyPrefix: `${config.sourceChain.name}-${config.sourceChain.name}`,

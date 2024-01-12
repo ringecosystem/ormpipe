@@ -27,12 +27,18 @@ export interface RelayBaseLifecycle extends RelayBaseConfig {
 export interface ChainInfoFlag {
   name: string
   endpoint: string
-  indexer: string
+  indexer: ChainInfoIndexerFlag
   contract: ChainInfoFlagContract
 }
 
+export interface ChainInfoIndexerFlag {
+  ormp: string
+  signcribe: string
+}
+
 export interface ChainInfoFlagContract {
-  subapi: string
+  signcribe: string
+  oracle2: string
   relayer: string
 }
 
