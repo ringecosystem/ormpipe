@@ -5,7 +5,7 @@ import {Oracle2ContractClient} from "./client/contract_oracle2";
 import {SigncribeContractClient} from "./client/contract_signcribe";
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
 
-const Safe = require('@safe-global/protocol-kit');
+import Safe, { EthersAdapter } from '@safe-global/protocol-kit'
 
 interface OracleRelayOptions {
   sourceChainId: number
@@ -190,7 +190,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     // sign
     const safeTransactionData = {
       to: '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
-      value: 0,
+      value: '0',
       data: '0x'
     }
 
@@ -207,8 +207,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       ethers: super.targetClient.evm,
       signerOrProvider: _signer
     };
-    const safeSdk = await Safe.default.create({
-      ethAdapter: new Safe.EthersAdapter(eac),
+    const safeSdk = await Safe.create({
+      ethAdapter: new EthersAdapter(eac),
       safeAddress: "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     })
 
