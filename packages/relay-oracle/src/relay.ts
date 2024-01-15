@@ -5,7 +5,8 @@ import {Oracle2ContractClient} from "./client/contract_oracle2";
 import {SigncribeContractClient} from "./client/contract_signcribe";
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
 
-import Safe, { EthersAdapter } from '@safe-global/protocol-kit'
+const Safe = require('@safe-global/protocol-kit');
+import { ethers } from "ethers";
 
 interface OracleRelayOptions {
   sourceChainId: number
@@ -203,12 +204,11 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     //     console.error('Error connecting to provider:', error);
     //   });
     const _signer = super.targetClient.wallet(super.lifecycle.targetSigner);
-    const eac = {
-      ethers: super.targetClient.evm,
-      signerOrProvider: _signer
-    };
-    const safeSdk = await Safe.create({
-      ethAdapter: new EthersAdapter(eac),
+    const safeSdk = await Safe.default.create({
+      ethAdapter: new Safe.EthersAdapter({
+        ethers,
+        signerOrProvider: _signer
+      }),
       safeAddress: "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     })
 
