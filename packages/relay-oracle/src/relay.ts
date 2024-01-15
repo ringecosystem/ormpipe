@@ -5,6 +5,7 @@ import {Oracle2ContractClient} from "./client/contract_oracle2";
 import {SigncribeContractClient} from "./client/contract_signcribe";
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
 
+const Safe = require('@safe-global/protocol-kit');
 
 interface OracleRelayOptions {
   sourceChainId: number
@@ -185,7 +186,76 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
 
+
+    // sign
+    const safeTransactionData = {
+      to: '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
+      value: 0,
+      data: '0x'
+    }
+
+    // const _provider = new ethers.JsonRpcProvider("https://ethereum-sepolia.publicnode.com");
+    // _provider.getBlockNumber()
+    //   .then(blockNumber => {
+    //     console.log(`Connected successfully. Current block number is ${blockNumber}`);
+    //   })
+    //   .catch(error => {
+    //     console.error('Error connecting to provider:', error);
+    //   });
+    const _signer = super.targetClient.wallet(super.lifecycle.targetSigner);
+    const eac = {
+      ethers: super.targetClient.evm,
+      signerOrProvider: _signer
+    };
+    const safeSdk = await Safe.default.create({
+      ethAdapter: new Safe.EthersAdapter(eac),
+      safeAddress: "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
+    })
+
+    const sfaeTransaction = await safeSdk.createTransaction({ transactions: [safeTransactionData] });
+
+    // console.log(safeTransactionData);
+    const safeTxHash = await safeSdk.getTransactionHash(sfaeTransaction);
+    const senderSignature = await safeSdk.signTransactionHash(safeTxHash);
+    console.log(senderSignature);
+
+
     // todo: sign message
+
+    /*
+    // tron
+    const tronWeb = new TronWeb({
+                fullHost: 'https://api.shasta.trongrid.io',
+                privateKey: tronPrivateKey
+            })
+            const oracleV2addr = tronWeb.address.toHex("TDACQR5FUtNpuBS2g85WKiucvrAWhY6zzs");
+            const functions = "importMessageRoot(uint256,uint256,bytes32)";
+            var parameter = [{ type: 'uint256', value: 42416 }, { type: 'uint256', value: 1 }, { type: 'bytes32', value: `0x0000000000000000000000000000000000000000000000000000000000000001` }];
+            const subapiDao = tronWeb.address.toHex("TKXAuEtPiqa49vnuoBQQDURUzCB7SnXb4y");
+
+            const options = {
+                feeLimit: 100000000,
+                callValue: 0,
+                Permission_id: 0
+            }
+
+            const initTx = await tronWeb.transactionBuilder.triggerSmartContract(oracleV2addr, functions, options, parameter, subapiDao);
+            const unsignedTx = await tronWeb.transactionBuilder.extendExpiration(initTx.transaction, 1800);
+
+            var signedTransaction = await tronWeb.trx.multiSign(unsignedTx);
+            console.log("signedTransaction", JSON.stringify(signedTransaction));
+
+            // const signedTransaction = "";
+
+            var signWeight = await tronWeb.trx.getSignWeight(signedTransaction);
+            console.log("signWeight", signWeight);
+
+            // var approvedList = await tronWeb.trx.getApprovedList(signedTransaction);
+            // console.log("approvedList", approvedList);
+
+            // var result = await tronWeb.trx.broadcast(signedTransaction);
+            // console.log("result", result);
+     */
 
     await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
   }
