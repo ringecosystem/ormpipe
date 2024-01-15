@@ -15,6 +15,10 @@ export default class Oracle extends Command {
 
   static flags = {
     ...CommandHelper.COMMON_FLAGS,
+    'mainly': Flags.boolean({
+      required: false,
+      description: 'mainly node',
+    }),
   }
 
   static args = {}
@@ -25,7 +29,7 @@ export default class Oracle extends Command {
     const cliConfig = camelize(flags) as unknown as CliOracleConfig;
     const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
     for (const rc of relayConfigs) {
-      const lifecycle = await this.buildLifecycle(rc);
+      const lifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
       const relay = new OracleRelay(lifecycle);
       await relay.start();
     }
@@ -63,6 +67,7 @@ export default class Oracle extends Command {
       targetClient,
       sourceIndexerOrmp: sourceIndex.ormp(),
       targetIndexerOrmp: targetIndex.ormp(),
+      indexerSigncribe: sourceIndex.signcribe(),
     };
   }
 

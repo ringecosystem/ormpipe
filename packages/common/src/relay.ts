@@ -6,6 +6,9 @@ export class CommonRelay<T extends RelayBaseLifecycle> {
 
   private readonly _lifecycle: T;
 
+  private _sourceChainId?: number;
+  private _targetChainId?: number;
+
   constructor(lifecycle: T,) {
     this._lifecycle = lifecycle;
   }
@@ -32,6 +35,20 @@ export class CommonRelay<T extends RelayBaseLifecycle> {
 
   public get storage(): RelayStorage {
     return this.lifecycle.storage
+  }
+
+  public async sourceChainId(): Promise<number> {
+    if (this._sourceChainId) return this._sourceChainId;
+    const sourceNetwork = await this.sourceClient.evm.getNetwork();
+    this._sourceChainId = Number(sourceNetwork.chainId);
+    return this._sourceChainId;
+  }
+
+  public async targetChainId(): Promise<number> {
+    if (this._targetChainId) return this._targetChainId;
+    const targetNetwork = await this.targetClient.evm.getNetwork();
+    this._targetChainId = Number(targetNetwork.chainId);
+    return this._targetChainId;
   }
 
   public meta(target: string, breads?: string[]): any {

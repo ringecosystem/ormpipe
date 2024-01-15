@@ -2,7 +2,6 @@ import * as enquirer from "enquirer";
 import {ChainInfoFlag, CliBaseConfig, logger, RelayBaseConfig} from "@darwinia/ormpipe-common";
 import {Flags} from "@oclif/core";
 import * as fs from 'fs';
-import {OracleRelayConfig} from "@darwinia/ormpipe-relay-oracle";
 
 const REALY_CONFIG_DEFAULT = require('../assets/relay-chain.default.json');
 
@@ -121,12 +120,13 @@ export class CommandHelper {
       });
 
       const work = {
-        dataPath: cliStartConfig.dataPath,
+        // dataPath: cliStartConfig.dataPath,
+        ...cliStartConfig,
         sourceChain,
         sourceSigner,
         targetChain,
         targetSigner,
-      } as OracleRelayConfig;
+      } as RelayBaseConfig;
       works.push(work);
     }
     return works;
