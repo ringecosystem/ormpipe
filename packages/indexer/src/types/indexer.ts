@@ -6,4 +6,5 @@ export interface IndexerInput extends IndexerHttpConfig {
   endpoint: string;
   ormpEndpoint?: string
   signcribeEndpoint?: string
+  oracleEndpoint?: string
 }

@@ -62,23 +62,23 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
   public async start() {
     try {
-
       const sourceChainId = await super.sourceChainId();
       const targetChainId = await super.targetChainId();
-      await this.sign({
+
+      const options: OracleRelayOptions = {
         sourceChainId,
         targetChainId,
-      });
+      };
+      await this.sign(options);
 
       if (!super.lifecycle.mainly) {
         return;
       }
-      await this.submit();
+      await this.submit(options);
     } catch (e: any) {
       logger.error(e, super.meta('ormpipe-relay'));
     }
   }
-
 
   private async _lastAssignedMessageAccepted(options: OracleRelayOptions): Promise<OrmpMessageAccepted | undefined> {
     const msgHashes = await this.sourceIndexerOrmp.pickOracleAssignedMessageHashes({
@@ -190,7 +190,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
   }
 
-  private async submit() {
+  private async submit(options: OracleRelayOptions) {
     console.log('submit');
   }
 

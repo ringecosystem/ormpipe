@@ -68,6 +68,7 @@ export default class Relayer extends Command {
       targetClient,
       sourceIndexerOrmp: sourceIndex.ormp(),
       targetIndexerOrmp: targetIndex.ormp(),
+      targetIndexerOracle: targetIndex.oracle(),
     };
   }
 

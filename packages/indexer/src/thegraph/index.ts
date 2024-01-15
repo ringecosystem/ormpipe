@@ -1,15 +1,17 @@
 import {IndexerInput} from "../types/indexer";
 import {ThegraphIndexOrmp} from "./ormp";
-import {Gqlc} from "../gqlc";
 import {ThegraphIndexSigncribe} from "./signcribe";
+import {ThegraphIndexOracle} from "./oracle"
+import {Gqlc} from "../gqlc";
 
 
 export class ThegraphIndexer {
   private readonly graphOrmp: ThegraphIndexOrmp;
   private readonly graphSigncribe: ThegraphIndexSigncribe;
+  private readonly graphOracle: ThegraphIndexOracle;
 
   constructor(input: IndexerInput) {
-    const {endpoint, ormpEndpoint, signcribeEndpoint} = input;
+    const {endpoint, ormpEndpoint, signcribeEndpoint, oracleEndpoint} = input;
     this.graphOrmp = new ThegraphIndexOrmp(input, new Gqlc({
       timeout: input.timeout,
       endpoint: ormpEndpoint ?? endpoint,
@@ -17,6 +19,10 @@ export class ThegraphIndexer {
     this.graphSigncribe = new ThegraphIndexSigncribe(input, new Gqlc({
       timeout: input.timeout,
       endpoint: signcribeEndpoint ?? endpoint,
+    }));
+    this.graphOracle = new ThegraphIndexOracle(input, new Gqlc({
+      timeout: input.timeout,
+      endpoint: oracleEndpoint ?? endpoint,
     }));
   }
 
@@ -26,6 +32,10 @@ export class ThegraphIndexer {
 
   public signcribe(): ThegraphIndexSigncribe {
     return this.graphSigncribe;
+  }
+
+  public oracle(): ThegraphIndexOracle {
+    return this.graphOracle;
   }
 
 
