@@ -204,7 +204,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       safeAddress: "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     })
 
-    const safeTransaction = await safeSdk.createTransaction({ transactions: [safeTransactionData], options: {nonce: 2} });
+    const safeTransaction = await safeSdk.createTransaction({ transactions: [safeTransactionData], options: {nonce: 1} });
 
     // console.log(safeTransactionData);
     const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
