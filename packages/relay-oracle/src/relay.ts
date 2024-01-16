@@ -212,6 +212,27 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     console.log(senderSignature);
 
 
+    safeTransaction.signatures = [];
+    [
+      {
+          signer: '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
+          data: '0x8f90c6f9bdde7adcd240b7c17cd1568590a64567dbe7ff1106124285b0bec7fe0bf4c5f74f4f5be8a0f8a2f55d1f72eb112b21eeb318590cb41a5707869806791f'
+      },
+      {
+          signer: '0x178E699c9a6bB2Cd624557Fbd85ed219e6faBa77',
+          data: '0x51d92c0d1977541ca705f6b17d6fc7bc0eed26ef49a868a8c760f6a04ee4e820737dfb599bd14b2c73ee50e433b989d0bc5039b380a494829e3412726a37f82e1f'
+      },
+      {
+          signer: '0xA4bE619E8C0E3889f5fA28bb0393A4862Cad35ad',
+          data: '0xfbdfd00be788c8b03ae12e112b713d9a5abbb78b361da3724db9ddebe11a414172eb322eaaf983d2b341e993199d27e38af59ebe70b9fe41dca19501bc48fab51f'
+      }
+  ].forEach(item=>{
+    safeTransaction.signatures.push(new Safe.EthSafeSignature(item.signer, item.data));
+  })
+  console.log("safeTransaction", safeTransaction);
+  const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
+
+
     // todo: sign message
 
     /*
