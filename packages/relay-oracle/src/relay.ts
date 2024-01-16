@@ -195,14 +195,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       data: '0x'
     }
 
-    // const _provider = new ethers.JsonRpcProvider("https://ethereum-sepolia.publicnode.com");
-    // _provider.getBlockNumber()
-    //   .then(blockNumber => {
-    //     console.log(`Connected successfully. Current block number is ${blockNumber}`);
-    //   })
-    //   .catch(error => {
-    //     console.error('Error connecting to provider:', error);
-    //   });
     const _signer = super.targetClient.wallet(super.lifecycle.targetSigner);
     const safeSdk = await Safe.default.create({
       ethAdapter: new Safe.EthersAdapter({
@@ -212,10 +204,10 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       safeAddress: "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     })
 
-    const sfaeTransaction = await safeSdk.createTransaction({ transactions: [safeTransactionData] });
+    const safeTransaction = await safeSdk.createTransaction({ transactions: [safeTransactionData] });
 
     // console.log(safeTransactionData);
-    const safeTxHash = await safeSdk.getTransactionHash(sfaeTransaction);
+    const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
     const senderSignature = await safeSdk.signTransactionHash(safeTxHash);
     console.log(senderSignature);
 
