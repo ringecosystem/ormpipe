@@ -88,6 +88,17 @@ export class CommandHelper {
     const works = [] as RelayBaseConfig[];
     const _SIGNER_BASE = process.env['ORMPIPE_SIGNER'];
 
+    const _SIGNER_SIGNCRIBE = process.env[`ORMPIPE_SIGNER_SIGNCRIBE`];
+    const signcribeSigner = await this.interactiveValue({
+      required: true,
+      enable: true,
+      type: 'password',
+      name: 'signer',
+      message: 'missing signcribe signer',
+      title: `please type signer for signcibe`,
+      default: _SIGNER_SIGNCRIBE ?? _SIGNER_BASE,
+    });
+
     for (const pair of pairs) {
       const [source, target] = pair.split('-');
       if (!source || !target) {
@@ -105,7 +116,7 @@ export class CommandHelper {
         enable: true,
         type: 'password',
         name: 'signer',
-        message: 'missing --signer',
+        message: 'missing source chain signer',
         title: `please type signer for ${source}`,
         default: _SIGNER_SOURCE ?? _SIGNER_BASE,
       });
@@ -114,7 +125,7 @@ export class CommandHelper {
         enable: true,
         type: 'password',
         name: 'signer',
-        message: 'missing --signer',
+        message: 'missing target chain signer',
         title: `please type signer for ${target}`,
         default: _SIGNER_TARGET ?? _SIGNER_BASE,
       });
@@ -126,6 +137,7 @@ export class CommandHelper {
         sourceSigner,
         targetChain,
         targetSigner,
+        signcribeSigner,
       } as RelayBaseConfig;
       works.push(work);
     }

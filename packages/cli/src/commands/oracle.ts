@@ -47,6 +47,11 @@ export default class Oracle extends Command {
       endpoint: config.targetChain.endpoint,
       signer: config.targetSigner,
     });
+    const signcribeClient = new RelayEVMClient({
+      chainName: 'darwinia',
+      endpoint: 'https://rpc.darwinia.network',
+      signer: config.signcribeSigner,
+    });
     const sourceIndex = new OrmpipeIndexer({
       endpoint: config.sourceChain.indexer.ormp,
       signcribeEndpoint: config.sourceChain.indexer.signcribe,
@@ -65,6 +70,7 @@ export default class Oracle extends Command {
       targetName: config.targetChain.name,
       sourceClient,
       targetClient,
+      signcribeClient,
       sourceIndexerOrmp: sourceIndex.ormp(),
       targetIndexerOrmp: targetIndex.ormp(),
       indexerSigncribe: sourceIndex.signcribe(),

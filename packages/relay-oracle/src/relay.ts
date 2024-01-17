@@ -2,11 +2,12 @@ import {OracleRelayLifecycle} from "./types/config";
 import {CommonRelay, logger} from "@darwinia/ormpipe-common";
 import {OrmpMessageAccepted, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
 import {Oracle2ContractClient} from "./client/contract_oracle2";
-import {SigncribeContractClient} from "./client/contract_signcribe";
+import {SigncribeContractClient, SubmitSignscribeOptions} from "./client/contract_signcribe";
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
 
 const Safe = require('@safe-global/protocol-kit');
-import { ethers } from "ethers";
+import {AbiCoder, ethers} from "ethers";
+import {SafeSignature} from "@safe-global/safe-core-sdk-types";
 
 interface OracleRelayOptions {
   sourceChainId: number
@@ -38,28 +39,27 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     return super.lifecycle.targetIndexerOrmp
   }
 
-  public get targetOracle2Client(): Oracle2ContractClient {
+  public get targetOracle2Contract(): Oracle2ContractClient {
     if (this._targetOracle2ContractClient) return this._targetOracle2ContractClient;
     this._targetOracle2ContractClient = new Oracle2ContractClient({
-        chainName: super.sourceName,
-        signer: super.lifecycle.targetSigner,
-        address: super.lifecycle.targetChain.contract.relayer,
-        evm: super.sourceClient.evm,
+      chainName: super.sourceName,
+      signer: super.lifecycle.targetSigner,
+      address: super.lifecycle.targetChain.contract.relayer,
+      evm: super.sourceClient.evm,
     });
     return this._targetOracle2ContractClient;
   }
 
-  public get signcribeClient(): SigncribeContractClient {
+  public get signcribeContract(): SigncribeContractClient {
     if (this._signcribeContractClient) return this._signcribeContractClient;
     this._signcribeContractClient = new SigncribeContractClient({
-      chainName: super.sourceName,
-      signer: super.lifecycle.sourceSigner,
-      address: super.lifecycle.sourceChain.contract.relayer,
-      evm: super.sourceClient.evm,
+      chainName: 'signcribe',
+      signer: super.lifecycle.signcribeSigner,
+      address: super.lifecycle.sourceChain.contract.signcribe,
+      evm: super.lifecycle.signcribeClient.evm,
     });
     return this._signcribeContractClient;
   }
-
 
 
   public async start() {
@@ -187,12 +187,14 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
 
-
     // sign
+    // super.lifecycle.targetClient.evm.
+
+    // this.targetOracle2Client
     const safeTransactionData = {
-      to: '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
+      to: super.lifecycle.targetChain.contract.oracle2, // oracle v2 contrace address
       value: '0',
-      data: '0x'
+      data: '0x', // abi encode importMessageProof
     }
 
     const _signer = super.targetClient.wallet(super.lifecycle.targetSigner);
@@ -204,33 +206,71 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       safeAddress: "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     })
 
-    const safeTransaction = await safeSdk.createTransaction({ transactions: [safeTransactionData], options: {nonce: 1} });
+    const safeTransaction = await safeSdk.createTransaction({
+        transactions: [safeTransactionData],
+        options: {nonce: 1}
+      }
+    );
 
     // console.log(safeTransactionData);
     const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
-    const senderSignature = await safeSdk.signTransactionHash(safeTxHash);
-    console.log(senderSignature);
+    const senderSignature: SafeSignature = await safeSdk.signTransactionHash(safeTxHash);
 
+    const abiCoder = AbiCoder.defaultAbiCoder();
+    const encodedData = abiCoder.encode([
+        'tuple(uint256 chainId, bytes messageRoot, uint256 nonce, uint256 blockNumber)'
+      ],
+      [
+        {
+          chainId: sourceNextMessageAccepted.message_fromChainId,
+          messageRoot: sourceNextMessageAccepted.root,
+          nonce: 1,
+          blockNumber: sourceNextMessageAccepted.blockNumber
+        }
+      ]
+    );
 
-    safeTransaction.signatures = [];
-    [
-      {
-          signer: '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
-          data: '0x8f90c6f9bdde7adcd240b7c17cd1568590a64567dbe7ff1106124285b0bec7fe0bf4c5f74f4f5be8a0f8a2f55d1f72eb112b21eeb318590cb41a5707869806791f'
-      },
-      {
-          signer: '0x178E699c9a6bB2Cd624557Fbd85ed219e6faBa77',
-          data: '0x51d92c0d1977541ca705f6b17d6fc7bc0eed26ef49a868a8c760f6a04ee4e820737dfb599bd14b2c73ee50e433b989d0bc5039b380a494829e3412726a37f82e1f'
-      },
-      {
-          signer: '0xA4bE619E8C0E3889f5fA28bb0393A4862Cad35ad',
-          data: '0xfbdfd00be788c8b03ae12e112b713d9a5abbb78b361da3724db9ddebe11a414172eb322eaaf983d2b341e993199d27e38af59ebe70b9fe41dca19501bc48fab51f'
-      }
-  ].forEach(item=>{
-    safeTransaction.signatures.push(new Safe.EthSafeSignature(item.signer, item.data));
-  })
-  console.log("safeTransaction", safeTransaction);
-  const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
+    const resp = await this.signcribeContract.submit({
+      chainId: +sourceNextMessageAccepted.message_fromChainId,
+      signature: senderSignature.data,
+      data: encodedData
+    });
+    if (!resp) {
+      logger.error(
+        'failed to submit signed to signcribe contract',
+        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+      );
+      return;
+    }
+
+    logger.info(
+      'message %s(%s) is signed and submit to signcribe: %s',
+      sourceNextMessageAccepted.message_index,
+      super.sourceName,
+      resp?.hash,
+      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    );
+
+    // safeTransaction.signatures = [];
+    // [
+    //   {
+    //     signer: '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
+    //     data: '0x8f90c6f9bdde7adcd240b7c17cd1568590a64567dbe7ff1106124285b0bec7fe0bf4c5f74f4f5be8a0f8a2f55d1f72eb112b21eeb318590cb41a5707869806791f'
+    //   },
+    //   {
+    //     signer: '0x178E699c9a6bB2Cd624557Fbd85ed219e6faBa77',
+    //     data: '0x51d92c0d1977541ca705f6b17d6fc7bc0eed26ef49a868a8c760f6a04ee4e820737dfb599bd14b2c73ee50e433b989d0bc5039b380a494829e3412726a37f82e1f'
+    //   },
+    //   {
+    //     signer: '0xA4bE619E8C0E3889f5fA28bb0393A4862Cad35ad',
+    //     data: '0xfbdfd00be788c8b03ae12e112b713d9a5abbb78b361da3724db9ddebe11a414172eb322eaaf983d2b341e993199d27e38af59ebe70b9fe41dca19501bc48fab51f'
+    //   }
+    // ].forEach(item => {
+    //   safeTransaction.signatures.push(new Safe.EthSafeSignature(item.signer, item.data));
+    // })
+    // console.log("safeTransaction", safeTransaction);
+    //
+    // const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
 
 
     // todo: sign message

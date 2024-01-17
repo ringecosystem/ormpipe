@@ -9,7 +9,8 @@
     "contract": {
       "oracle2": "0x0000000000B3A9Ae50c8e29df878FB3aDCcB85c0",
       "signcribe": "0x6e40a3621614b12821a0f184a03798ad505e4758",
-      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
+      "subapidao": "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     }
   },
   "darwinia": {
@@ -22,7 +23,8 @@
     "contract": {
       "oracle2": "0x0000000000B3A9Ae50c8e29df878FB3aDCcB85c0",
       "signcribe": "0x6e40a3621614b12821a0f184a03798ad505e4758",
-      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
+      "subapidao": "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     }
   },
   "sepolia": {
@@ -35,7 +37,8 @@
     "contract": {
       "oracle2": "0x0000000000B3A9Ae50c8e29df878FB3aDCcB85c0",
       "signcribe": "0x6e40a3621614b12821a0f184a03798ad505e4758",
-      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
+      "subapidao": "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     }
   },
   "arbitrumsepolia": {
@@ -48,7 +51,8 @@
     "contract": {
       "oracle2": "0x0000000000B3A9Ae50c8e29df878FB3aDCcB85c0",
       "signcribe": "0x6e40a3621614b12821a0f184a03798ad505e4758",
-      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
+      "subapidao": "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     }
   },
   "arbitrum": {
@@ -61,7 +65,8 @@
     "contract": {
       "oracle2": "0x0000000000B3A9Ae50c8e29df878FB3aDCcB85c0",
       "signcribe": "0x6e40a3621614b12821a0f184a03798ad505e4758",
-      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
+      "subapidao": "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     }
   },
   "ethereum": {
@@ -74,7 +79,8 @@
     "contract": {
       "oracle2": "0x0000000000B3A9Ae50c8e29df878FB3aDCcB85c0",
       "signcribe": "0x6e40a3621614b12821a0f184a03798ad505e4758",
-      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1"
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
+      "subapidao": "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
     }
   }
 }

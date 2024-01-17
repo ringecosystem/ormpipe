@@ -14,6 +14,7 @@ export interface RelayBaseConfig {
   targetChain: ChainInfoFlag
   sourceSigner: string
   targetSigner: string
+  signcribeSigner: string
 }
 
 export interface RelayBaseLifecycle extends RelayBaseConfig {
@@ -40,5 +41,6 @@ export interface ChainInfoFlagContract {
   signcribe: string
   oracle2: string
   relayer: string
+  subapidao: string
 }
 

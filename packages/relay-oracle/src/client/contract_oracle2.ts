@@ -3,6 +3,12 @@ import {ethers} from "ethers";
 
 const abi = require("../abis/Oracle2.json");
 
+export interface ImportMessageRootOptions {
+  chainId: number
+  blockNumber: number
+  messageRoot: string
+}
+
 export class Oracle2ContractClient {
 
   private readonly config: ContractConfig;
@@ -14,5 +20,15 @@ export class Oracle2ContractClient {
     this.contract = new ethers.Contract(config.address, abi, wallet);
   }
 
+  public async buildImportMessageRoot(options: ImportMessageRootOptions) {
+    // this.contract.populateTransaction();
+    // this.contract['importMessageRoot'](
+    //   options.chainId,
+    //   options.blockNumber,
+    //   options.messageRoot
+    // ).serialize().toString("hex")
+
+
+  }
 
 }

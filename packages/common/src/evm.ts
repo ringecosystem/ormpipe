@@ -64,23 +64,6 @@ export class RelayEVMClient {
     return new ethers.Wallet(privateKey, this.evm);
   }
 
-  // public subapi(address: string): SubapiContractClient {
-  //   return new SubapiContractClient({
-  //     chainName: this.config.chainName,
-  //     signer: this.config.signerSubapi ?? this.config.signer,
-  //     address,
-  //     evm: this.evm
-  //   })
-  // }
-  //
-  // public relayer(address: string): RelayerContractClient {
-  //   return new RelayerContractClient({
-  //     chainName: this.config.chainName,
-  //     signer: this.config.signerRelayer ?? this.config.signer,
-  //     address,
-  //     evm: this.evm
-  //   });
-  // }
 
 }
 
