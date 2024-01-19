@@ -21,14 +21,10 @@ export class Oracle2ContractClient {
   }
 
   public async buildImportMessageRoot(options: ImportMessageRootOptions) {
-    // this.contract.populateTransaction();
-    // this.contract['importMessageRoot'](
-    //   options.chainId,
-    //   options.blockNumber,
-    //   options.messageRoot
-    // ).serialize().toString("hex")
-
-
+    return this.contract.interface.encodeFunctionData(
+      'importMessageRoot',
+      [options.chainId, options.blockNumber, options.messageRoot]
+    );
   }
 
 }

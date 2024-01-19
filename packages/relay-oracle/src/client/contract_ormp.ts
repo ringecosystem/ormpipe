@@ -1,5 +1,5 @@
 import {ContractConfig} from "@darwinia/ormpipe-common";
-import {ethers} from "ethers";
+import {ethers, EventLog, Log} from "ethers";
 
 const abi = require("../abis/Ormp.json");
 
@@ -19,8 +19,10 @@ export class OrmpContractClient {
   }
 
   public async root(options: OrmpRootOptions): Promise<string> {
-    console.log(this.config)
-    return await this.contract['root']({blockTag: 0x482853}); //
+    const filters = this.contract.filters.MessageAccepted;
+    const events: Array<EventLog | Log> = await this.contract.queryFilter(filters, options.blockNumber, options.blockNumber);
+    const firstBlockEvent = events[0];
+    return firstBlockEvent.data.substring(0, 66);
   }
 
 }

@@ -11,9 +11,15 @@ import {SafeSignature} from "@safe-global/safe-core-sdk-types";
 import {SafeContractClient} from "./client/contract_safe";
 import {OrmpContractClient} from "./client/contract_ormp";
 
-interface OracleRelayOptions {
+interface OracleSignOptions {
   sourceChainId: number
   targetChainId: number
+  mainly: boolean
+}
+
+interface OracleSubmitOptions {
+  safe: any,
+  transaction: any,
 }
 
 interface LastSignature {
@@ -99,22 +105,18 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       const sourceChainId = await super.sourceChainId();
       const targetChainId = await super.targetChainId();
 
-      const options: OracleRelayOptions = {
+      const options: OracleSignOptions = {
         sourceChainId,
         targetChainId,
+        mainly: super.lifecycle.mainly,
       };
-      // await this.sign(options);
-
-      if (!super.lifecycle.mainly) {
-        return;
-      }
-      await this.submit(options);
+      await this.sign(options);
     } catch (e: any) {
       logger.error(e, super.meta('ormpipe-relay'));
     }
   }
 
-  private async _lastAssignedMessageAccepted(options: OracleRelayOptions): Promise<OrmpMessageAccepted | undefined> {
+  private async _lastAssignedMessageAccepted(options: OracleSignOptions): Promise<OrmpMessageAccepted | undefined> {
     const msgHashes = await this.sourceIndexerOrmp.pickOracleAssignedMessageHashes({
       toChainId: options.targetChainId,
     });
@@ -151,7 +153,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   }
 
 
-  private async sign(options: OracleRelayOptions) {
+  private async sign(options: OracleSignOptions) {
     logger.debug('start oracle sign', super.meta('ormpipe-relay-oracle', ['oracle:sign']));
     // delivery start block
     const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted(options);
@@ -219,7 +221,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
     // check sign progress
-    const lastSignature = await this._lastSignature(options.sourceChainId);
+    const lastSignature = await this._lastSignature(+sourceNextMessageAccepted.message_fromChainId);
     if (!lastSignature.completed) {
       const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
       if (lastSignature.signatures.findIndex(item => item.signer === sourceSignerAddress) > -1) {
@@ -234,20 +236,20 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     const safeNonce = await this.targetSafeContract.nonce();
 
-    // sign
-    // super.lifecycle.targetClient.evm.
-
-
-    // check root is right
+    // check root by chain rpc
     const queriedRootFromContract = await this.sourceOrmpContract.root({
-      blockNumber: +sourceNextMessageAccepted.blockNumber, // todo: what's block number
+      blockNumber: +sourceNextMessageAccepted.blockNumber,
     });
 
-    // this.targetOracle2Client
+    const txcaller = await this.targetOracle2Contract.buildImportMessageRoot({
+      chainId: +sourceNextMessageAccepted.message_fromChainId,
+      blockNumber: +sourceNextMessageAccepted.blockNumber,
+      messageRoot: queriedRootFromContract,
+    });
     const safeTransactionData = {
-      to: super.lifecycle.targetChain.contract.oracle2, // oracle v2 contrace address
+      to: super.lifecycle.targetChain.contract.oracle2, // oracle v2 contract address
       value: '0',
-      data: '0x', // todo: abi encode importMessageProof
+      data: txcaller,
     }
 
     const _signer = super.targetClient.wallet(super.lifecycle.targetSigner);
@@ -278,48 +280,57 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     };
     const encodedData = this._encodeSigncribeData(signcribeData);
 
-    const resp = await this.signcribeContract.submit({
+    const signcribeSubmitOptions = {
       chainId: +sourceNextMessageAccepted.message_fromChainId,
       signature: senderSignature.data,
       data: encodedData,
-    });
-    if (!resp) {
-      logger.error(
-        'failed to submit signed to signcribe contract',
+    };
+
+
+    if (!lastSignature.completed) {
+      const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
+      if (!resp) {
+        logger.error(
+          'failed to submit signed to signcribe contract',
+          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        );
+        return;
+      }
+
+      logger.info(
+        'message %s(%s) is signed and submit to signcribe: %s',
+        sourceNextMessageAccepted.message_index,
+        super.sourceName,
+        resp?.hash,
+        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+      );
+    }
+
+    if (!options.mainly) {
+      return;
+    }
+
+    console.log(lastSignature);
+    const alreadySignedCount = lastSignature.signatures.length;
+    if (!this._isCompletedSignate(alreadySignedCount + 1)) {
+      logger.info(
+        'skip execute safe transaction, wait other nodes sign this message',
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
       return;
     }
 
-    logger.info(
-      'message %s(%s) is signed and submit to signcribe: %s',
-      sourceNextMessageAccepted.message_index,
-      super.sourceName,
-      resp?.hash,
-      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-    );
+    safeTransaction.signatures = [];
+    for (const signature of lastSignature.signatures) {
+      safeTransaction.signatures.push({signer: signature.signer, data: signature.signature});
+    }
+    safeTransaction.signatures.push({
+      signer: _signer.address,
+      data: encodedData,
+    } as SignatureSubmittion);
 
-    // safeTransaction.signatures = [];
-    // [
-    //   {
-    //     signer: '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
-    //     data: '0x8f90c6f9bdde7adcd240b7c17cd1568590a64567dbe7ff1106124285b0bec7fe0bf4c5f74f4f5be8a0f8a2f55d1f72eb112b21eeb318590cb41a5707869806791f'
-    //   },
-    //   {
-    //     signer: '0x178E699c9a6bB2Cd624557Fbd85ed219e6faBa77',
-    //     data: '0x51d92c0d1977541ca705f6b17d6fc7bc0eed26ef49a868a8c760f6a04ee4e820737dfb599bd14b2c73ee50e433b989d0bc5039b380a494829e3412726a37f82e1f'
-    //   },
-    //   {
-    //     signer: '0xA4bE619E8C0E3889f5fA28bb0393A4862Cad35ad',
-    //     data: '0xfbdfd00be788c8b03ae12e112b713d9a5abbb78b361da3724db9ddebe11a414172eb322eaaf983d2b341e993199d27e38af59ebe70b9fe41dca19501bc48fab51f'
-    //   }
-    // ].forEach(item => {
-    //   safeTransaction.signatures.push(new Safe.EthSafeSignature(item.signer, item.data));
-    // })
-    // console.log("safeTransaction", safeTransaction);
-    //
-    // const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
-
+    const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
+    console.log(executeTxResponse);
 
     /*
     // tron
@@ -359,23 +370,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
   }
 
-  private async submit(options: OracleRelayOptions) {
-    // console.log(checklistSignatures);
-    const lastSignature = await this._lastSignature(options.sourceChainId);
-    if (!lastSignature.completed) {
-      logger.info(
-        'not have any completed signature.',
-        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-        );
-      return;
-    }
-    const signatures = lastSignature.signatures;
-
-
-
-
-  }
-
 
   private async _lastSignature(chainId: number): Promise<LastSignature> {
     const topSignatures = await this.indexerSigncribe.topSignatures({chainId, limit: 10});
@@ -399,10 +393,15 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     return {
       signatures: checklistSignatures,
       last: checklistSignatures[0],
-      completed: checklistSignatures.length > (2 / 3),
+      completed: this._isCompletedSignate(checklistSignatures.length),
     };
   }
 
+  private _isCompletedSignate(count: number): boolean {
+    const countNodes = 5;
+    const countSc = countNodes * (3 / 5);
+    return count >= countSc;
+  }
 
   private _encodeSigncribeData(data: SigncribeData): string {
     const abiCoder = AbiCoder.defaultAbiCoder();

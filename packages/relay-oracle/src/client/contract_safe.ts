@@ -20,8 +20,7 @@ export class SafeContractClient {
   }
 
   public async nonce(): Promise<number> {
-
-    return 1;
+    return this.contract['nonce']();
   }
 
 }
