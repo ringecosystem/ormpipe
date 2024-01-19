@@ -224,7 +224,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const lastSignature = await this._lastSignature(+sourceNextMessageAccepted.message_fromChainId);
     if (!lastSignature.completed) {
       const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
-      if (lastSignature.signatures.findIndex(item => item.signer === sourceSignerAddress) > -1) {
+      if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {
         logger.info(
           'you should wait other nodes to sign message',
           super.meta('ormpipe-relay-oracle', ['oracle:sign']),
@@ -287,6 +287,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     };
 
 
+    let alreadySignedCount = lastSignature.signatures.length;
     if (!lastSignature.completed) {
       const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
       if (!resp) {
@@ -304,15 +305,14 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         resp?.hash,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
+      alreadySignedCount += 1;
     }
 
     if (!options.mainly) {
       return;
     }
 
-    console.log(lastSignature);
-    const alreadySignedCount = lastSignature.signatures.length;
-    if (!this._isCompletedSignate(alreadySignedCount + 1)) {
+    if (!this._isCompletedSignate(alreadySignedCount)) {
       logger.info(
         'skip execute safe transaction, wait other nodes sign this message',
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
@@ -325,7 +325,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       safeTransaction.signatures.push({signer: signature.signer, data: signature.signature});
     }
     safeTransaction.signatures.push({
-      signer: _signer.address,
+      signer: _signer.address.toLowerCase(),
       data: encodedData,
     } as SignatureSubmittion);
 
