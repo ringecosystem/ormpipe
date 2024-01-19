@@ -1,27 +1,37 @@
 import {OracleRelayLifecycle} from "./types/config";
 import {CommonRelay, logger} from "@darwinia/ormpipe-common";
-import {OrmpMessageAccepted, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
+import {OrmpMessageAccepted, SignatureSubmittion, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
 import {Oracle2ContractClient} from "./client/contract_oracle2";
-import {SigncribeContractClient, SubmitSignscribeOptions} from "./client/contract_signcribe";
+import {SigncribeContractClient, SigncribeData, SubmitSignscribeOptions} from "./client/contract_signcribe";
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
 
 const Safe = require('@safe-global/protocol-kit');
 import {AbiCoder, ethers} from "ethers";
 import {SafeSignature} from "@safe-global/safe-core-sdk-types";
+import {SafeContractClient} from "./client/contract_safe";
+import {OrmpContractClient} from "./client/contract_ormp";
 
 interface OracleRelayOptions {
   sourceChainId: number
   targetChainId: number
 }
 
+interface LastSignature {
+  signatures: SignatureSubmittion[],
+  last?: SignatureSubmittion,
+  completed: boolean
+}
+
 export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
-  private static CK_ORACLE_DELIVERIED: string = 'ormpipe.oracle.deliveried';
+  private static CK_ORACLE_SIGNED: string = 'ormpipe.oracle.signed';
   private static CK_ORACLE_AGGREGATED: string = 'ormpipe.oracle.aggregated';
   private static CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT: string = 'ormpipe.oracle.mark.aggregated_message_count';
 
   private _targetOracle2ContractClient?: Oracle2ContractClient;
   private _signcribeContractClient?: SigncribeContractClient;
+  private _safeContractClient?: SafeContractClient;
+  private _ormpContractClient?: OrmpContractClient;
 
   constructor(lifecycle: OracleRelayLifecycle) {
     super(lifecycle);
@@ -42,12 +52,23 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   public get targetOracle2Contract(): Oracle2ContractClient {
     if (this._targetOracle2ContractClient) return this._targetOracle2ContractClient;
     this._targetOracle2ContractClient = new Oracle2ContractClient({
-      chainName: super.sourceName,
+      chainName: super.targetName,
       signer: super.lifecycle.targetSigner,
-      address: super.lifecycle.targetChain.contract.relayer,
+      address: super.lifecycle.targetChain.contract.oracle2,
       evm: super.sourceClient.evm,
     });
     return this._targetOracle2ContractClient;
+  }
+
+  public get targetSafeContract(): SafeContractClient {
+    if (this._safeContractClient) return this._safeContractClient;
+    this._safeContractClient = new SafeContractClient({
+      chainName: super.targetName,
+      signer: super.lifecycle.targetSigner,
+      address: super.lifecycle.targetChain.contract.safe,
+      evm: super.sourceClient.evm,
+    });
+    return this._safeContractClient;
   }
 
   public get signcribeContract(): SigncribeContractClient {
@@ -61,6 +82,17 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     return this._signcribeContractClient;
   }
 
+  public get sourceOrmpContract(): OrmpContractClient {
+    if (this._ormpContractClient) return this._ormpContractClient;
+    this._ormpContractClient = new OrmpContractClient({
+      chainName: super.sourceName,
+      signer: super.lifecycle.sourceSigner,
+      address: super.lifecycle.sourceChain.contract.ormp,
+      evm: super.lifecycle.sourceClient.evm,
+    });
+    return this._ormpContractClient;
+  }
+
 
   public async start() {
     try {
@@ -71,7 +103,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         sourceChainId,
         targetChainId,
       };
-      await this.sign(options);
+      // await this.sign(options);
 
       if (!super.lifecycle.mainly) {
         return;
@@ -114,7 +146,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       toChainId: options.targetChainId,
     });
     if (sourceLastOracleMessageAssigned) {
-      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceLastOracleMessageAssigned.message_index);
+      await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceLastOracleMessageAssigned.message_index);
     }
   }
 
@@ -145,7 +177,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         sourceNextMessageAccepted.message_toChainId,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
-      await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
+      await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
       return;
     }
 
@@ -186,15 +218,36 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       super.meta('ormpipe-relay-oracle', ['oracle:sign']),
     );
 
+    // check sign progress
+    const lastSignature = await this._lastSignature(options.sourceChainId);
+    if (!lastSignature.completed) {
+      const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
+      if (lastSignature.signatures.findIndex(item => item.signer === sourceSignerAddress) > -1) {
+        logger.info(
+          'you should wait other nodes to sign message',
+          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        );
+        return;
+      }
+    }
+
+
+    const safeNonce = await this.targetSafeContract.nonce();
 
     // sign
     // super.lifecycle.targetClient.evm.
+
+
+    // check root is right
+    const queriedRootFromContract = await this.sourceOrmpContract.root({
+      blockNumber: +sourceNextMessageAccepted.blockNumber, // todo: what's block number
+    });
 
     // this.targetOracle2Client
     const safeTransactionData = {
       to: super.lifecycle.targetChain.contract.oracle2, // oracle v2 contrace address
       value: '0',
-      data: '0x', // abi encode importMessageProof
+      data: '0x', // todo: abi encode importMessageProof
     }
 
     const _signer = super.targetClient.wallet(super.lifecycle.targetSigner);
@@ -203,12 +256,13 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         ethers,
         signerOrProvider: _signer
       }),
-      safeAddress: "0x000000000a0D8ac9cc6CbD817fA77090322FF29d"
-    })
+      safeAddress: super.lifecycle.targetChain.contract.safe,
+    });
+
 
     const safeTransaction = await safeSdk.createTransaction({
         transactions: [safeTransactionData],
-        options: {nonce: 1}
+        options: {nonce: safeNonce}
       }
     );
 
@@ -216,24 +270,18 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
     const senderSignature: SafeSignature = await safeSdk.signTransactionHash(safeTxHash);
 
-    const abiCoder = AbiCoder.defaultAbiCoder();
-    const encodedData = abiCoder.encode([
-        'tuple(uint256 chainId, bytes messageRoot, uint256 nonce, uint256 blockNumber)'
-      ],
-      [
-        {
-          chainId: sourceNextMessageAccepted.message_fromChainId,
-          messageRoot: sourceNextMessageAccepted.root,
-          nonce: 1,
-          blockNumber: sourceNextMessageAccepted.blockNumber
-        }
-      ]
-    );
+    const signcribeData = {
+      chainId: +sourceNextMessageAccepted.message_fromChainId,
+      messageRoot: queriedRootFromContract,
+      nonce: safeNonce,
+      blockNumber: +sourceNextMessageAccepted.blockNumber,
+    };
+    const encodedData = this._encodeSigncribeData(signcribeData);
 
     const resp = await this.signcribeContract.submit({
       chainId: +sourceNextMessageAccepted.message_fromChainId,
       signature: senderSignature.data,
-      data: encodedData
+      data: encodedData,
     });
     if (!resp) {
       logger.error(
@@ -273,8 +321,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     // const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
 
 
-    // todo: sign message
-
     /*
     // tron
     const tronWeb = new TronWeb({
@@ -310,11 +356,76 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
             // console.log("result", result);
      */
 
-    await super.storage.put(OracleRelay.CK_ORACLE_DELIVERIED, sourceNextMessageAccepted.message_index);
+    await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
   }
 
   private async submit(options: OracleRelayOptions) {
-    console.log('submit');
+    // console.log(checklistSignatures);
+    const lastSignature = await this._lastSignature(options.sourceChainId);
+    if (!lastSignature.completed) {
+      logger.info(
+        'not have any completed signature.',
+        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        );
+      return;
+    }
+    const signatures = lastSignature.signatures;
+
+
+
+
+  }
+
+
+  private async _lastSignature(chainId: number): Promise<LastSignature> {
+    const topSignatures = await this.indexerSigncribe.topSignatures({chainId, limit: 10});
+    if (!topSignatures.length) {
+      logger.debug(
+        'not have any submitted signature',
+        super.meta('ormpipe-relay-oracle', ['oracle:submit']),
+      );
+      return {
+        signatures: [],
+        completed: false,
+      } as LastSignature;
+    }
+    const top1Signature = topSignatures[0];
+    const checklistSignatures: SignatureSubmittion[] = [];
+    for (const tst of topSignatures) {
+      if (tst.data != top1Signature.data) continue;
+      if (checklistSignatures.findIndex(item => item.signer === tst.signer) != -1) continue;
+      checklistSignatures.push(tst);
+    }
+    return {
+      signatures: checklistSignatures,
+      last: checklistSignatures[0],
+      completed: checklistSignatures.length > (2 / 3),
+    };
+  }
+
+
+  private _encodeSigncribeData(data: SigncribeData): string {
+    const abiCoder = AbiCoder.defaultAbiCoder();
+    const encodedData = abiCoder.encode([
+        'tuple(uint256 chainId, bytes messageRoot, uint256 nonce, uint256 blockNumber)'
+      ],
+      [data]
+    );
+    return encodedData;
+  }
+
+  private _decodeSigncribeData(hex: string): SigncribeData {
+    const abiCoder = AbiCoder.defaultAbiCoder();
+    const v = abiCoder.decode([
+      'tuple(uint256 chainId, bytes messageRoot, uint256 nonce, uint256 blockNumber)'
+    ], hex);
+    const decoded = v[0];
+    return {
+      chainId: decoded[0],
+      messageRoot: decoded[1],
+      nonce: decoded[2],
+      blockNumber: decoded[3],
+    };
   }
 
 }

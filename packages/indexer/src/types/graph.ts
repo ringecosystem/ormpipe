@@ -56,6 +56,9 @@ export interface QueryInspectMessageDispatched {
   msgHash: string
 }
 
+export interface QueryTopSigncribe extends QueryWithChainId {
+  limit: number
+}
 
 export type QueryNextOracleAssigned = QueryNextRelayerAssigned
 
@@ -114,6 +117,13 @@ export interface SubapiBeacon extends SubapiBeaconBase {
   beacon_endpointId: string
   beacon_sponsor: string
   beacon_sponsorWallet: string
+}
+
+export interface SignatureSubmittion extends BaseGraphEntity {
+  chainId: string
+  signer: string
+  signature: string
+  data: string
 }
 
 // export interface AirnodeComplted extends SubapiBeaconBase {

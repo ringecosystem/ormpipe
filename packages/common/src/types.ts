@@ -42,5 +42,7 @@ export interface ChainInfoFlagContract {
   oracle2: string
   relayer: string
   subapidao: string
+  safe: string
+  ormp: string
 }
 

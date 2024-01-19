@@ -9,6 +9,14 @@ export interface SubmitSignscribeOptions {
   data: string
 }
 
+
+export interface SigncribeData {
+  chainId: number
+  messageRoot: string
+  nonce: number
+  blockNumber: number
+}
+
 export class SigncribeContractClient {
 
   private readonly config: ContractConfig;
@@ -23,7 +31,6 @@ export class SigncribeContractClient {
 
 
   public async submit(options: SubmitSignscribeOptions): Promise<TransactionResponse | undefined> {
-    console.log(this.config);
     const tx = await this.contract['submit'](
       options.chainId,
       options.signature,
