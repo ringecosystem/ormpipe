@@ -22,6 +22,7 @@ export class ThegraphIndexOracle extends GraphCommon {
         transactionHash
 
         chainId
+        blockHeight
         messageRoot
       }
     }

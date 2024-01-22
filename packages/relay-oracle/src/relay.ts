@@ -171,12 +171,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         'can not query message accepted by roo: %s',
         lastImportedMessageRoot.messageRoot,
         super.meta('ormpipe-relay')
-        );
+      );
       return;
     }
-     nextAssignedMessageAccepted = await this.sourceIndexerOrmp.nextOracleMessageAccepted({
+    nextAssignedMessageAccepted = await this.sourceIndexerOrmp.nextOracleMessageAccepted({
       messageIndex: +currentMessageAccepted.message_index,
-       toChainId: options.targetChainId,
+      toChainId: options.targetChainId,
     });
 
     // if (sourceLastOracleMessageAssigned) {
@@ -258,7 +258,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const lastSignature = await this._lastSignature(
       +sourceNextMessageAccepted.message_fromChainId,
       +sourceNextMessageAccepted.message_index,
-      );
+    );
     if (!lastSignature.completed) {
       const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
       if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {

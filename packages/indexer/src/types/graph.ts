@@ -144,5 +144,7 @@ export interface SignatureSubmittion extends BaseGraphEntity {
 // }
 
 export interface OracleImportedMessageRoot extends BaseGraphEntity {
+  chainId: string
+  blockHeight: string
   messageRoot: string
 }
