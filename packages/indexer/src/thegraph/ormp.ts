@@ -147,7 +147,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
     }
   }
 
-  public async nextMessageAccepted(variables: QueryNextMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
+  public async nextOracleMessageAccepted(variables: QueryNextMessageAccepted): Promise<OrmpMessageAccepted | undefined> {
     const query = `
     query QueryNextMessageAccepted($messageIndex: BigInt!, $toChainId: Int!) {
       ormpProtocolMessageAccepteds(
@@ -155,6 +155,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
         orderBy: message_index
         orderDirection: asc
         where: {
+          oracleAssigned: true
           message_index_gt: $messageIndex
           message_toChainId: $toChainId
         }

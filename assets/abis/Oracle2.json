@@ -40,7 +40,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "chaindId",
+        "name": "chainId",
         "type": "uint256"
       },
       {
@@ -56,7 +56,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "ImporedMessageRoot",
+    "name": "ImportedMessageRoot",
     "type": "event"
   },
   {

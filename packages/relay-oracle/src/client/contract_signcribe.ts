@@ -5,6 +5,7 @@ const abi = require("../abis/SubAPISignaturePub.json");
 
 export interface SubmitSignscribeOptions {
   chainId: number
+  msgIndex: number
   signature: string
   data: string
 }
@@ -33,6 +34,7 @@ export class SigncribeContractClient {
   public async submit(options: SubmitSignscribeOptions): Promise<TransactionResponse | undefined> {
     const tx = await this.contract['submit'](
       options.chainId,
+      options.msgIndex,
       options.signature,
       options.data,
     )

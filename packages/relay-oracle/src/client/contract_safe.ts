@@ -23,4 +23,8 @@ export class SafeContractClient {
     return this.contract['nonce']();
   }
 
+  public async owners(): Promise<string[]> {
+    return await this.contract['getOwners']();
+  }
+
 }

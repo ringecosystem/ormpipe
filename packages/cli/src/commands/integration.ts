@@ -33,7 +33,7 @@ export default class Integration extends Command {
       required: true,
       description: 'ormp oracle address',
       env: 'ORMPIPE_ADDRESS_ORACLE',
-      default: '0x0000000000ba03146Cc235509E802873D418a6bc',
+      default: '0x0000000004452056780Ff88Beb91d8FDf6381fc5',
     }),
     'address-relayer': Flags.string({
       required: true,

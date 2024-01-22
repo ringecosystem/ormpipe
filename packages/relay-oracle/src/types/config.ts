@@ -5,7 +5,7 @@ import {
   RelayBaseLifecycle,
   RelayEVMClient
 } from "@darwinia/ormpipe-common";
-import {ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
+import {ThegraphIndexOracle, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
 
 
@@ -17,9 +17,10 @@ export interface OracleRelayConfig extends RelayBaseConfig {
 }
 
 export interface OracleRelayLifecycle extends RelayBaseLifecycle {
-  signcribeClient: RelayEVMClient,
-  sourceIndexerOrmp: ThegraphIndexOrmp,
-  targetIndexerOrmp: ThegraphIndexOrmp,
-  indexerSigncribe: ThegraphIndexSigncribe,
-  mainly: boolean,
+  signcribeClient: RelayEVMClient
+  sourceIndexerOrmp: ThegraphIndexOrmp
+  targetIndexerOrmp: ThegraphIndexOrmp
+  targetIndexOracle: ThegraphIndexOracle
+  indexerSigncribe: ThegraphIndexSigncribe
+  mainly: boolean
 }

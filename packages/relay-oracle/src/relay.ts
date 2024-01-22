@@ -1,6 +1,11 @@
 import {OracleRelayLifecycle} from "./types/config";
 import {CommonRelay, logger} from "@darwinia/ormpipe-common";
-import {OrmpMessageAccepted, SignatureSubmittion, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
+import {
+  OrmpMessageAccepted,
+  SignatureSubmittion,
+  ThegraphIndexOracle,
+  ThegraphIndexOrmp
+} from "@darwinia/ormpipe-indexer";
 import {Oracle2ContractClient} from "./client/contract_oracle2";
 import {SigncribeContractClient, SigncribeData, SubmitSignscribeOptions} from "./client/contract_signcribe";
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
@@ -58,6 +63,10 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
   public get targetIndexerOrmp(): ThegraphIndexOrmp {
     return super.lifecycle.targetIndexerOrmp
+  }
+
+  public get targetIndexerOracle(): ThegraphIndexOracle {
+    return super.lifecycle.targetIndexOracle
   }
 
   public get targetOracle2Contract(): Oracle2ContractClient {
@@ -122,39 +131,59 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   }
 
   private async _lastAssignedMessageAccepted(options: OracleSignOptions): Promise<OrmpMessageAccepted | undefined> {
-    const msgHashes = await this.sourceIndexerOrmp.pickOracleAssignedMessageHashes({
-      toChainId: options.targetChainId,
+    const lastImportedMessageRoot = await this.targetIndexerOracle.lastImportedMessageRoot({
+      chainId: options.sourceChainId,
     });
-    let sourceNextMessageAccepted;
-    if (msgHashes.length) {
-      const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(msgHashes);
-      if (!unRelayedMessagesQueriedFromTarget.length) {
-        logger.debug(
-          'not have any unrelayed messages from %s',
-          super.sourceName,
-          super.meta('ormpipe-relay', ['oracle'])
-        );
-        return undefined;
-      }
-      sourceNextMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
-        msgHash: unRelayedMessagesQueriedFromTarget[0],
-      });
-    } else {
-      sourceNextMessageAccepted = await this.sourceIndexerOrmp.nextMessageAccepted({
-        messageIndex: -1,
+
+    let nextAssignedMessageAccepted;
+    if (!lastImportedMessageRoot) {
+      const msgHashes = await this.sourceIndexerOrmp.pickOracleAssignedMessageHashes({
         toChainId: options.targetChainId,
       });
-    }
-    if (sourceNextMessageAccepted) {
-      return sourceNextMessageAccepted;
+
+      if (msgHashes.length) {
+        const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(msgHashes);
+        if (!unRelayedMessagesQueriedFromTarget.length) {
+          logger.debug(
+            'not have any unrelayed messages from %s',
+            super.sourceName,
+            super.meta('ormpipe-relay', ['oracle'])
+          );
+          return undefined;
+        }
+        nextAssignedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+          msgHash: unRelayedMessagesQueriedFromTarget[0],
+        });
+      } else {
+        nextAssignedMessageAccepted = await this.sourceIndexerOrmp.nextOracleMessageAccepted({
+          messageIndex: -1,
+          toChainId: options.targetChainId,
+        });
+      }
+      return nextAssignedMessageAccepted;
     }
 
-    const sourceLastOracleMessageAssigned = await this.sourceIndexerOrmp.lastOracleAssigned({
-      toChainId: options.targetChainId,
+    const currentMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+      root: lastImportedMessageRoot.messageRoot,
     });
-    if (sourceLastOracleMessageAssigned) {
-      await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceLastOracleMessageAssigned.message_index);
+    if (!currentMessageAccepted) {
+      logger.warn(
+        'can not query message accepted by roo: %s',
+        lastImportedMessageRoot.messageRoot,
+        super.meta('ormpipe-relay')
+        );
+      return;
     }
+     nextAssignedMessageAccepted = await this.sourceIndexerOrmp.nextOracleMessageAccepted({
+      messageIndex: +currentMessageAccepted.message_index,
+       toChainId: options.targetChainId,
+    });
+
+    // if (sourceLastOracleMessageAssigned) {
+    //   await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceLastOracleMessageAssigned.message_index);
+    // }
+
+    return nextAssignedMessageAccepted;
   }
 
 
@@ -226,7 +255,10 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
     // check sign progress
-    const lastSignature = await this._lastSignature(+sourceNextMessageAccepted.message_fromChainId);
+    const lastSignature = await this._lastSignature(
+      +sourceNextMessageAccepted.message_fromChainId,
+      +sourceNextMessageAccepted.message_index,
+      );
     if (!lastSignature.completed) {
       const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
       if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {
@@ -287,6 +319,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     const signcribeSubmitOptions = {
       chainId: +sourceNextMessageAccepted.message_fromChainId,
+      msgIndex: +sourceNextMessageAccepted.message_index,
       signature: senderSignature.data,
       data: encodedData,
     };
@@ -386,11 +419,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   }
 
 
-  private async _lastSignature(chainId: number): Promise<LastSignature> {
+  private async _lastSignature(chainId: number, msgIndex: number): Promise<LastSignature> {
+    const owners = await this.targetSafeContract.owners();
     const topSignatures = await this.indexerSigncribe.topSignatures({
       chainId,
-      limit: 10,
-      signers: OracleRelay.ALLOWED_ACCOUNTS,
+      msgIndex: msgIndex,
+      signers: owners,
     });
     if (!topSignatures.length) {
       logger.debug(

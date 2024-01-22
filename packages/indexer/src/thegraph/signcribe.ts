@@ -7,13 +7,13 @@ export class ThegraphIndexSigncribe extends GraphCommon {
 
   public async topSignatures(variables: QueryTopSigncribe): Promise<SignatureSubmittion[]> {
     const query = `
-    query QuerySignPub($limit: Int!, $chainId: BigInt!, $signers: [String!]!) {
+    query QuerySignPub($msgIndex: BigInt!, $chainId: BigInt!, $signers: [String!]!) {
       signatureSubmittions(
         orderBy: blockNumber
         orderDirection: desc
-        first: $limit
         where: {
           chainId: $chainId
+          msgIndex: $msgIndex
           signer_in: $signers
         }
       ) {
@@ -22,6 +22,7 @@ export class ThegraphIndexSigncribe extends GraphCommon {
         signer
         signature
         data
+        msgIndex
         blockNumber
       }
     }

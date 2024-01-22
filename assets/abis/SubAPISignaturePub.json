@@ -4,28 +4,34 @@
     "type": "event",
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "uint256",
         "name": "chainId",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
+        "type": "uint256"
       },
       {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "msgIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "signer",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
+        "type": "address"
       },
       {
+        "indexed": false,
+        "internalType": "bytes",
         "name": "signature",
-        "type": "bytes",
-        "indexed": false,
-        "internalType": "bytes"
+        "type": "bytes"
       },
       {
-        "name": "data",
-        "type": "bytes",
         "indexed": false,
-        "internalType": "bytes"
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
     "anonymous": false
@@ -34,9 +40,10 @@
     "name": "submit",
     "type": "function",
     "inputs": [
-      { "name": "chainId", "type": "uint256", "internalType": "uint256" },
-      { "name": "signature", "type": "bytes", "internalType": "bytes" },
-      { "name": "data", "type": "bytes", "internalType": "bytes" }
+      { "internalType": "uint256", "name": "chainId", "type": "uint256" },
+      { "internalType": "uint256", "name": "msgIndex", "type": "uint256" },
+      { "internalType": "bytes", "name": "signature", "type": "bytes" },
+      { "internalType": "bytes", "name": "data", "type": "bytes" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"

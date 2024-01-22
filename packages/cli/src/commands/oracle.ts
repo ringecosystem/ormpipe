@@ -80,6 +80,7 @@ export default class Oracle extends Command {
       signcribeClient,
       sourceIndexerOrmp: sourceIndex.ormp(),
       targetIndexerOrmp: targetIndex.ormp(),
+      targetIndexOracle: targetIndex.oracle(),
       indexerSigncribe: sourceIndex.signcribe(),
     };
   }
