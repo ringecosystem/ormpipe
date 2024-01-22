@@ -174,11 +174,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       ]
     );
 
-    console.log('last imported message root', lastImportedMessageRoot.messageRoot);
-    console.log('root', imt.root());
-    console.log('msg hashes', rawMsgHashes.length, rawMsgHashes);
-    console.log('message', message);
-    console.log('proof', messageProof);
+    // console.log('last imported message root', lastImportedMessageRoot.messageRoot);
+    // console.log('root', imt.root());
+    // console.log('msg hashes', rawMsgHashes.length, rawMsgHashes);
+    // console.log('message', message);
+    // console.log('proof', messageProof);
 
     // console.log('------ relay');
     const enableGasCheck = [
