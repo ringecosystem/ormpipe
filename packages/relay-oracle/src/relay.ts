@@ -264,7 +264,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     const safeTransaction = await safeSdk.createTransaction({
         transactions: [safeTransactionData],
-        options: {nonce: safeNonce}
+        options: {nonce: safeNonce},
       }
     );
 
