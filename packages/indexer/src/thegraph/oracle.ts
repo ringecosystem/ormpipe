@@ -7,7 +7,7 @@ export class ThegraphIndexOracle extends GraphCommon {
 
   public async lastImportedMessageRoot(variables: QueryLastImportedMessageRoot): Promise<OracleImportedMessageRoot | undefined> {
     const query = `
-    query QueryLastImportedMessageRoot($chainId: Bytes!) {
+    query QueryLastImportedMessageRoot($chainId: BigInt!) {
       ormpOracleImportedMessageRoots(
         first: 1
         orderBy: blockNumber
@@ -24,7 +24,7 @@ export class ThegraphIndexOracle extends GraphCommon {
         chainId
         messageRoot
       }
-    )
+    }
     `;
     return await super.single({query, variables, schema: 'ormpOracleImportedMessageRoots'})
   }
