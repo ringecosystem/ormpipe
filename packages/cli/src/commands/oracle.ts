@@ -1,7 +1,7 @@
 import {Args, Command, Flags} from '@oclif/core'
 import {CommandHelper} from "../common/commander";
 import {CliOracleConfig, OracleRelay, OracleRelayConfig, OracleRelayLifecycle} from "@darwinia/ormpipe-relay-oracle";
-import {RelayEVMClient, RelayStorage} from "@darwinia/ormpipe-common";
+import {logger, RelayEVMClient, RelayStorage} from "@darwinia/ormpipe-common";
 import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
 
 const camelize = require('camelize')
@@ -30,6 +30,11 @@ export default class Oracle extends Command {
     const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
     while (true) {
       for (const rc of relayConfigs) {
+        logger.info(
+          '--------- %s>%s ---------',
+          rc.sourceChain.name,
+          rc.targetChain.name,
+        );
         const lifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
         const relay = new OracleRelay(lifecycle);
         await relay.start();

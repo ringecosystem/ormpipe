@@ -58,6 +58,7 @@ export interface QueryInspectMessageDispatched {
 
 export interface QueryTopSigncribe extends QueryWithChainId {
   limit: number
+  signers: string[]
 }
 
 export type QueryNextOracleAssigned = QueryNextRelayerAssigned

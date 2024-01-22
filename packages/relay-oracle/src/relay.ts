@@ -33,6 +33,11 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   private static CK_ORACLE_SIGNED: string = 'ormpipe.oracle.signed';
   private static CK_ORACLE_AGGREGATED: string = 'ormpipe.oracle.aggregated';
   private static CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT: string = 'ormpipe.oracle.mark.aggregated_message_count';
+  private static ALLOWED_ACCOUNTS: string[] = [
+    '0x9f33a4809aa708d7a399fedba514e0a0d15efa85',
+    '0x178e699c9a6bb2cd624557fbd85ed219e6faba77',
+    '0xA4bE619E8C0E3889f5fA28bb0393A4862Cad35ad',
+  ];
 
   private _targetOracle2ContractClient?: Oracle2ContractClient;
   private _signcribeContractClient?: SigncribeContractClient;
@@ -72,7 +77,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       chainName: super.targetName,
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.safe,
-      evm: super.sourceClient.evm,
+      evm: super.targetClient.evm,
     });
     return this._safeContractClient;
   }
@@ -287,6 +292,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     };
 
 
+    // safeTransaction.signatures = {};
+
     let alreadySignedCount = lastSignature.signatures.length;
     if (!lastSignature.completed) {
       const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
@@ -305,7 +312,13 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         resp?.hash,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
-      alreadySignedCount += 1;
+      alreadySignedCount += 1
+
+      // safeTransaction.signatures.push({
+      //   signer: _signer.address.toLowerCase(),
+      //   data: senderSignature.data,
+      // } as SignatureSubmittion);
+      safeTransaction.addSignature(new Safe.EthSafeSignature(_signer.address.toLowerCase(), senderSignature.data));
     }
 
     if (!options.mainly) {
@@ -320,17 +333,19 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       return;
     }
 
-    safeTransaction.signatures = [];
     for (const signature of lastSignature.signatures) {
-      safeTransaction.signatures.push({signer: signature.signer, data: signature.signature});
+      // safeTransaction.signatures.push({signer: signature.signer, data: signature.signature});
+      safeTransaction.addSignature(new Safe.EthSafeSignature(signature.signer, signature.signature));
     }
-    safeTransaction.signatures.push({
-      signer: _signer.address.toLowerCase(),
-      data: encodedData,
-    } as SignatureSubmittion);
 
+    console.log(safeTransaction.signatures, safeNonce);
     const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
     console.log(executeTxResponse);
+    logger.info(
+      'multisign transaction executed: message index %s',
+      sourceNextMessageAccepted.message_index,
+      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    );
 
     /*
     // tron
@@ -372,7 +387,11 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
 
   private async _lastSignature(chainId: number): Promise<LastSignature> {
-    const topSignatures = await this.indexerSigncribe.topSignatures({chainId, limit: 10});
+    const topSignatures = await this.indexerSigncribe.topSignatures({
+      chainId,
+      limit: 10,
+      signers: OracleRelay.ALLOWED_ACCOUNTS,
+    });
     if (!topSignatures.length) {
       logger.debug(
         'not have any submitted signature',
