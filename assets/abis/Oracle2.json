@@ -46,7 +46,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "blockNumber",
+        "name": "blockHeight",
         "type": "uint256"
       },
       {
