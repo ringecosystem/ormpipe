@@ -25,7 +25,7 @@ export class SafeContractClient {
 
   public async owners(): Promise<string[]> {
     const owners = await this.contract['getOwners']();
-    return owners.map(item => item.toLowerCase());
+    return owners.map((item: any) => item.toString().toLowerCase());
   }
 
 }

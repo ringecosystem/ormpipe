@@ -202,7 +202,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     }
     const cachedSignedMessageIndex: number | undefined = await super.storage.get(OracleRelay.CK_ORACLE_SIGNED);
     if (cachedSignedMessageIndex != undefined) {
-      if (sourceNextMessageAccepted.message_index <= cachedSignedMessageIndex) {
+      if (+sourceNextMessageAccepted.message_index <= cachedSignedMessageIndex) {
         logger.warn(
           'this message index %s already signed and executed, queried by cache: %s',
           sourceNextMessageAccepted.message_index,
