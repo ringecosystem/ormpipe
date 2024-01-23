@@ -20,6 +20,7 @@ export interface OracleRelayLifecycle extends RelayBaseLifecycle {
   signcribeClient: RelayEVMClient
   sourceIndexerOrmp: ThegraphIndexOrmp
   targetIndexerOrmp: ThegraphIndexOrmp
+  sourceIndexOracle: ThegraphIndexOracle
   targetIndexOracle: ThegraphIndexOracle
   indexerSigncribe: ThegraphIndexSigncribe
   mainly: boolean

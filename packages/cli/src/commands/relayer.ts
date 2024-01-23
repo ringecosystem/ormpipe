@@ -6,8 +6,9 @@ import {
   RelayerRelayConfig,
   RelayerRelayLifecycle
 } from "@darwinia/ormpipe-relay-relayer";
-import {RelayEVMClient, RelayStorage} from "@darwinia/ormpipe-common";
+import {logger, RelayEVMClient, RelayStorage} from "@darwinia/ormpipe-common";
 import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
+import {setTimeout} from "timers/promises";
 
 const camelize = require('camelize')
 
@@ -30,10 +31,39 @@ export default class Relayer extends Command {
     const cliConfig = camelize(flags) as unknown as CliRelayerConfig;
     const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
     for (const rc of relayConfigs) {
-      const lifecycle = await this.buildLifecycle(rc);
-      const relay = new RelayerRelay(lifecycle);
-      await relay.start();
+      const sourceToTargetLifecycle = await this.buildLifecycle(rc);
+
+      logger.info(
+        '--------- realyer %s>%s ---------',
+        sourceToTargetLifecycle.sourceChain.name,
+        sourceToTargetLifecycle.targetChain.name,
+      );
+      const sourceToTargetRelay = new RelayerRelay(sourceToTargetLifecycle);
+      await sourceToTargetRelay.start();
+      await setTimeout(1000);
+
+      const targetToSourceLifecycle = {
+        ...sourceToTargetLifecycle,
+        sourceName: sourceToTargetLifecycle.targetName,
+        targetName: sourceToTargetLifecycle.sourceName,
+        sourceClient: sourceToTargetLifecycle.targetClient,
+        targetClient: sourceToTargetLifecycle.sourceClient,
+        sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
+        targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
+        sourceIndexerOracle: sourceToTargetLifecycle.targetIndexerOracle,
+        targetIndexerOracle: sourceToTargetLifecycle.sourceIndexerOracle,
+      }
+
+      logger.info(
+        '--------- oracle %s>%s ---------',
+        targetToSourceLifecycle.sourceChain.name,
+        targetToSourceLifecycle.targetChain.name,
+      );
+      const targetToSourceRelay = new RelayerRelay(targetToSourceLifecycle);
+      await targetToSourceRelay.start();
+      await setTimeout(1000);
     }
+    await setTimeout(4000);
   }
 
 
@@ -68,6 +98,7 @@ export default class Relayer extends Command {
       targetClient,
       sourceIndexerOrmp: sourceIndex.ormp(),
       targetIndexerOrmp: targetIndex.ormp(),
+      sourceIndexerOracle: sourceIndex.oracle(),
       targetIndexerOracle: targetIndex.oracle(),
     };
   }

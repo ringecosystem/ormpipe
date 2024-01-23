@@ -9,7 +9,8 @@ export interface RelayerRelayConfig extends RelayBaseConfig {
 }
 
 export interface RelayerRelayLifecycle extends RelayBaseLifecycle {
-  sourceIndexerOrmp: ThegraphIndexOrmp,
-  targetIndexerOrmp: ThegraphIndexOrmp,
-  targetIndexerOracle: ThegraphIndexOracle,
+  sourceIndexerOrmp: ThegraphIndexOrmp
+  targetIndexerOrmp: ThegraphIndexOrmp
+  sourceIndexerOracle: ThegraphIndexOracle
+  targetIndexerOracle: ThegraphIndexOracle
 }

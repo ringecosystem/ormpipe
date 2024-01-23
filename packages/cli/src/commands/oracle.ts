@@ -3,6 +3,7 @@ import {CommandHelper} from "../common/commander";
 import {CliOracleConfig, OracleRelay, OracleRelayConfig, OracleRelayLifecycle} from "@darwinia/ormpipe-relay-oracle";
 import {logger, RelayEVMClient, RelayStorage} from "@darwinia/ormpipe-common";
 import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
+import {setTimeout} from "timers/promises";
 
 const camelize = require('camelize')
 
@@ -30,15 +31,43 @@ export default class Oracle extends Command {
     const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
     while (true) {
       for (const rc of relayConfigs) {
+        const sourceToTargetLifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
+
         logger.info(
-          '--------- %s>%s ---------',
-          rc.sourceChain.name,
-          rc.targetChain.name,
+          '--------- oracle %s>%s ---------',
+          sourceToTargetLifecycle.sourceChain.name,
+          sourceToTargetLifecycle.targetChain.name,
         );
-        const lifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
-        const relay = new OracleRelay(lifecycle);
-        await relay.start();
+        const sourceToTargetRelay = new OracleRelay(sourceToTargetLifecycle);
+        await sourceToTargetRelay.start();
+        await setTimeout(1000);
+
+        const targetToSourceLifecycle = {
+          ...sourceToTargetLifecycle,
+          sourceChain: sourceToTargetLifecycle.targetChain,
+          targetChain: sourceToTargetLifecycle.sourceChain,
+          sourceSigner: sourceToTargetLifecycle.targetSigner,
+          targetSigner: sourceToTargetLifecycle.sourceSigner,
+          sourceName: sourceToTargetLifecycle.targetName,
+          targetName: sourceToTargetLifecycle.sourceName,
+          sourceClient: sourceToTargetLifecycle.targetClient,
+          targetClient: sourceToTargetLifecycle.sourceClient,
+          sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
+          targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
+          sourceIndexOracle: sourceToTargetLifecycle.targetIndexOracle,
+          targetIndexOracle: sourceToTargetLifecycle.sourceIndexOracle,
+        };
+
+        logger.info(
+          '--------- oracle %s>%s ---------',
+          targetToSourceLifecycle.sourceChain.name,
+          targetToSourceLifecycle.targetChain.name,
+        );
+        const targetToSourceRelay = new OracleRelay(targetToSourceLifecycle);
+        await targetToSourceRelay.start();
+        await setTimeout(1000);
       }
+      await setTimeout(4000);
     }
   }
 
@@ -80,6 +109,7 @@ export default class Oracle extends Command {
       signcribeClient,
       sourceIndexerOrmp: sourceIndex.ormp(),
       targetIndexerOrmp: targetIndex.ormp(),
+      sourceIndexOracle: sourceIndex.oracle(),
       targetIndexOracle: targetIndex.oracle(),
       indexerSigncribe: sourceIndex.signcribe(),
     };

@@ -22,11 +22,6 @@ interface OracleSignOptions {
   mainly: boolean
 }
 
-interface OracleSubmitOptions {
-  safe: any,
-  transaction: any,
-}
-
 interface LastSignature {
   signatures: SignatureSubmittion[],
   last?: SignatureSubmittion,
@@ -36,13 +31,6 @@ interface LastSignature {
 export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
   private static CK_ORACLE_SIGNED: string = 'ormpipe.oracle.signed';
-  private static CK_ORACLE_AGGREGATED: string = 'ormpipe.oracle.aggregated';
-  private static CK_ORACLE_MARK_AGGREGATED_MESSAGE_COUNT: string = 'ormpipe.oracle.mark.aggregated_message_count';
-  private static ALLOWED_ACCOUNTS: string[] = [
-    '0x9f33a4809aa708d7a399fedba514e0a0d15efa85',
-    '0x178e699c9a6bb2cd624557fbd85ed219e6faba77',
-    '0xA4bE619E8C0E3889f5fA28bb0393A4862Cad35ad',
-  ];
 
   private _targetOracle2ContractClient?: Oracle2ContractClient;
   private _signcribeContractClient?: SigncribeContractClient;
@@ -179,10 +167,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       toChainId: options.targetChainId,
     });
 
-    // if (sourceLastOracleMessageAssigned) {
-    //   await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceLastOracleMessageAssigned.message_index);
-    // }
-
     return nextAssignedMessageAccepted;
   }
 
@@ -215,6 +199,18 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       );
       await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
       return;
+    }
+    const cachedSignedMessageIndex: number | undefined = await super.storage.get(OracleRelay.CK_ORACLE_SIGNED);
+    if (cachedSignedMessageIndex != undefined) {
+      if (sourceNextMessageAccepted.message_index <= cachedSignedMessageIndex) {
+        logger.warn(
+          'this message index %s already signed and executed, queried by cache: %s',
+          sourceNextMessageAccepted.message_index,
+          cachedSignedMessageIndex,
+          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        )
+        return;
+      }
     }
 
 
@@ -270,7 +266,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       }
     }
 
-
     const safeNonce = await this.targetSafeContract.nonce();
 
     // check root by chain rpc
@@ -305,7 +300,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       }
     );
 
-    // console.log(safeTransactionData);
     const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
     const senderSignature: SafeSignature = await safeSdk.signTransactionHash(safeTxHash);
 
@@ -323,9 +317,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signature: senderSignature.data,
       data: encodedData,
     };
-
-
-    // safeTransaction.signatures = {};
 
     let alreadySignedCount = lastSignature.signatures.length;
     if (!lastSignature.completed) {
@@ -347,10 +338,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       );
       alreadySignedCount += 1
 
-      // safeTransaction.signatures.push({
-      //   signer: _signer.address.toLowerCase(),
-      //   data: senderSignature.data,
-      // } as SignatureSubmittion);
       safeTransaction.addSignature(new Safe.EthSafeSignature(_signer.address.toLowerCase(), senderSignature.data));
     }
 
@@ -367,16 +354,14 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     }
 
     for (const signature of lastSignature.signatures) {
-      // safeTransaction.signatures.push({signer: signature.signer, data: signature.signature});
       safeTransaction.addSignature(new Safe.EthSafeSignature(signature.signer, signature.signature));
     }
 
-    console.log(safeTransaction.signatures, safeNonce);
-    const executeTxResponse = await safeSdk.executeTransaction(safeTransaction)
-    console.log(executeTxResponse);
+    const executeTxResponse = await safeSdk.executeTransaction(safeTransaction);
     logger.info(
-      'multisign transaction executed: message index %s',
+      'multisign transaction executed: (%s) %s ',
       sourceNextMessageAccepted.message_index,
+      executeTxResponse.hash,
       super.meta('ormpipe-relay-oracle', ['oracle:sign']),
     );
 
