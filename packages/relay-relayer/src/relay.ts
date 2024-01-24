@@ -88,7 +88,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       chainId: options.sourceChainId
     });
     if (!lastImportedMessageRoot) {
-      logger.debug(
+      logger.info(
         'not have any imported message from %s',
         super.targetName,
         super.meta('ormpipe-relay-relayer', ['relayer']),
