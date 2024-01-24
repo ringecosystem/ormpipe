@@ -259,7 +259,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
       if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {
         logger.info(
-          'you should wait other nodes to sign message',
+          'you should wait other nodes to sign message: %s',
+          sourceNextMessageAccepted.message_index,
           super.meta('ormpipe-relay-oracle', ['oracle:sign']),
         );
         return;
