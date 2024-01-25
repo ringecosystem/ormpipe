@@ -24,7 +24,7 @@ export class Gqlc {
       // baseURL: 'https://httpbin.org/post',
       // baseURL: 'https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-goerli/version/latest',
       baseURL: endpoint,
-      timeout: this.config.timeout,
+      timeout: this.config.timeout ?? 1000 * 10,
     });
     this._interceptors(service);
     return service;
