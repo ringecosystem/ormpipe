@@ -262,7 +262,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     while (true) {
       unRelayedIndex += 1;
       if (unRelayMessageAcceptedList.length - 1 < unRelayedIndex) {
-        logger.debug(
+        logger.info(
           'not have more unrelayed message acceipte list from %s',
           super.sourceName,
           super.meta('ormpipe-relay-relayer', ['relayer']),
@@ -283,7 +283,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
       const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
       if (await sim.isSkipped(+currentMessageIndex)) {
-        logger.debug(
+        logger.info(
           `the message %s skipped, will retry later`,
           currentMessageIndex,
           super.meta('ormpipe-relay', ['relayer:relay'])
@@ -293,7 +293,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
       const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
       if (currentMessageIndex == cachedLastDeliveriedIndex) {
-        logger.debug(
+        logger.info(
           `the message %s already relayed to %s (queried by cache)`,
           currentMessageIndex,
           super.targetName,
