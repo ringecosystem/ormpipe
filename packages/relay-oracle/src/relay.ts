@@ -227,7 +227,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       )
       return;
     }
-    logger.debug(
+    logger.info(
       'message block finalized %s/%s(%s)',
       sourceFinalizedBLock.number,
       sourceNextMessageAccepted.blockNumber,
@@ -240,15 +240,22 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       +sourceNextMessageAccepted.message_fromChainId,
       +sourceNextMessageAccepted.message_index,
     );
+
     if (!lastSignature.completed) {
       const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
       if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {
+        // // # always sign when not completed, because maybe someone signed wrong data
+        // logger.info(
+        //   'you should wait other nodes to sign message: %s',
+        //   sourceNextMessageAccepted.message_index,
+        //   super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        // );
+        // return;
         logger.info(
-          'you should wait other nodes to sign message: %s',
+          'sign message %s again, wait other node to sign this message',
           sourceNextMessageAccepted.message_index,
           super.meta('ormpipe-relay-oracle', ['oracle:sign']),
         );
-        return;
       }
     }
 
