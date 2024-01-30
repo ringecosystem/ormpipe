@@ -240,9 +240,9 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       +sourceNextMessageAccepted.message_fromChainId,
       +sourceNextMessageAccepted.message_index,
     );
+    const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
 
     if (!lastSignature.completed) {
-      const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
       if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {
         // // # always sign when not completed, because maybe someone signed wrong data
         // logger.info(
@@ -264,7 +264,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       blockNumber: +sourceNextMessageAccepted.blockNumber,
     });
 
-    const _signer = super.targetClient.wallet(super.lifecycle.targetSigner);
+    const targetSigner = super.targetClient.wallet(super.lifecycle.targetSigner);
 
     const expiration = (+sourceNextMessageAccepted.blockTimestamp) + (60 * 60 * 24 * 10);
     const dataToSigned = ethers.solidityPackedKeccak256(
@@ -278,7 +278,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       ],
     );
 
-    const signature = await _signer.signMessage(ethers.getBytes(dataToSigned));
+    const signature = await targetSigner.signMessage(ethers.getBytes(dataToSigned));
 
     const signcribeData = {
       chainId: +sourceNextMessageAccepted.message_fromChainId,
@@ -314,8 +314,10 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         resp?.hash,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
-      alreadySignedCount += 1
-      shouldAddCurrentSignature = true;
+      if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) == -1) {
+        alreadySignedCount += 1
+        shouldAddCurrentSignature = true;
+      }
     }
 
     if (!options.mainly) {
@@ -335,7 +337,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     });
     if (shouldAddCurrentSignature) {
       _signatures.push({
-        signer: _signer.address.toLowerCase(),
+        signer: targetSigner.address.toLowerCase(),
         signature: signature,
       });
     }
