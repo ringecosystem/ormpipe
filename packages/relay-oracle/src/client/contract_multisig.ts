@@ -1,24 +1,17 @@
 import {ContractConfig, TransactionResponse} from "@darwinia/ormpipe-common";
 import {ethers} from "ethers";
 
-const abi = require("../abis/SubAPISignaturePub.json");
+const abi = require("../abis/Multisig.json");
 
-export interface SubmitSignscribeOptions {
+export interface ImportMessageRootOptions {
   chainId: number
-  msgIndex: number
-  signature: string
-  data: string
-}
-
-
-export interface SigncribeData {
-  chainId: number
+  blockNumber: number
   messageRoot: string
   expiration: number
-  blockNumber: number
+  signatures: string
 }
 
-export class SigncribeContractClient {
+export class MultisigContractClient {
 
   private readonly config: ContractConfig;
   private readonly contract: ethers.Contract;
@@ -29,15 +22,14 @@ export class SigncribeContractClient {
     this.contract = new ethers.Contract(config.address, abi, wallet);
   }
 
-
-
-  public async submit(options: SubmitSignscribeOptions): Promise<TransactionResponse | undefined> {
-    const tx = await this.contract['submit'](
+  public async importMessageRoot(options: ImportMessageRootOptions): Promise<TransactionResponse | undefined> {
+    const tx = this.contract['importMessageRoot'](
+      options.expiration,
       options.chainId,
-      options.msgIndex,
-      options.signature,
-      options.data,
-    )
+      options.blockNumber,
+      options.messageRoot,
+      options.signatures
+    );
     return await tx.wait();
   }
 

@@ -6,14 +6,11 @@ import {
   ThegraphIndexOracle,
   ThegraphIndexOrmp
 } from "@darwinia/ormpipe-indexer";
-import {Oracle2ContractClient} from "./client/contract_oracle2";
-import {SigncribeContractClient, SigncribeData, SubmitSignscribeOptions} from "./client/contract_signcribe";
+import {MultisigContractClient} from "./client/contract_multisig";
+import {SigncribeContractClient, SigncribeData} from "./client/contract_signcribe";
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
 
-const Safe = require('@safe-global/protocol-kit');
 import {AbiCoder, ethers} from "ethers";
-import {SafeSignature} from "@safe-global/safe-core-sdk-types";
-import {SafeContractClient} from "./client/contract_safe";
 import {OrmpContractClient} from "./client/contract_ormp";
 
 interface OracleSignOptions {
@@ -32,9 +29,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
   private static CK_ORACLE_SIGNED: string = 'ormpipe.oracle.signed';
 
-  private _targetOracle2ContractClient?: Oracle2ContractClient;
+  private _targetMultisigContractClient?: MultisigContractClient;
   private _signcribeContractClient?: SigncribeContractClient;
-  private _safeContractClient?: SafeContractClient;
   private _ormpContractClient?: OrmpContractClient;
 
   constructor(lifecycle: OracleRelayLifecycle) {
@@ -57,26 +53,15 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     return super.lifecycle.targetIndexOracle
   }
 
-  public get targetOracle2Contract(): Oracle2ContractClient {
-    if (this._targetOracle2ContractClient) return this._targetOracle2ContractClient;
-    this._targetOracle2ContractClient = new Oracle2ContractClient({
+  public get targetMultisigContract(): MultisigContractClient {
+    if (this._targetMultisigContractClient) return this._targetMultisigContractClient;
+    this._targetMultisigContractClient = new MultisigContractClient({
       chainName: super.targetName,
       signer: super.lifecycle.targetSigner,
-      address: super.lifecycle.targetChain.contract.oracle2,
+      address: super.lifecycle.targetChain.contract.multisig,
       evm: super.sourceClient.evm,
     });
-    return this._targetOracle2ContractClient;
-  }
-
-  public get targetSafeContract(): SafeContractClient {
-    if (this._safeContractClient) return this._safeContractClient;
-    this._safeContractClient = new SafeContractClient({
-      chainName: super.targetName,
-      signer: super.lifecycle.targetSigner,
-      address: super.lifecycle.targetChain.contract.safe,
-      evm: super.targetClient.evm,
-    });
-    return this._safeContractClient;
+    return this._targetMultisigContractClient;
   }
 
   public get signcribeContract(): SigncribeContractClient {
@@ -267,47 +252,31 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       }
     }
 
-    const safeNonce = await this.targetSafeContract.nonce();
-
     // check root by chain rpc
     const queriedRootFromContract = await this.sourceOrmpContract.root({
       blockNumber: +sourceNextMessageAccepted.blockNumber,
     });
 
-    const txcaller = await this.targetOracle2Contract.buildImportMessageRoot({
-      chainId: +sourceNextMessageAccepted.message_fromChainId,
-      blockNumber: +sourceNextMessageAccepted.blockNumber,
-      messageRoot: queriedRootFromContract,
-    });
-    const safeTransactionData = {
-      to: super.lifecycle.targetChain.contract.oracle2, // oracle v2 contract address
-      value: '0',
-      data: txcaller,
-    }
-
     const _signer = super.targetClient.wallet(super.lifecycle.targetSigner);
-    const safeSdk = await Safe.default.create({
-      ethAdapter: new Safe.EthersAdapter({
-        ethers,
-        signerOrProvider: _signer
-      }),
-      safeAddress: super.lifecycle.targetChain.contract.safe,
-    });
 
-
-    const safeTransaction = await safeSdk.createTransaction({
-        transactions: [safeTransactionData],
-        options: {nonce: safeNonce},
-      }
+    const expiration = (+sourceNextMessageAccepted.blockTimestamp) + (60 * 60 * 24 * 10);
+    const dataToSigned = ethers.solidityPackedKeccak256(
+      ['uint256', 'uint256', 'uint256', 'uint256', 'bytes32'],
+      [
+        1,
+        expiration,
+        sourceNextMessageAccepted.message_fromChainId,
+        sourceNextMessageAccepted.blockNumber,
+        queriedRootFromContract
+      ],
     );
 
-    const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
-    const senderSignature: SafeSignature = await safeSdk.signTransactionHash(safeTxHash);
+    const signature = await _signer.signMessage(ethers.getBytes(dataToSigned));
 
     const signcribeData = {
       chainId: +sourceNextMessageAccepted.message_fromChainId,
       messageRoot: queriedRootFromContract,
-      nonce: safeNonce,
+      expiration: expiration,
       blockNumber: +sourceNextMessageAccepted.blockNumber,
     };
     const encodedData = this._encodeSigncribeData(signcribeData);
@@ -315,11 +284,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const signcribeSubmitOptions = {
       chainId: +sourceNextMessageAccepted.message_fromChainId,
       msgIndex: +sourceNextMessageAccepted.message_index,
-      signature: senderSignature.data,
+      signature: signature,
       data: encodedData,
     };
 
     let alreadySignedCount = lastSignature.signatures.length;
+    let shouldAddCurrentSignature = false;
     if (!lastSignature.completed) {
       const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
       if (!resp) {
@@ -338,8 +308,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
       alreadySignedCount += 1
-
-      safeTransaction.addSignature(new Safe.EthSafeSignature(_signer.address.toLowerCase(), senderSignature.data));
+      shouldAddCurrentSignature = true;
     }
 
     if (!options.mainly) {
@@ -354,11 +323,33 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       return;
     }
 
-    for (const signature of lastSignature.signatures) {
-      safeTransaction.addSignature(new Safe.EthSafeSignature(signature.signer, signature.signature));
+    const _signatures = lastSignature.signatures.map(item => {
+      return {signer: item.signer, signature: item.signature}
+    });
+    if (shouldAddCurrentSignature) {
+      _signatures.push({
+        signer: _signer.address.toLowerCase(),
+        signature: signature,
+      });
+    }
+    const _sortedSignatures = _signatures.sort((a, b) => a.signer > b.signer ? 1 : (a.signer < b.signer ? -1 : 0));
+    const _collatedSignatures = _sortedSignatures.map(item => item.signature).join('').replace('0x', '');
+    const executeTxResponse = await this.targetMultisigContract.importMessageRoot({
+      chainId: signcribeData.chainId,
+      blockNumber: signcribeData.blockNumber,
+      messageRoot: signcribeData.messageRoot,
+      expiration: signcribeData.expiration,
+      signatures: _collatedSignatures,
+    });
+    if (!executeTxResponse) {
+      logger.warn(
+        'no response for submit multisig: %s',
+        sourceNextMessageAccepted.message_index,
+        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+      );
+      return;
     }
 
-    const executeTxResponse = await safeSdk.executeTransaction(safeTransaction);
     logger.info(
       'multisign transaction executed: (%s) %s ',
       sourceNextMessageAccepted.message_index,
@@ -366,47 +357,18 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       super.meta('ormpipe-relay-oracle', ['oracle:sign']),
     );
 
-    /*
-    // tron
-    const tronWeb = new TronWeb({
-                fullHost: 'https://api.shasta.trongrid.io',
-                privateKey: tronPrivateKey
-            })
-            const oracleV2addr = tronWeb.address.toHex("TDACQR5FUtNpuBS2g85WKiucvrAWhY6zzs");
-            const functions = "importMessageRoot(uint256,uint256,bytes32)";
-            var parameter = [{ type: 'uint256', value: 42416 }, { type: 'uint256', value: 1 }, { type: 'bytes32', value: `0x0000000000000000000000000000000000000000000000000000000000000001` }];
-            const subapiDao = tronWeb.address.toHex("TKXAuEtPiqa49vnuoBQQDURUzCB7SnXb4y");
-
-            const options = {
-                feeLimit: 100000000,
-                callValue: 0,
-                Permission_id: 0
-            }
-
-            const initTx = await tronWeb.transactionBuilder.triggerSmartContract(oracleV2addr, functions, options, parameter, subapiDao);
-            const unsignedTx = await tronWeb.transactionBuilder.extendExpiration(initTx.transaction, 1800);
-
-            var signedTransaction = await tronWeb.trx.multiSign(unsignedTx);
-            console.log("signedTransaction", JSON.stringify(signedTransaction));
-
-            // const signedTransaction = "";
-
-            var signWeight = await tronWeb.trx.getSignWeight(signedTransaction);
-            console.log("signWeight", signWeight);
-
-            // var approvedList = await tronWeb.trx.getApprovedList(signedTransaction);
-            // console.log("approvedList", approvedList);
-
-            // var result = await tronWeb.trx.broadcast(signedTransaction);
-            // console.log("result", result);
-     */
-
     await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
   }
 
-
   private async _lastSignature(chainId: number, msgIndex: number): Promise<LastSignature> {
-    const owners = await this.targetSafeContract.owners();
+    // const owners = await this.targetSafeContract.owners();
+    const owners = [
+      '0xFa5727bE643dba6599fC7F812fE60dA3264A8205',
+      '0xB9a0CaDD13C5d534b034d878b2fcA9E5a6e1e3A4',
+      '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
+      '0x178E699c9a6bB2Cd624557Fbd85ed219e6faBa77',
+      '0xA4bE619E8C0E3889f5fA28bb0393A4862Cad35ad'
+    ];
     const topSignatures = await this.indexerSigncribe.topSignatures({
       chainId,
       msgIndex: msgIndex,
@@ -429,10 +391,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       if (checklistSignatures.findIndex(item => item.signer === tst.signer) != -1) continue;
       checklistSignatures.push(tst);
     }
+    const sortedCheckListSignatures = checklistSignatures
+      .sort((a, b) => a.signer > b.signer ? 1 : (a.signer < b.signer ? -1 : 0));
     return {
-      signatures: checklistSignatures,
-      last: checklistSignatures[0],
-      completed: this._isCompletedSignate(checklistSignatures.length),
+      signatures: sortedCheckListSignatures,
+      last: sortedCheckListSignatures[0],
+      completed: this._isCompletedSignate(sortedCheckListSignatures.length),
     };
   }
 
@@ -445,7 +409,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   private _encodeSigncribeData(data: SigncribeData): string {
     const abiCoder = AbiCoder.defaultAbiCoder();
     const encodedData = abiCoder.encode([
-        'tuple(uint256 chainId, bytes messageRoot, uint256 nonce, uint256 blockNumber)'
+        'tuple(uint256 chainId, bytes messageRoot, uint256 expiration, uint256 blockNumber)'
       ],
       [data]
     );
@@ -455,13 +419,13 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   private _decodeSigncribeData(hex: string): SigncribeData {
     const abiCoder = AbiCoder.defaultAbiCoder();
     const v = abiCoder.decode([
-      'tuple(uint256 chainId, bytes messageRoot, uint256 nonce, uint256 blockNumber)'
+      'tuple(uint256 chainId, bytes messageRoot, uint256 expiration, uint256 blockNumber)'
     ], hex);
     const decoded = v[0];
     return {
       chainId: decoded[0],
       messageRoot: decoded[1],
-      nonce: decoded[2],
+      expiration: decoded[2],
       blockNumber: decoded[3],
     };
   }

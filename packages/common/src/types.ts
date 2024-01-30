@@ -39,9 +39,8 @@ export interface ChainInfoIndexerFlag {
 
 export interface ChainInfoFlagContract {
   signcribe: string
-  oracle2: string
+  multisig: string
   relayer: string
-  safe: string
   ormp: string
 }
 

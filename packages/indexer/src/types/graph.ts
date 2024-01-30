@@ -122,6 +122,7 @@ export interface SubapiBeacon extends SubapiBeaconBase {
 
 export interface SignatureSubmittion extends BaseGraphEntity {
   chainId: string
+  msgIndex: string
   signer: string
   signature: string
   data: string

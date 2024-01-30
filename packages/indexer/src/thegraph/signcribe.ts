@@ -19,6 +19,7 @@ export class ThegraphIndexSigncribe extends GraphCommon {
       ) {
         id
         chainId
+        msgIndex
         signer
         signature
         data
