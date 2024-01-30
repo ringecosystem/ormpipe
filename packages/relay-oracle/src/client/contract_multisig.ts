@@ -23,7 +23,7 @@ export class MultisigContractClient {
   }
 
   public async importMessageRoot(options: ImportMessageRootOptions): Promise<TransactionResponse | undefined> {
-    const tx = this.contract['importMessageRoot'](
+    const tx = await this.contract['importMessageRoot'](
       options.expiration,
       options.chainId,
       options.blockNumber,
