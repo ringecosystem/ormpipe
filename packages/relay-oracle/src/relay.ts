@@ -252,8 +252,9 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         // );
         // return;
         logger.info(
-          'sign message %s again, wait other nodes to sign this message',
+          'sign message %s again, wait other nodes to sign this message, current sign count %s',
           sourceNextMessageAccepted.message_index,
+          lastSignature.signatures.length,
           super.meta('ormpipe-relay-oracle', ['oracle:sign']),
         );
       }
@@ -353,24 +354,45 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     // console.log(alreadySignedCount);
     // console.log(lastSignature.signatures);
     // console.log(importMessageRootOptions);
-    const executeTxResponse = await this.targetMultisigContract.importMessageRoot(importMessageRootOptions);
-    if (!executeTxResponse) {
-      logger.warn(
-        'no response for submit multisig: %s',
+    try {
+      const executeTxResponse = await this.targetMultisigContract.importMessageRoot(importMessageRootOptions);
+      if (!executeTxResponse) {
+        logger.warn(
+          'no response for submit multisig: %s',
+          sourceNextMessageAccepted.message_index,
+          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        );
+        return;
+      }
+
+      logger.info(
+        'multisign transaction executed: (%s) %s ',
         sourceNextMessageAccepted.message_index,
+        executeTxResponse.hash,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
-      return;
+
+      await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
+    } catch (e: any) {
+      logger.error(e, super.meta('ormpipe-relay'));
+      // when multisign failed, resign again.
+      const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
+      if (!resp) {
+        logger.error(
+          'failed to submit resigned message to signcribe contract',
+          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        );
+        return;
+      }
+
+      logger.info(
+        'message %s(%s) is resigned and submit to signcribe: %s',
+        sourceNextMessageAccepted.message_index,
+        super.sourceName,
+        resp?.hash,
+        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+      );
     }
-
-    logger.info(
-      'multisign transaction executed: (%s) %s ',
-      sourceNextMessageAccepted.message_index,
-      executeTxResponse.hash,
-      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-    );
-
-    await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
   }
 
   private async _lastSignature(chainId: number, msgIndex: number): Promise<LastSignature> {
