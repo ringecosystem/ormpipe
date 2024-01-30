@@ -59,7 +59,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       chainName: super.targetName,
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.multisig,
-      evm: super.sourceClient.evm,
+      evm: super.targetClient.evm,
     });
     return this._targetMultisigContractClient;
   }
@@ -81,7 +81,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       chainName: super.sourceName,
       signer: super.lifecycle.sourceSigner,
       address: super.lifecycle.sourceChain.contract.ormp,
-      evm: super.lifecycle.sourceClient.evm,
+      evm: super.sourceClient.evm,
     });
     return this._ormpContractClient;
   }
