@@ -317,7 +317,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     if (!this._isCompletedSignate(alreadySignedCount)) {
       logger.info(
-        'skip execute safe transaction, wait other nodes sign this message',
+        'skip execute transaction, wait other nodes sign this message',
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
       return;
