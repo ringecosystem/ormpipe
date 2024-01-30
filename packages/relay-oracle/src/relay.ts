@@ -252,7 +252,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         // );
         // return;
         logger.info(
-          'sign message %s again, wait other node to sign this message',
+          'sign message %s again, wait other nodes to sign this message',
           sourceNextMessageAccepted.message_index,
           super.meta('ormpipe-relay-oracle', ['oracle:sign']),
         );
@@ -346,7 +346,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       blockNumber: signcribeData.blockNumber,
       messageRoot: signcribeData.messageRoot,
       expiration: signcribeData.expiration,
-      signatures: _collatedSignatures,
+      signatures: `0x${_collatedSignatures}`,
     });
     if (!executeTxResponse) {
       logger.warn(
