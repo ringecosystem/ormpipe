@@ -342,14 +342,18 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       });
     }
     const _sortedSignatures = _signatures.sort((a, b) => a.signer > b.signer ? 1 : (a.signer < b.signer ? -1 : 0));
-    const _collatedSignatures = _sortedSignatures.map(item => item.signature).join('').replace('0x', '');
-    const executeTxResponse = await this.targetMultisigContract.importMessageRoot({
+    const _collatedSignatures = _sortedSignatures.map(item => item.signature).join('').replaceAll('0x', '');
+    const importMessageRootOptions = {
       chainId: signcribeData.chainId,
       blockNumber: signcribeData.blockNumber,
       messageRoot: signcribeData.messageRoot,
       expiration: signcribeData.expiration,
       signatures: `0x${_collatedSignatures}`,
-    });
+    };
+    // console.log(alreadySignedCount);
+    // console.log(lastSignature.signatures);
+    // console.log(importMessageRootOptions);
+    const executeTxResponse = await this.targetMultisigContract.importMessageRoot(importMessageRootOptions);
     if (!executeTxResponse) {
       logger.warn(
         'no response for submit multisig: %s',
