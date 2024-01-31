@@ -29,7 +29,7 @@
   },
   "sepolia": {
     "name": "sepolia",
-    "endpoint": "https://rpc.sepolia.org",
+    "endpoint": "https://ethereum-sepolia.publicnode.com",
     "indexer": {
       "ormp": "https://api.studio.thegraph.com/query/51152/ormpipe-sepolia/version/latest",
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
