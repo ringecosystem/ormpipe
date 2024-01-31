@@ -298,6 +298,14 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     let alreadySignedCount = lastSignature.signatures.length;
     let shouldAddCurrentSignature = false;
+    logger.info(
+      'prepare to submit signature for message %s(%s) and last signature state is %s',
+      sourceNextMessageAccepted.message_index,
+      super.sourceName,
+      lastSignature.completed,
+      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    );
+    console.log(lastSignature);
     if (!lastSignature.completed) {
       const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
       if (!resp) {
