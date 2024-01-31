@@ -6,14 +6,15 @@ export class ThegraphIndexSigncribe extends GraphCommon {
 
 
   public async topSignatures(variables: QueryTopSigncribe): Promise<SignatureSubmittion[]> {
-    console.log('-----------------------------')
-    console.log(variables);
-    console.log('-----------------------------')
+    // console.log('-----------------------------')
+    // console.log(JSON.stringify(variables, null, 2));
+    // console.log('-----------------------------')
     const query = `
     query QuerySignPub($msgIndex: BigInt!, $chainId: BigInt!, $signers: [String!]!) {
       signatureSubmittions(
         orderBy: blockNumber
         orderDirection: desc
+        first: 10
         where: {
           chainId: $chainId
           msgIndex: $msgIndex
