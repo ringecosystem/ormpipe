@@ -242,23 +242,23 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
     const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
 
-    if (!lastSignature.completed) {
-      if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {
-        // // # always sign when not completed, because maybe someone signed wrong data
-        // logger.info(
-        //   'you should wait other nodes to sign message: %s',
-        //   sourceNextMessageAccepted.message_index,
-        //   super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-        // );
-        // return;
-        logger.info(
-          'sign message %s again, wait other nodes to sign this message, current sign count %s',
-          sourceNextMessageAccepted.message_index,
-          lastSignature.signatures.length,
-          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-        );
-      }
-    }
+    // if (!lastSignature.completed) {
+    //   if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {
+    //     // // # always sign when not completed, because maybe someone signed wrong data
+    //     // logger.info(
+    //     //   'you should wait other nodes to sign message: %s',
+    //     //   sourceNextMessageAccepted.message_index,
+    //     //   super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    //     // );
+    //     // return;
+    //     logger.info(
+    //       'sign message %s again, wait other nodes to sign this message, current sign count %s',
+    //       sourceNextMessageAccepted.message_index,
+    //       lastSignature.signatures.length,
+    //       super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    //     );
+    //   }
+    // }
 
     // check root by chain rpc
     const queriedRootFromContract = await this.sourceOrmpContract.root({
@@ -295,122 +295,112 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signature: signature,
       data: encodedData,
     };
+    const alreadySignedCount = lastSignature.signatures.length;
+    const isCollectedSignatures = this._isCompletedSignatures(alreadySignedCount);
 
-    let alreadySignedCount = lastSignature.signatures.length;
-    let shouldAddCurrentSignature = false;
+    // mainly node will execute multisig
+    if (options.mainly) {
+      if (isCollectedSignatures) {
+        try {
+          await this.submit(
+            lastSignature,
+            signcribeData,
+            +sourceNextMessageAccepted.message_index
+          );
+        } catch (e: any) {
+          logger.error(e, super.meta('ormpipe-relay'));
+          logger.info(
+            'failed to execute multisign will sign message again, %s(%s)',
+            sourceNextMessageAccepted.message_index,
+            super.sourceName,
+            super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+          );
+        }
+      } else {
+        logger.info(
+          'skip execute transaction for message %s(%s), wait other nodes sign this message, current sign count is %s',
+          sourceNextMessageAccepted.message_index,
+          super.sourceName,
+          alreadySignedCount,
+          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        );
+      }
+    }
+
     logger.info(
-      'prepare to submit signature for message %s(%s) and last signature state is %s',
+      'prepare to submit signature for message %s(%s) to %s and last signature state is %s',
       sourceNextMessageAccepted.message_index,
       super.sourceName,
+      super.targetName,
       lastSignature.completed,
       super.meta('ormpipe-relay-oracle', ['oracle:sign']),
     );
-    console.log(lastSignature);
-    if (!lastSignature.completed) {
-      const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
-      if (!resp) {
-        logger.error(
-          'failed to submit signed to signcribe contract',
-          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-        );
-        return;
-      }
 
-      logger.info(
-        'message %s(%s) is signed and submit to signcribe: %s',
-        sourceNextMessageAccepted.message_index,
-        super.sourceName,
-        resp?.hash,
-        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-      );
-      if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) == -1) {
-        alreadySignedCount += 1
-        shouldAddCurrentSignature = true;
-      }
-    }
-
-    if (!options.mainly) {
-      return;
-    }
-
-    if (!this._isCompletedSignate(alreadySignedCount)) {
-      logger.info(
-        'skip execute transaction, wait other nodes sign this message',
+    const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
+    if (!resp) {
+      logger.error(
+        'failed to submit signed to signcribe contract',
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
       return;
     }
 
+    logger.info(
+      'message %s(%s) is signed and submit to signcribe: %s',
+      sourceNextMessageAccepted.message_index,
+      super.sourceName,
+      resp?.hash,
+      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    );
+
+  }
+
+
+  private async submit(
+    lastSignature: LastSignature,
+    signcribeData: SigncribeData,
+    msgIndex: number,
+  ) {
     const _signatures = lastSignature.signatures.map(item => {
       return {signer: item.signer, signature: item.signature}
     });
-    if (shouldAddCurrentSignature) {
-      _signatures.push({
-        signer: targetSigner.address.toLowerCase(),
-        signature: signature,
-      });
-    }
     const _sortedSignatures = _signatures.sort((a, b) => a.signer > b.signer ? 1 : (a.signer < b.signer ? -1 : 0));
-    const _collatedSignatures = _sortedSignatures.map(item => item.signature).join('').replaceAll('0x', '');
+    const _collectedSignatures = _sortedSignatures.map(item => item.signature).join('').replaceAll('0x', '');
     const importMessageRootOptions = {
       chainId: signcribeData.chainId,
       blockNumber: signcribeData.blockNumber,
       messageRoot: signcribeData.messageRoot,
       expiration: signcribeData.expiration,
-      signatures: `0x${_collatedSignatures}`,
+      signatures: `0x${_collectedSignatures}`,
     };
-    // console.log(alreadySignedCount);
-    // console.log(lastSignature.signatures);
-    // console.log(importMessageRootOptions);
-    try {
-      const executeTxResponse = await this.targetMultisigContract.importMessageRoot(importMessageRootOptions);
-      if (!executeTxResponse) {
-        logger.warn(
-          'no response for submit multisig: %s',
-          sourceNextMessageAccepted.message_index,
-          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-        );
-        return;
-      }
 
-      logger.info(
-        'multisign transaction executed: (%s) %s ',
-        sourceNextMessageAccepted.message_index,
-        executeTxResponse.hash,
+    const executeTxResponse = await this.targetMultisigContract.importMessageRoot(importMessageRootOptions);
+    if (!executeTxResponse) {
+      logger.warn(
+        'no response for submit multisig: %s',
+        msgIndex,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
-
-      await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
-    } catch (e: any) {
-      logger.error(e, super.meta('ormpipe-relay'));
-      // when multisign failed, resign again.
-      const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
-      if (!resp) {
-        logger.error(
-          'failed to submit resigned message to signcribe contract',
-          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-        );
-        return;
-      }
-
-      logger.info(
-        'message %s(%s) is resigned and submit to signcribe: %s',
-        sourceNextMessageAccepted.message_index,
-        super.sourceName,
-        resp?.hash,
-        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-      );
+      return
     }
+
+    logger.info(
+      'multisign transaction executed: (%s) %s ',
+      msgIndex,
+      executeTxResponse.hash,
+      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    );
+    await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, msgIndex);
   }
 
   private async _lastSignature(chainId: number, msgIndex: number): Promise<LastSignature> {
     // const owners = await this.targetSafeContract.owners();
     const owners = [
-      '0xFa5727bE643dba6599fC7F812fE60dA3264A8205',
-      '0xB9a0CaDD13C5d534b034d878b2fcA9E5a6e1e3A4',
-      '0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85',
-      '0x178E699c9a6bB2Cd624557Fbd85ed219e6faBa77',
-      '0xA4bE619E8C0E3889f5fA28bb0393A4862Cad35ad'
+      "0xfa5727be643dba6599fc7f812fe60da3264a8205",
+      "0xb9a0cadd13c5d534b034d878b2fca9e5a6e1e3a4",
+      "0x9f33a4809aa708d7a399fedba514e0a0d15efa85",
+      "0x178e699c9a6bb2cd624557fbd85ed219e6faba77",
+      "0xa4be619e8c0e3889f5fa28bb0393a4862cad35ad"
     ];
     const topSignatures = await this.indexerSigncribe.topSignatures({
       chainId,
@@ -439,11 +429,11 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     return {
       signatures: sortedCheckListSignatures,
       last: sortedCheckListSignatures[0],
-      completed: this._isCompletedSignate(sortedCheckListSignatures.length),
+      completed: this._isCompletedSignatures(sortedCheckListSignatures.length),
     };
   }
 
-  private _isCompletedSignate(count: number): boolean {
+  private _isCompletedSignatures(count: number): boolean {
     const countNodes = 5;
     const countSc = countNodes * (3 / 5);
     return count >= countSc;
