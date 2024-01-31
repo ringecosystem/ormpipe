@@ -240,6 +240,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       +sourceNextMessageAccepted.message_fromChainId,
       +sourceNextMessageAccepted.message_index,
     );
+    console.log(lastSignature);
     const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
 
     // if (!lastSignature.completed) {
