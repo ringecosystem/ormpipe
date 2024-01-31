@@ -240,26 +240,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       +sourceNextMessageAccepted.message_fromChainId,
       +sourceNextMessageAccepted.message_index,
     );
-    console.log(lastSignature);
-    const sourceSignerAddress = super.lifecycle.sourceClient.wallet(this.lifecycle.sourceSigner).address;
-
-    // if (!lastSignature.completed) {
-    //   if (lastSignature.signatures.findIndex(item => item.signer.toLowerCase() === sourceSignerAddress.toLowerCase()) > -1) {
-    //     // // # always sign when not completed, because maybe someone signed wrong data
-    //     // logger.info(
-    //     //   'you should wait other nodes to sign message: %s',
-    //     //   sourceNextMessageAccepted.message_index,
-    //     //   super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-    //     // );
-    //     // return;
-    //     logger.info(
-    //       'sign message %s again, wait other nodes to sign this message, current sign count %s',
-    //       sourceNextMessageAccepted.message_index,
-    //       lastSignature.signatures.length,
-    //       super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-    //     );
-    //   }
-    // }
 
     // check root by chain rpc
     const queriedRootFromContract = await this.sourceOrmpContract.root({
