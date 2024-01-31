@@ -6,6 +6,9 @@ export class ThegraphIndexSigncribe extends GraphCommon {
 
 
   public async topSignatures(variables: QueryTopSigncribe): Promise<SignatureSubmittion[]> {
+    console.log('-----------------------------')
+    console.log(variables);
+    console.log('-----------------------------')
     const query = `
     query QuerySignPub($msgIndex: BigInt!, $chainId: BigInt!, $signers: [String!]!) {
       signatureSubmittions(
