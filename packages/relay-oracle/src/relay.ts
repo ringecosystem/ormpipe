@@ -288,6 +288,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
             signcribeData,
             +sourceNextMessageAccepted.message_index
           );
+          return;
         } catch (e: any) {
           logger.error(e, super.meta('ormpipe-relay'));
           logger.info(
@@ -299,10 +300,11 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         }
       } else {
         logger.info(
-          'skip execute transaction for message %s(%s), wait other nodes sign this message, current sign count is %s',
+          'skip execute transaction for message %s(%s), wait other nodes sign this message, current sign count is %s. %s',
           sourceNextMessageAccepted.message_index,
           super.sourceName,
           alreadySignedCount,
+          lastSignature.signatures.map(item => item.signer),
           super.meta('ormpipe-relay-oracle', ['oracle:sign']),
         );
       }
