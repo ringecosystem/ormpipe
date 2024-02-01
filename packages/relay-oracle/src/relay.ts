@@ -244,7 +244,17 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     // check root by chain rpc
     const queriedRootFromContract = await this.sourceOrmpContract.root({
       blockNumber: +sourceNextMessageAccepted.blockNumber,
+      msgIndex: +sourceNextMessageAccepted.message_index,
     });
+    if (!queriedRootFromContract) {
+      logger.error(
+        'can not query message root by %s(%s) from ormp contract',
+        sourceNextMessageAccepted.message_index,
+        super.sourceName,
+        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+      );
+      return;
+    }
 
     const targetSigner = super.targetClient.wallet(super.lifecycle.targetSigner);
 
@@ -348,7 +358,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       return {signer: item.signer, signature: item.signature}
     });
     const _sortedSignatures = _signatures.sort((a, b) => a.signer > b.signer ? 1 : (a.signer < b.signer ? -1 : 0));
-    const _collectedSignatures = _sortedSignatures.map(item => item.signature).join('').replaceAll('0x', '');
+    const _keepSortedSignatures = _sortedSignatures.splice(0, 3);
+    const _collectedSignatures = _keepSortedSignatures.map(item => item.signature).join('').replaceAll('0x', '');
     const importMessageRootOptions = {
       chainId: signcribeData.chainId,
       blockNumber: signcribeData.blockNumber,
