@@ -262,7 +262,7 @@ export class ThegraphIndexOrmp extends GraphCommon {
 
   public async pickOracleAssignedMessageHashes(variables: QueryBasicMessageAccepted): Promise<string[]> {
     const query = `
-    query QueryAllOracleAssignedMessageAccepted($skip: Int!, $toChainId: Int!) {
+    query QueryAllOracleAssignedMessageAccepted($skip: Int!, $toChainId: BigInt!) {
       ormpProtocolMessageAccepteds(
         skip: $skip
         first: 10

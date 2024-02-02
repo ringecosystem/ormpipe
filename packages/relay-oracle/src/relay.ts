@@ -12,7 +12,6 @@ import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/si
 
 import {AbiCoder, ethers} from "ethers";
 import {OrmpContractClient} from "./client/contract_ormp";
-import exp = require("node:constants");
 
 interface OracleSignOptions {
   sourceChainId: number
