@@ -12,6 +12,7 @@ import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/si
 
 import {AbiCoder, ethers} from "ethers";
 import {OrmpContractClient} from "./client/contract_ormp";
+import exp = require("node:constants");
 
 interface OracleSignOptions {
   sourceChainId: number
@@ -257,26 +258,20 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     }
 
     const targetSigner = super.targetClient.wallet(super.lifecycle.targetSigner);
-
     const expiration = (+sourceNextMessageAccepted.blockTimestamp) + (60 * 60 * 24 * 10);
-    const dataToSigned = ethers.solidityPackedKeccak256(
-      ['uint256', 'uint256', 'uint256', 'uint256', 'bytes32'],
-      [
-        1,
-        expiration,
-        sourceNextMessageAccepted.message_fromChainId,
-        sourceNextMessageAccepted.blockNumber,
-        queriedRootFromContract
-      ],
-    );
 
-    const signature = await targetSigner.signMessage(ethers.getBytes(dataToSigned));
+    const signedMessage = this.targetMultisigContract.buildSign({
+      oracleContractAddress: super.lifecycle.targetChain.contract.oracle,
+      chainId: +sourceNextMessageAccepted.message_fromChainId,
+      expiration: expiration,
+      messageIndex: +sourceNextMessageAccepted.message_index,
+      messageRoot: queriedRootFromContract,
+    });
+    const signature = await targetSigner.signMessage(ethers.getBytes(signedMessage.hash));
 
     const signcribeData = {
-      chainId: +sourceNextMessageAccepted.message_fromChainId,
-      messageRoot: queriedRootFromContract,
+      importRootCallData: signedMessage.importRootCallData,
       expiration: expiration,
-      blockNumber: +sourceNextMessageAccepted.blockNumber,
     };
     const encodedData = this._encodeSigncribeData(signcribeData);
 
@@ -359,11 +354,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     });
     const _sortedSignatures = _signatures.sort((a, b) => a.signer > b.signer ? 1 : (a.signer < b.signer ? -1 : 0));
     const _keepSortedSignatures = _sortedSignatures.splice(0, 3);
-    const _collectedSignatures = _keepSortedSignatures.map(item => item.signature).join('').replaceAll('0x', '');
+    const _collectedSignatures = _keepSortedSignatures.map(item => item.signature).join('')
+      .replaceAll('0x', '');
+      // .replace('0x', '');
     const importMessageRootOptions = {
-      chainId: signcribeData.chainId,
-      blockNumber: signcribeData.blockNumber,
-      messageRoot: signcribeData.messageRoot,
+      oracleContractAddress: super.lifecycle.targetChain.contract.oracle,
+      importRootCallData: signcribeData.importRootCallData,
       expiration: signcribeData.expiration,
       signatures: `0x${_collectedSignatures}`,
     };
@@ -436,7 +432,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   private _encodeSigncribeData(data: SigncribeData): string {
     const abiCoder = AbiCoder.defaultAbiCoder();
     const encodedData = abiCoder.encode([
-        'tuple(uint256 chainId, bytes messageRoot, uint256 expiration, uint256 blockNumber)'
+        'tuple(bytes importRootCallData, uint256 expiration)'
       ],
       [data]
     );
@@ -446,14 +442,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   private _decodeSigncribeData(hex: string): SigncribeData {
     const abiCoder = AbiCoder.defaultAbiCoder();
     const v = abiCoder.decode([
-      'tuple(uint256 chainId, bytes messageRoot, uint256 expiration, uint256 blockNumber)'
+      'tuple(bytes importRootCallData, uint256 expiration)'
     ], hex);
     const decoded = v[0];
     return {
-      chainId: decoded[0],
-      messageRoot: decoded[1],
+      importRootCallData: decoded[0],
       expiration: decoded[2],
-      blockNumber: decoded[3],
     };
   }
 

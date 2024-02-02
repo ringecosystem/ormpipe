@@ -42,5 +42,6 @@ export interface ChainInfoFlagContract {
   multisig: string
   relayer: string
   ormp: string
+  oracle: string
 }
 

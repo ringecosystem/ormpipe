@@ -7,10 +7,11 @@
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
     },
     "contract": {
-      "multisig": "0x000000000C1Ab3d46b1FF59C29aeF0Dd1e8369e8",
+      "multisig": "0x0000000004127035e3559B9E3376e9DF07822B1E",
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
       "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
-      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A"
+      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
+      "oracle": "0x0000000004A34ac73374b65a55C93CF9D4Bc3d17"
     }
   },
   "darwinia": {
@@ -21,10 +22,11 @@
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
     },
     "contract": {
-      "multisig": "0x000000000C1Ab3d46b1FF59C29aeF0Dd1e8369e8",
+      "multisig": "0x0000000004127035e3559B9E3376e9DF07822B1E",
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
       "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
-      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A"
+      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
+      "oracle": "0x0000000004A34ac73374b65a55C93CF9D4Bc3d17"
     }
   },
   "sepolia": {
@@ -35,10 +37,11 @@
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
     },
     "contract": {
-      "multisig": "0x000000000C1Ab3d46b1FF59C29aeF0Dd1e8369e8",
+      "multisig": "0x0000000004127035e3559B9E3376e9DF07822B1E",
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
       "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
-      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A"
+      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
+      "oracle": "0x0000000004A34ac73374b65a55C93CF9D4Bc3d17"
     }
   },
   "arbitrumsepolia": {
@@ -49,10 +52,11 @@
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
     },
     "contract": {
-      "multisig": "0x000000000C1Ab3d46b1FF59C29aeF0Dd1e8369e8",
+      "multisig": "0x0000000004127035e3559B9E3376e9DF07822B1E",
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
       "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
-      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A"
+      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
+      "oracle": "0x0000000004A34ac73374b65a55C93CF9D4Bc3d17"
     }
   },
   "arbitrum": {
@@ -63,10 +67,11 @@
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
     },
     "contract": {
-      "multisig": "0x000000000C1Ab3d46b1FF59C29aeF0Dd1e8369e8",
+      "multisig": "0x0000000004127035e3559B9E3376e9DF07822B1E",
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
       "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
-      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A"
+      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
+      "oracle": "0x0000000004A34ac73374b65a55C93CF9D4Bc3d17"
     }
   },
   "ethereum": {
@@ -77,10 +82,11 @@
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
     },
     "contract": {
-      "multisig": "0x000000000C1Ab3d46b1FF59C29aeF0Dd1e8369e8",
+      "multisig": "0x0000000004127035e3559B9E3376e9DF07822B1E",
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
       "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
-      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A"
+      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
+      "oracle": "0x0000000004A34ac73374b65a55C93CF9D4Bc3d17"
     }
   }
 }

@@ -2,18 +2,13 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "oracle",
-        "type": "address"
-      },
-      {
         "internalType": "address[]",
-        "name": "_signers",
+        "name": "signers",
         "type": "address[]"
       },
       {
         "internalType": "uint64",
-        "name": "_quorum",
+        "name": "threshold",
         "type": "uint64"
       }
     ],
@@ -21,90 +16,29 @@
     "type": "constructor"
   },
   {
+    "anonymous": false,
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "hash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "HashAlreadyUsed",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "MultiSig_OnlySigner",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "MultiSig_QuorumIsZero",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint64",
-        "name": "signersSize",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "quorum",
-        "type": "uint64"
-      }
-    ],
-    "name": "MultiSig_SignersSizeIsLessThanQuorum",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
+        "indexed": false,
         "internalType": "address",
-        "name": "signer",
+        "name": "owner",
         "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
       }
     ],
-    "name": "MultiSig_StateAlreadySet",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "MultiSig_UnorderedSigners",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "hash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "OperationExpired",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "VerifySignaturesFailed",
-    "type": "error"
+    "name": "AddedOwner",
+    "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint64",
-        "name": "_quorum",
-        "type": "uint64"
+        "internalType": "uint256",
+        "name": "threshold",
+        "type": "uint256"
       }
     ],
-    "name": "UpdateQuorum",
+    "name": "ChangedThreshold",
     "type": "event"
   },
   {
@@ -113,27 +47,58 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_signer",
+        "name": "owner",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_active",
-        "type": "bool"
       }
     ],
-    "name": "UpdateSigner",
+    "name": "RemovedOwner",
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "ORACLE",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "addOwnerWithThreshold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeThreshold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "doneOf",
     "outputs": [
       {
-        "internalType": "contract IOracle",
+        "internalType": "bool",
         "name": "",
-        "type": "address"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -142,9 +107,87 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint256",
         "name": "expiration",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signatures",
+        "type": "bytes"
+      }
+    ],
+    "name": "exec",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getOwners",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getThreshold",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "isOwner",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "prevOwner",
+        "type": "address"
       },
       {
         "internalType": "address",
@@ -152,149 +195,59 @@
         "type": "address"
       },
       {
-        "internalType": "bytes",
-        "name": "signatures",
-        "type": "bytes"
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
       }
     ],
-    "name": "changeOwner",
+    "name": "removeOwner",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "expiration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "chainId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "blockNumber",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "messageRoot",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signatures",
-        "type": "bytes"
-      }
-    ],
-    "name": "importMessageRoot",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "quorum",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "expiration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "operator",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "approve",
-        "type": "bool"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signatures",
-        "type": "bytes"
-      }
-    ],
-    "name": "setApproved",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "signerSize",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "prevOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "oldOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "newOwner",
         "type": "address"
       }
     ],
-    "name": "signers",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "swapOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "_hash",
+        "name": "hash",
         "type": "bytes32"
       },
       {
         "internalType": "bytes",
-        "name": "_signatures",
+        "name": "signatures",
         "type": "bytes"
       }
     ],
     "name": "verifySignatures",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      },
-      {
-        "internalType": "enum MultiSig.Errors",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

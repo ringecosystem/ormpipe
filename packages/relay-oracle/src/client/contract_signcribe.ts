@@ -12,10 +12,8 @@ export interface SubmitSignscribeOptions {
 
 
 export interface SigncribeData {
-  chainId: number
-  messageRoot: string
+  importRootCallData: string
   expiration: number
-  blockNumber: number
 }
 
 export class SigncribeContractClient {
