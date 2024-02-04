@@ -261,7 +261,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     const signedMessage = this.targetMultisigContract.buildSign({
       oracleContractAddress: super.lifecycle.targetChain.contract.oracle,
-      chainId: +sourceNextMessageAccepted.message_fromChainId,
+      sourceChainId: +sourceNextMessageAccepted.message_fromChainId,
+      targetChainId: +sourceNextMessageAccepted.message_toChainId,
       expiration: expiration,
       messageIndex: +sourceNextMessageAccepted.message_index,
       messageRoot: queriedRootFromContract,
