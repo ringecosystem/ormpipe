@@ -12,6 +12,7 @@ import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/si
 
 import {AbiCoder, ethers} from "ethers";
 import {OrmpContractClient} from "./client/contract_ormp";
+import {OracleContractClient} from "./client/contract_oracle";
 
 interface OracleSignOptions {
   sourceChainId: number
@@ -30,6 +31,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   private static CK_ORACLE_SIGNED: string = 'ormpipe.oracle.signed';
 
   private _targetMultisigContractClient?: MultisigContractClient;
+  private _targetOracleContractClient?: OracleContractClient;
   private _signcribeContractClient?: SigncribeContractClient;
   private _ormpContractClient?: OrmpContractClient;
 
@@ -62,6 +64,17 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       evm: super.targetClient.evm,
     });
     return this._targetMultisigContractClient;
+  }
+
+  public get targetOracleContract(): OracleContractClient {
+    if (this._targetOracleContractClient) return this._targetOracleContractClient;
+    this._targetOracleContractClient = new OracleContractClient({
+      chainName: super.targetName,
+      signer: super.lifecycle.targetSigner,
+      address: super.lifecycle.targetChain.contract.oracle,
+      evm: super.targetClient.evm,
+    });
+    return this._targetOracleContractClient;
   }
 
   public get signcribeContract(): SigncribeContractClient {
@@ -259,18 +272,21 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const targetSigner = super.targetClient.wallet(super.lifecycle.targetSigner);
     const expiration = (+sourceNextMessageAccepted.blockTimestamp) + (60 * 60 * 24 * 10);
 
-    const signedMessage = this.targetMultisigContract.buildSign({
-      oracleContractAddress: super.lifecycle.targetChain.contract.oracle,
+    const importRootCallData = this.targetOracleContract.buildImportMessageRoot({
       sourceChainId: +sourceNextMessageAccepted.message_fromChainId,
-      targetChainId: +sourceNextMessageAccepted.message_toChainId,
-      expiration: expiration,
       messageIndex: +sourceNextMessageAccepted.message_index,
       messageRoot: queriedRootFromContract,
     });
-    const signature = await targetSigner.signMessage(ethers.getBytes(signedMessage.hash));
+    const signedMessageHash = this.targetMultisigContract.buildSign({
+      oracleContractAddress: super.lifecycle.targetChain.contract.oracle,
+      targetChainId: +sourceNextMessageAccepted.message_toChainId,
+      expiration: expiration,
+      importRootCallData: importRootCallData,
+    });
+    const signature = await targetSigner.signMessage(ethers.getBytes(signedMessageHash));
 
     const signcribeData = {
-      importRootCallData: signedMessage.importRootCallData,
+      importRootCallData: importRootCallData,
       expiration: expiration,
     };
     const encodedData = this._encodeSigncribeData(signcribeData);

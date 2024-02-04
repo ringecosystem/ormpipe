@@ -12,15 +12,8 @@ export interface ImportMessageRootOptions {
 
 export interface BuildSignOptions {
   oracleContractAddress: string
-  sourceChainId: number
   targetChainId: number
   expiration: number
-  messageIndex: number
-  messageRoot: string
-}
-
-export interface BuildSignResult {
-  hash: string
   importRootCallData: string
 }
 
@@ -36,12 +29,7 @@ export class MultisigContractClient {
   }
 
 
-  public buildSign(options: BuildSignOptions): BuildSignResult {
-    const importRootCallData = this.contract.interface.encodeFunctionData('importMessageRoot', [
-      options.sourceChainId, // chainId
-      options.messageIndex, // messageIndex
-      options.messageRoot, // messageRoot
-    ]);
+  public buildSign(options: BuildSignOptions): string {
     const toSignData = ethers.AbiCoder.defaultAbiCoder()
       .encode(
         ['uint256', 'address', 'address', 'uint256', 'uint256', 'bytes'],
@@ -51,13 +39,10 @@ export class MultisigContractClient {
           options.oracleContractAddress, // oracleV2 address
           0, // value, 0, don't need pay for it.
           options.expiration, // expiration
-          importRootCallData, // call importMessageRoot
+          options.importRootCallData, // call importMessageRoot
         ]
       );
-    return {
-      hash: keccak256(toSignData),
-      importRootCallData,
-    };
+    return keccak256(toSignData);
   }
 
   public async importMessageRoot(options: ImportMessageRootOptions): Promise<TransactionResponse | undefined> {
