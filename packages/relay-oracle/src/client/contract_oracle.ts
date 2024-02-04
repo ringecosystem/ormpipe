@@ -6,7 +6,7 @@ const abi = require("../abis/OrmpOracle.json");
 
 export interface BuildImportMessageRootOptions {
   sourceChainId: number
-  messageIndex: number
+  blockNumber: number
   messageRoot: string
 }
 
@@ -25,7 +25,7 @@ export class OracleContractClient {
   public buildImportMessageRoot(options: BuildImportMessageRootOptions): string {
     return this.contract.interface.encodeFunctionData('importMessageRoot', [
       options.sourceChainId, // chainId
-      options.messageIndex, // messageIndex
+      options.blockNumber, // messageIndex
       options.messageRoot, // messageRoot
     ]);
   }

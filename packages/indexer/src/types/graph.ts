@@ -128,24 +128,8 @@ export interface SignatureSubmittion extends BaseGraphEntity {
   data: string
 }
 
-// export interface AirnodeComplted extends SubapiBeaconBase {
-//   requestId: string
-//   data: string
-// }
-//
-// export interface AirnodeBeaconCompletedDistruibution {
-//   beaconId: string
-//   data: string
-// }
-//
-// export interface AirnodeAggregatedMessageRoot {
-//   chainId: number
-//   ormpData_root: string
-//   ormpData_count: string
-// }
-
 export interface OracleImportedMessageRoot extends BaseGraphEntity {
   chainId: string
-  messageIndex: string
+  blockHeight: string
   messageRoot: string
 }

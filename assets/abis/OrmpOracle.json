@@ -46,7 +46,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "messageIndex",
+        "name": "blockHeight",
         "type": "uint256"
       },
       {
@@ -245,7 +245,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "messageIndex",
+        "name": "blockNumber",
         "type": "uint256"
       },
       {
@@ -287,7 +287,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "messageIndex",
+        "name": "blockNumber",
         "type": "uint256"
       }
     ],
