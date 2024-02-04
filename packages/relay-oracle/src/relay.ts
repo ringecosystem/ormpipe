@@ -355,7 +355,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const _keepSortedSignatures = _sortedSignatures.splice(0, 3);
     const _collectedSignatures = _keepSortedSignatures.map(item => item.signature).join('')
       .replaceAll('0x', '');
-      // .replace('0x', '');
     const importMessageRootOptions = {
       oracleContractAddress: super.lifecycle.targetChain.contract.oracle,
       importRootCallData: signcribeData.importRootCallData,

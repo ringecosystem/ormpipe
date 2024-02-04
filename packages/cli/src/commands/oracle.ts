@@ -25,6 +25,11 @@ export default class Oracle extends Command {
   static args = {}
 
   public async run(): Promise<void> {
+
+    process.on('uncaughtException', (error) => {
+      logger.error(`detected uncaught exception: ${error.message}`);
+    })
+
     const {args, flags} = await this.parse(Oracle)
 
     const cliConfig = camelize(flags) as unknown as CliOracleConfig;
