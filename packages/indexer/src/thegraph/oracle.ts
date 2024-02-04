@@ -10,7 +10,7 @@ export class ThegraphIndexOracle extends GraphCommon {
     query QueryLastImportedMessageRoot($chainId: BigInt!) {
       ormpOracleImportedMessageRoots(
         first: 1
-        orderBy: blockNumber
+        orderBy: messageIndex
         orderDirection: desc
         where: {
           chainId: $chainId

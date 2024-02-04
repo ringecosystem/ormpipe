@@ -179,20 +179,35 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     // console.log('message', message);
     // console.log('proof', messageProof);
 
+    const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
+
     // console.log('------ relay');
     const enableGasCheck = [
       421614, // arbitrum sepolia
       42161, // arbitrum one
     ].indexOf(options.targetChainId) > -1;
     const baseGas = await this.sourceRelayerClient.configOf(options.targetChainId);
-    const targetTxRelayMessage = await this.targetRelayerClient.relay({
-      message,
-      proof: encodedProof,
-      gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
-      enableGasCheck,
-    });
 
-    const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
+    let targetTxRelayMessage;
+    try {
+      targetTxRelayMessage = await this.targetRelayerClient.relay({
+        message,
+        proof: encodedProof,
+        gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
+        enableGasCheck,
+      });
+    } catch (e: any) {
+      logger.error(
+        'failed to relay message %s(%s) to %s: %s',
+        message.index,
+        super.sourceName,
+        super.targetName,
+        e ? e.message : e,
+        super.meta('ormpipe-relay', ['relayer:relay']),
+      );
+      await sim.put(+message.index);
+      return;
+    }
 
     if (!targetTxRelayMessage) {
       logger.warn(

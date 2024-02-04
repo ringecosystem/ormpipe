@@ -304,6 +304,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     if (options.mainly) {
       if (isCollectedSignatures) {
         try {
+          // console.log(sourceNextMessageAccepted);
+          // console.log(signedMessageHash);
           await this.submit(
             lastSignature,
             signcribeData,
