@@ -107,6 +107,12 @@ export class CommandHelper {
       logger.info('====== %s-%s ======', source, target, {target: 'ormpipe'});
       const sourceChain = chainInfo[source];
       const targetChain = chainInfo[target];
+      if (!sourceChain) {
+        throw new Error(`missing chain: ${source}`);
+      }
+      if (!targetChain) {
+        throw new Error(`missing chain: ${target}`);
+      }
 
       const _SIGNER_SOURCE = process.env[`ORMPIPE_SIGNER_${source.toUpperCase()}`];
       const _SIGNER_TARGET = process.env[`ORMPIPE_SIGNER_${target.toUpperCase()}`];
