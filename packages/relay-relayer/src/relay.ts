@@ -163,12 +163,13 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     // const gasLimit = decodedGasLimit[0];
 
     const encodedProof = abiCoder.encode([
-        'tuple(uint blockNumber, bytes32[32] messageProof)'
+        'tuple(uint blockNumber, uint messageIndex, bytes32[32] messageProof)'
       ],
       [
         {
-          messageIndex: lastImportedMessageRoot.blockHeight,
-          messageProof: messageProof
+          blockNumber: +lastImportedMessageRoot.blockHeight,
+          messageIndex: message.index,
+          messageProof: messageProof,
         }
       ]
     );

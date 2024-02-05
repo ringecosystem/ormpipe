@@ -152,6 +152,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const currentMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
       root: lastImportedMessageRoot.messageRoot,
     });
+    // console.log(currentMessageAccepted);
     if (!currentMessageAccepted) {
       logger.warn(
         'can not query message accepted by roo: %s',
