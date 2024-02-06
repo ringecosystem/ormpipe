@@ -1,7 +1,7 @@
 {
-  "name": "@darwinia/ormpipe-indexer",
+  "name": "@darwinia/ormpipe-common",
   "version": "0.0.7",
-  "description": "ormpipe indexer",
+  "description": "ormpipe relay",
   "main": "dist/index.js",
   "author": "Darwinia Netowrk",
   "license": "MIT",
@@ -17,8 +17,11 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@darwinia/ormpipe-common": "^0.0.7",
-    "axios": "^1"
+    "@stdlib/string-pad": "^0",
+    "winston": "^3",
+    "cacache": "^18",
+    "ethers": "^6",
+    "chalk": "^4"
   },
   "devDependencies": {
     "@types/jest": "^29",

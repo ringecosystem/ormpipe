@@ -12,7 +12,7 @@ export interface QueryWithChainId {
 }
 
 export type QueryBeacons = QueryWithChainId;
-export type QueryLastAggregatedMessageRoot = QueryWithChainId;
+export type QueryLastImportedMessageRoot = QueryWithChainId;
 
 export interface QueryNextRelayerAssigned {
   msgHash: string
@@ -56,6 +56,10 @@ export interface QueryInspectMessageDispatched {
   msgHash: string
 }
 
+export interface QueryTopSigncribe extends QueryWithChainId {
+  signers: string[]
+  msgIndex: number
+}
 
 export type QueryNextOracleAssigned = QueryNextRelayerAssigned
 
@@ -116,18 +120,16 @@ export interface SubapiBeacon extends SubapiBeaconBase {
   beacon_sponsorWallet: string
 }
 
-export interface AirnodeComplted extends SubapiBeaconBase {
-  requestId: string
+export interface SignatureSubmittion extends BaseGraphEntity {
+  chainId: string
+  msgIndex: string
+  signer: string
+  signature: string
   data: string
 }
 
-export interface AirnodeBeaconCompletedDistruibution {
-  beaconId: string
-  data: string
-}
-
-export interface AirnodeAggregatedMessageRoot {
-  chainId: number
-  ormpData_root: string
-  ormpData_count: string
+export interface OracleImportedMessageRoot extends BaseGraphEntity {
+  chainId: string
+  blockHeight: string
+  messageRoot: string
 }

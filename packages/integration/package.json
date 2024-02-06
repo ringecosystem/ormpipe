@@ -9,7 +9,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "shx rm -rf dist && tsc -b && shx cp -r src/abis dist/",
+    "build": "shx rm -rf dist && tsc -b && shx cp -r ../../assets/abis dist/",
     "lint": "eslint . --ext .ts --fix",
     "posttest": "yarn lint",
     "test": "jest",

@@ -2,7 +2,7 @@ import {Args, Command, Flags} from '@oclif/core'
 import {IntegrationTestConfig} from "@darwinia/ormpipe-integration/dist/types/config";
 import {CommandHelper} from "../common/commander";
 import {OrmpIntegrationTestProgram} from "@darwinia/ormpipe-integration";
-import {logger} from "@darwinia/ormpipe-logger";
+import {logger} from "@darwinia/ormpipe-common";
 
 const camelize = require('camelize');
 
@@ -33,7 +33,7 @@ export default class Integration extends Command {
       required: true,
       description: 'ormp oracle address',
       env: 'ORMPIPE_ADDRESS_ORACLE',
-      default: '0x0000000000ba03146Cc235509E802873D418a6bc',
+      default: '0x0000000005Be70A35b6534bFBd21eC0c98B27b1f',
     }),
     'address-relayer': Flags.string({
       required: true,
