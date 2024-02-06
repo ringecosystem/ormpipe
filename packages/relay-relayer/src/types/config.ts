@@ -2,11 +2,9 @@ import {ChainInfoFlag, CliBaseConfig, RelayBaseConfig, RelayBaseLifecycle} from 
 import {ThegraphIndexOrmp, ThegraphIndexOracle} from "@darwinia/ormpipe-indexer";
 
 
-export interface CliRelayerConfig extends CliBaseConfig {
-}
+export type CliRelayerConfig = CliBaseConfig
 
-export interface RelayerRelayConfig extends RelayBaseConfig {
-}
+export type RelayerRelayConfig = RelayBaseConfig
 
 export interface RelayerRelayLifecycle extends RelayBaseLifecycle {
   sourceIndexerOrmp: ThegraphIndexOrmp

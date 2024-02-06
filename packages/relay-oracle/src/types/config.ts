@@ -1,5 +1,4 @@
 import {
-  ChainInfoFlag,
   CliBaseConfig,
   RelayBaseConfig,
   RelayBaseLifecycle,
@@ -9,8 +8,7 @@ import {ThegraphIndexOracle, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer"
 import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/signcribe";
 
 
-export interface CliOracleConfig extends CliBaseConfig {
-}
+export type CliOracleConfig = CliBaseConfig
 
 export interface OracleRelayConfig extends RelayBaseConfig {
   mainly: boolean,

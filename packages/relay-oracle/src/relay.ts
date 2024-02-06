@@ -28,7 +28,7 @@ interface LastSignature {
 
 export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
-  private static CK_ORACLE_SIGNED: string = 'ormpipe.oracle.signed';
+  private static CK_ORACLE_SIGNED = 'ormpipe.oracle.signed';
 
   private _targetMultisigContractClient?: MultisigContractClient;
   private _targetOracleContractClient?: OracleContractClient;
