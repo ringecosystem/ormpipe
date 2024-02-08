@@ -402,13 +402,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
   private async _lastSignature(chainId: number, msgIndex: number): Promise<LastSignature> {
     // const owners = await this.targetSafeContract.owners();
-    const owners = [
-      "0xfa5727be643dba6599fc7f812fe60da3264a8205",
-      "0xb9a0cadd13c5d534b034d878b2fca9e5a6e1e3a4",
-      "0x9f33a4809aa708d7a399fedba514e0a0d15efa85",
-      "0x178e699c9a6bb2cd624557fbd85ed219e6faba77",
-      "0xa4be619e8c0e3889f5fa28bb0393a4862cad35ad"
-    ];
+    const owners = await this.targetMultisigContract.getOwners();
     const topSignatures = await this.indexerSigncribe.topSignatures({
       chainId,
       msgIndex: msgIndex,

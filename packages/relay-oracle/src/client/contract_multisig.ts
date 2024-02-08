@@ -56,4 +56,9 @@ export class MultisigContractClient {
     return await tx.wait();
   }
 
+  public async getOwners(): Promise<string[]> {
+    const owners = await this.contract['getOwners']();
+    return owners.map((item: any) => item.toString().toLowerCase());
+  }
+
 }
