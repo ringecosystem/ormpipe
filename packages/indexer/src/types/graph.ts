@@ -94,13 +94,16 @@ export interface OrmpMessageAccepted extends BaseGraphEntity {
   message_to: string
   message_encoded: string
   message_gasLimit: string
+  logIndex: string
 
   oracleAssigned?: string
   oracleAssignedFee?: string
+  oracleLogIndex?: string
   relayerAssigned?: string
   relayerAssignedFee?: string
   relayerAssignedProof?: string
   relayerAssignedParams?: string
+  relayerLogIndex?: string
 }
 
 export interface OrmpMessageDispatched extends BaseGraphEntity {
