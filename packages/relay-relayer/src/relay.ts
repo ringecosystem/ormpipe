@@ -133,11 +133,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
       return;
     }
-    if ((+sourceNextMessageAccepted.logIndex + 1) != (+sourceNextMessageAccepted.relayerLogIndex)) {
+    if ((+sourceNextMessageAccepted.logIndex + 1) != (+(sourceNextMessageAccepted.relayerLogIndex ?? 0))) {
       logger.warn(
         `unexpected log index (%s, %s)`,
         sourceNextMessageAccepted.logIndex,
-        sourceNextMessageAccepted.relayerLogIndex,
+        sourceNextMessageAccepted.relayerLogIndex ?? 0,
         super.meta('ormpipe-relay-relayer', ['relayer']),
       );
       await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);

@@ -198,11 +198,11 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
       return;
     }
-    if ((+sourceNextMessageAccepted.logIndex + 2) != (+sourceNextMessageAccepted.oracleLogIndex)) {
+    if ((+sourceNextMessageAccepted.logIndex + 2) != (+(sourceNextMessageAccepted.oracleLogIndex ?? 0))) {
       logger.warn(
         `unexpected log index (%s, %s)`,
         sourceNextMessageAccepted.logIndex,
-        sourceNextMessageAccepted.oracleLogIndex,
+        sourceNextMessageAccepted.oracleLogIndex ?? 0,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
       await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
