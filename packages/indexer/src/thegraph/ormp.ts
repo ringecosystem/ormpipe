@@ -178,13 +178,16 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_to
         message_gasLimit
         message_encoded
+        logIndex
 
         oracleAssigned
         oracleAssignedFee
+        oracleLogIndex
         relayerAssigned
         relayerAssignedFee
         relayerAssignedProof
         relayerAssignedParams
+        relayerLogIndex
       }
     }
     `;
@@ -330,13 +333,16 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_to
         message_gasLimit
         message_encoded
+        logIndex
 
         oracleAssigned
         oracleAssignedFee
+        oracleLogIndex
         relayerAssigned
         relayerAssignedFee
         relayerAssignedProof
         relayerAssignedParams
+        relayerLogIndex
       }
     }
     `;
@@ -371,13 +377,16 @@ export class ThegraphIndexOrmp extends GraphCommon {
         message_to
         message_gasLimit
         message_encoded
+        logIndex
 
         oracleAssigned
         oracleAssignedFee
+        oracleLogIndex
         relayerAssigned
         relayerAssignedFee
         relayerAssignedProof
         relayerAssignedParams
+        relayerLogIndex
       }
     }
     `;
