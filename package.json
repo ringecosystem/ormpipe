@@ -1,6 +1,6 @@
 {
   "name": "@darwinia/ormpipe",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "description": "ORMP relay program",
   "private": true,
   "author": "Darwinia Network <hello@darwinia.network>",
