@@ -38,39 +38,44 @@ export default class Oracle extends Command {
       for (const rc of relayConfigs) {
         const sourceToTargetLifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
 
-        logger.info(
-          '--------- oracle %s>%s ---------',
-          sourceToTargetLifecycle.sourceChain.name,
-          sourceToTargetLifecycle.targetChain.name,
-        );
-        const sourceToTargetRelay = new OracleRelay(sourceToTargetLifecycle);
-        await sourceToTargetRelay.start();
-        await setTimeout(1000);
+        if (rc.symbol === '-' || rc.symbol === '>') {
+          logger.info(
+            '--------- oracle %s>%s ---------',
+            sourceToTargetLifecycle.sourceChain.name,
+            sourceToTargetLifecycle.targetChain.name,
+          );
+          const sourceToTargetRelay = new OracleRelay(sourceToTargetLifecycle);
+          await sourceToTargetRelay.start();
+          await setTimeout(1000)
+        }
 
-        const targetToSourceLifecycle = {
-          ...sourceToTargetLifecycle,
-          sourceChain: sourceToTargetLifecycle.targetChain,
-          targetChain: sourceToTargetLifecycle.sourceChain,
-          sourceSigner: sourceToTargetLifecycle.targetSigner,
-          targetSigner: sourceToTargetLifecycle.sourceSigner,
-          sourceName: sourceToTargetLifecycle.targetName,
-          targetName: sourceToTargetLifecycle.sourceName,
-          sourceClient: sourceToTargetLifecycle.targetClient,
-          targetClient: sourceToTargetLifecycle.sourceClient,
-          sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
-          targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
-          sourceIndexOracle: sourceToTargetLifecycle.targetIndexOracle,
-          targetIndexOracle: sourceToTargetLifecycle.sourceIndexOracle,
-        };
+        if (rc.symbol === '-' || rc.symbol === '<') {
+          const targetToSourceLifecycle = {
+            ...sourceToTargetLifecycle,
+            sourceChain: sourceToTargetLifecycle.targetChain,
+            targetChain: sourceToTargetLifecycle.sourceChain,
+            sourceSigner: sourceToTargetLifecycle.targetSigner,
+            targetSigner: sourceToTargetLifecycle.sourceSigner,
+            sourceName: sourceToTargetLifecycle.targetName,
+            targetName: sourceToTargetLifecycle.sourceName,
+            sourceClient: sourceToTargetLifecycle.targetClient,
+            targetClient: sourceToTargetLifecycle.sourceClient,
+            sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
+            targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
+            sourceIndexOracle: sourceToTargetLifecycle.targetIndexOracle,
+            targetIndexOracle: sourceToTargetLifecycle.sourceIndexOracle,
+          };
 
-        logger.info(
-          '--------- oracle %s>%s ---------',
-          targetToSourceLifecycle.sourceChain.name,
-          targetToSourceLifecycle.targetChain.name,
-        );
-        const targetToSourceRelay = new OracleRelay(targetToSourceLifecycle);
-        await targetToSourceRelay.start();
-        await setTimeout(1000);
+          logger.info(
+            '--------- oracle %s>%s ---------',
+            targetToSourceLifecycle.sourceChain.name,
+            targetToSourceLifecycle.targetChain.name,
+          );
+          const targetToSourceRelay = new OracleRelay(targetToSourceLifecycle);
+          await targetToSourceRelay.start();
+          await setTimeout(1000);
+        }
+
       }
       await setTimeout(4000);
     }

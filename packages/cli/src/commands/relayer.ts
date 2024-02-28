@@ -26,6 +26,11 @@ export default class Relayer extends Command {
   static args = {}
 
   public async run(): Promise<void> {
+
+    process.on('uncaughtException', (error) => {
+      logger.error(`detected uncaught exception: ${error.message}`);
+    })
+
     const {args, flags} = await this.parse(Relayer)
 
     const cliConfig = camelize(flags) as unknown as CliRelayerConfig;
@@ -34,39 +39,43 @@ export default class Relayer extends Command {
       for (const rc of relayConfigs) {
         const sourceToTargetLifecycle = await this.buildLifecycle(rc);
 
-        logger.info(
-          '--------- realyer %s>%s ---------',
-          sourceToTargetLifecycle.sourceChain.name,
-          sourceToTargetLifecycle.targetChain.name,
-        );
-        const sourceToTargetRelay = new RelayerRelay(sourceToTargetLifecycle);
-        await sourceToTargetRelay.start();
-        await setTimeout(1000);
-
-        const targetToSourceLifecycle = {
-          ...sourceToTargetLifecycle,
-          sourceChain: sourceToTargetLifecycle.targetChain,
-          targetChain: sourceToTargetLifecycle.sourceChain,
-          sourceSigner: sourceToTargetLifecycle.targetSigner,
-          targetSigner: sourceToTargetLifecycle.sourceSigner,
-          sourceName: sourceToTargetLifecycle.targetName,
-          targetName: sourceToTargetLifecycle.sourceName,
-          sourceClient: sourceToTargetLifecycle.targetClient,
-          targetClient: sourceToTargetLifecycle.sourceClient,
-          sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
-          targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
-          sourceIndexerOracle: sourceToTargetLifecycle.targetIndexerOracle,
-          targetIndexerOracle: sourceToTargetLifecycle.sourceIndexerOracle,
+        if (rc.symbol === '-' || rc.symbol === '>') {
+          logger.info(
+            '--------- realyer %s>%s ---------',
+            sourceToTargetLifecycle.sourceChain.name,
+            sourceToTargetLifecycle.targetChain.name,
+          );
+          const sourceToTargetRelay = new RelayerRelay(sourceToTargetLifecycle);
+          await sourceToTargetRelay.start();
+          await setTimeout(1000);
         }
 
-        logger.info(
-          '--------- relayer %s>%s ---------',
-          targetToSourceLifecycle.sourceChain.name,
-          targetToSourceLifecycle.targetChain.name,
-        );
-        const targetToSourceRelay = new RelayerRelay(targetToSourceLifecycle);
-        await targetToSourceRelay.start();
-        await setTimeout(1000);
+        if (rc.symbol === '-' || rc.symbol === '<') {
+          const targetToSourceLifecycle = {
+            ...sourceToTargetLifecycle,
+            sourceChain: sourceToTargetLifecycle.targetChain,
+            targetChain: sourceToTargetLifecycle.sourceChain,
+            sourceSigner: sourceToTargetLifecycle.targetSigner,
+            targetSigner: sourceToTargetLifecycle.sourceSigner,
+            sourceName: sourceToTargetLifecycle.targetName,
+            targetName: sourceToTargetLifecycle.sourceName,
+            sourceClient: sourceToTargetLifecycle.targetClient,
+            targetClient: sourceToTargetLifecycle.sourceClient,
+            sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
+            targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
+            sourceIndexerOracle: sourceToTargetLifecycle.targetIndexerOracle,
+            targetIndexerOracle: sourceToTargetLifecycle.sourceIndexerOracle,
+          }
+
+          logger.info(
+            '--------- relayer %s>%s ---------',
+            targetToSourceLifecycle.sourceChain.name,
+            targetToSourceLifecycle.targetChain.name,
+          );
+          const targetToSourceRelay = new RelayerRelay(targetToSourceLifecycle);
+          await targetToSourceRelay.start();
+          await setTimeout(1000);
+        }
       }
       await setTimeout(4000);
     }

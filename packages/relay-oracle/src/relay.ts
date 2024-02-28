@@ -154,7 +154,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     });
     if (!currentMessageAccepted) {
       logger.warn(
-        'can not query message accepted by roo: %s',
+        'can not query message accepted by root: %s',
         lastImportedMessageRoot.messageRoot,
         super.meta('ormpipe-relay')
       );
