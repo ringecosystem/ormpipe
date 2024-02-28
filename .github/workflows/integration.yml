@@ -12,10 +12,10 @@ jobs:
     strategy:
       matrix:
         task:
-          - endpoint: https://sepolia-rollup.arbitrum.io/rpc
+          - endpoint: https://rpc.darwinia.network
             target-chain-id: 44
           - endpoint: https://crab-rpc.darwinia.network
-            target-chain-id: 421614
+            target-chain-id: 46
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -26,12 +26,12 @@ jobs:
       - name: install dependencies
         run: yarn install
 
-      # - name: run task
-      #   env:
-      #     ORMPIPE_LOG_LEVEL: debug
-      #     ORMPIPE_SIGNER: ${{ secrets.ORMPIPE_SIGNER }}
-      #   run: |
-      #     scripts/ormpipe.sh integration \
-      #       send-message-msgline \
-      #       --endpoint=${{ matrix.task.endpoint }} \
-      #       --target-chain-id=${{ matrix.task.target-chain-id }}
+      - name: run task
+        env:
+          ORMPIPE_LOG_LEVEL: debug
+          ORMPIPE_SIGNER: ${{ secrets.ORMPIPE_SIGNER }}
+        run: |
+          scripts/ormpipe.sh integration \
+            send-message-msgline \
+            --endpoint=${{ matrix.task.endpoint }} \
+            --target-chain-id=${{ matrix.task.target-chain-id }}
