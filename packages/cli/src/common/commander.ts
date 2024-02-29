@@ -100,7 +100,20 @@ export class CommandHelper {
     });
 
     for (const pair of pairs) {
-      const [source, target] = pair.split('-');
+      let source, target, symbol;
+      if (pair.indexOf('-') > -1) {
+       [source, target] = pair.split('-');
+       symbol = '-';
+      }
+      if (pair.indexOf('>') > -1) {
+        [source, target] = pair.split('>');
+        symbol = '>';
+      }
+      if (pair.indexOf('<') > -1) {
+        [source, target]= pair.split('<');
+        symbol = '<';
+      }
+      // const [source, target] = pair.split('-');
       if (!source || !target) {
         continue;
       }
@@ -139,6 +152,7 @@ export class CommandHelper {
       const work = {
         // dataPath: cliStartConfig.dataPath,
         ...cliStartConfig,
+        symbol: symbol,
         sourceChain,
         sourceSigner,
         targetChain,

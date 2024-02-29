@@ -9,6 +9,7 @@ export interface CliBaseConfig {
 }
 
 export interface RelayBaseConfig {
+  symbol: string
   dataPath: string
   sourceChain: ChainInfoFlag
   targetChain: ChainInfoFlag

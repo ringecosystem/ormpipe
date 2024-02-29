@@ -266,6 +266,8 @@ export class ThegraphIndexOrmp extends GraphCommon {
       const hashes = unRelayMessages.map(item => item.msgHash);
       unRelayMessageHashes.push(...hashes);
     }
+    // console.log(JSON.stringify(msgHashes));
+    // console.log(JSON.stringify(unRelayMessageHashes));
     return msgHashes.filter(item => unRelayMessageHashes.indexOf(item) == -1);
   }
 
