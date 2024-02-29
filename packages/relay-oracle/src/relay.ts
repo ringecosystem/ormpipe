@@ -209,6 +209,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       return;
     }
     const cachedSignedMessageIndex: number | undefined = await super.storage.get(OracleRelay.CK_ORACLE_SIGNED);
+    logger.debug(
+      'compare cache signed message index %s/%s',
+      sourceNextMessageAccepted.message_index,
+      cachedSignedMessageIndex,
+      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    );
     if (cachedSignedMessageIndex != undefined) {
       if (+sourceNextMessageAccepted.message_index == cachedSignedMessageIndex) {
         logger.warn(
@@ -398,7 +404,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         msgIndex,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
-      return
+      return;
     }
 
     logger.info(
