@@ -39,3 +39,4 @@ jobs:
             send-message-msgline \
             --endpoint=${{ matrix.task.endpoint }} \
             --target-chain-id=${{ matrix.task.target-chain-id }}
+
