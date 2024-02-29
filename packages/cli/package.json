@@ -1,6 +1,6 @@
 {
   "name": "@darwinia/ormpipe-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "ormp relay cli",
   "author": "Darwinia Netowrk",
   "bin": {
@@ -20,10 +20,10 @@
     "/oclif.manifest.json"
   ],
   "dependencies": {
-    "@darwinia/ormpipe-common": "^0.1.1",
-    "@darwinia/ormpipe-relay-oracle": "^0.1.1",
-    "@darwinia/ormpipe-relay-relayer": "^0.1.1",
-    "@darwinia/ormpipe-integration": "^0.1.1",
+    "@darwinia/ormpipe-common": "^0.1.2",
+    "@darwinia/ormpipe-relay-oracle": "^0.1.2",
+    "@darwinia/ormpipe-relay-relayer": "^0.1.2",
+    "@darwinia/ormpipe-integration": "^0.1.2",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "camelize": "^1",
