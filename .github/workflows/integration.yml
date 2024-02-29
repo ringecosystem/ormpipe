@@ -12,14 +12,14 @@ jobs:
     strategy:
       matrix:
         task:
-          # - endpoint: https://rpc.darwinia.network
-          #   target-chain-id: 44
-          # - endpoint: https://crab-rpc.darwinia.network
-          #   target-chain-id: 46
-          - endpoint: https://ethereum-sepolia-rpc.publicnode.com
-            target-chain-id: 421614
-          - endpoint: https://sepolia-rollup.arbitrum.io/rpc
-            target-chain-id: 11155111
+          - endpoint: https://rpc.darwinia.network
+            target-chain-id: 44
+          - endpoint: https://crab-rpc.darwinia.network
+            target-chain-id: 46
+          # - endpoint: https://ethereum-sepolia-rpc.publicnode.com
+          #   target-chain-id: 421614
+          # - endpoint: https://sepolia-rollup.arbitrum.io/rpc
+          #   target-chain-id: 11155111
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
