@@ -103,5 +103,20 @@
       "oracle": "0x0000000003ebeF32D8f0ED406a5CA8805c80AFba",
       "multisig": "0x000000000d60704384100A29efb6C9cf8cD72820"
     }
+  },
+  "polygon": {
+    "name": "polygon",
+    "endpoint": "https://polygon-bor-rpc.publicnode.com",
+    "indexer": {
+      "ormp": "https://api.studio.thegraph.com/proxy/51152/ormpipe-polygon/version/latest",
+      "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
+    },
+    "contract": {
+      "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
+      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
+      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
+      "oracle": "0x0000000003ebeF32D8f0ED406a5CA8805c80AFba",
+      "multisig": "0x000000000d60704384100A29efb6C9cf8cD72820"
+    }
   }
 }
