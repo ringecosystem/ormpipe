@@ -198,7 +198,9 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.message_index);
       return;
     }
-    if ((+sourceNextMessageAccepted.logIndex + 2) != (+(sourceNextMessageAccepted.oracleLogIndex ?? 0))) {
+    // polygon is 4 other is 2
+    const gapOfEventIndex = options.sourceChainId == 137 ? 4 : 2;
+    if ((+sourceNextMessageAccepted.logIndex + gapOfEventIndex) != (+(sourceNextMessageAccepted.oracleLogIndex ?? 0))) {
       logger.warn(
         `unexpected log index (%s, %s)`,
         sourceNextMessageAccepted.logIndex,

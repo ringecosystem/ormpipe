@@ -133,7 +133,9 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
       return;
     }
-    if ((+sourceNextMessageAccepted.logIndex + 1) != (+(sourceNextMessageAccepted.relayerLogIndex ?? 0))) {
+    // polygon is 2 other is 1
+    const gapOfEventIndex = options.sourceChainId == 137 ? 2 : 1;
+    if ((+sourceNextMessageAccepted.logIndex + gapOfEventIndex) != (+(sourceNextMessageAccepted.relayerLogIndex ?? 0))) {
       logger.warn(
         `unexpected log index (%s, %s)`,
         sourceNextMessageAccepted.logIndex,
