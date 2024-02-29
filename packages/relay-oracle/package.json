@@ -1,6 +1,6 @@
 {
   "name": "@darwinia/ormpipe-relay-oracle",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ormpipe oracle relay",
   "main": "dist/index.js",
   "author": "Darwinia Netowrk",
@@ -17,8 +17,8 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@darwinia/ormpipe-common": "^0.1.0",
-    "@darwinia/ormpipe-indexer": "^0.1.0",
+    "@darwinia/ormpipe-common": "^0.1.1",
+    "@darwinia/ormpipe-indexer": "^0.1.1",
     "async": "^3",
     "cacache": "^18",
     "chalk": "^4",
