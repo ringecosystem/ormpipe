@@ -22,6 +22,13 @@ export interface RelayOptions {
   chainId: number
 }
 
+interface EthersRequestOptions {
+  gasLimit?: bigint
+  gasPrice?: bigint
+  maxPriorityFeePerGas?: bigint
+  type?: number
+}
+
 export class RelayerContractClient {
 
   private readonly config: ContractConfig;
@@ -55,18 +62,16 @@ export class RelayerContractClient {
     //     return;
     //   }
     // }
-    const contractOptions = options.enableGasCheck
-      ? {}
-      : {
-        gasLimit: options.gasLimit,
-      };
+    const contractOptions: EthersRequestOptions = {};
+    if (!options.enableGasCheck) {
+      contractOptions.gasLimit = options.gasLimit;
+    }
     switch (options.chainId) {
       case 42161: // arbitrum
-        contractOptions['gasPrice'] = 200000000;
-        contractOptions['maxPriorityFeePerGas'] = 100000000;
+        contractOptions.maxPriorityFeePerGas = BigInt(100000000);
         break;
       case 81457: // blast
-        contractOptions['type'] = 0;
+        contractOptions.type = 0;
         break;
     }
     const tx = await this.contract['relay'](
