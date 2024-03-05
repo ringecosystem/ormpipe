@@ -79,7 +79,37 @@ export class CommandHelper {
     }
     const content = fs.readFileSync(_file, {encoding: 'utf-8'});
     const parsed = JSON.parse(content);
-    return parsed as unknown as Record<string, ChainInfoFlag>;
+    const chainMap = parsed as unknown as Record<string, ChainInfoFlag>;
+
+    const chainNames = Object.keys(chainMap);
+    for (const chainName of chainNames) {
+      const envChainName = chainName.toUpperCase();
+      const xEndpoint = process.env[`ORMPIPE_ENDPOINT_${envChainName}`];
+      const xContractSigncribe = process.env[`ORMPIPE_CONTRACT_SIGNCRIBE_${envChainName}`];
+      const xContractRelayer = process.env[`ORMPIPE_CONTRACT_RELAYER_${envChainName}`];
+      const xContractOrmp = process.env[`ORMPIPE_CONTRACT_ORMP_${envChainName}`];
+      const xContractOracle = process.env[`ORMPIPE_CONTRACT_ORACLE_${envChainName}`];
+      const xContractMultisig = process.env[`ORMPIPE_CONTRACT_MULTISIG_${envChainName}`];
+      const xIndexerOrmp = process.env[`ORMPIPE_INDEXER_ORMP_${envChainName}`];
+      const xIndexerSigncribe = process.env[`ORMPIPE_INDEXER_SIGNCRIBE_${envChainName}`];
+      const currentChain = chainMap[chainName];
+      const currentChainContract = currentChain.contract;
+      const currentChainIndexer = currentChain.indexer;
+      currentChain.endpoint = xEndpoint ?? currentChain.endpoint;
+      if (currentChainContract) {
+        currentChainContract.signcribe = xContractSigncribe ?? currentChainContract.signcribe;
+        currentChainContract.relayer = xContractRelayer ?? currentChainContract.relayer;
+        currentChainContract.ormp = xContractOrmp ?? currentChainContract.ormp;
+        currentChainContract.oracle = xContractOracle ?? currentChainContract.oracle;
+        currentChainContract.multisig = xContractMultisig ?? currentChainContract.multisig;
+      }
+      if (currentChainIndexer) {
+        currentChainIndexer.ormp = xIndexerOrmp ?? currentChainIndexer.ormp;
+        currentChainIndexer.signcribe = xIndexerSigncribe ?? currentChainIndexer.signcribe;
+      }
+
+    }
+    return chainMap;
   }
 
   public static async buildRelayConfig(cliStartConfig: CliBaseConfig): Promise<RelayBaseConfig[]> {
