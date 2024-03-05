@@ -68,7 +68,6 @@ export class RelayerContractClient {
     }
     switch (options.chainId) {
       case 42161: // arbitrum
-        contractOptions.gasPrice = BigInt(200000000);
         contractOptions.maxPriorityFeePerGas = BigInt(100000000);
         break;
       case 81457: // blast
