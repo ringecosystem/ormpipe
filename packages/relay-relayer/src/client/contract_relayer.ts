@@ -25,6 +25,7 @@ export interface RelayOptions {
 interface EthersRequestOptions {
   gasLimit?: bigint
   gasPrice?: bigint
+  maxFeePerGas?: bigint
   maxPriorityFeePerGas?: bigint
   type?: number
 }
@@ -68,6 +69,7 @@ export class RelayerContractClient {
     }
     switch (options.chainId) {
       case 42161: // arbitrum
+        contractOptions.maxFeePerGas = BigInt(300000000);
         contractOptions.maxPriorityFeePerGas = BigInt(100000000);
         break;
       case 81457: // blast
