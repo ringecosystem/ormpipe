@@ -22,6 +22,13 @@ export interface RelayOptions {
   chainId: number
 }
 
+interface EthersRequestOptions {
+  gasLimit?: bigint
+  gasPrice?: bigint
+  maxPriorityFeePerGas?: bigint
+  type?: number
+}
+
 export class RelayerContractClient {
 
   private readonly config: ContractConfig;
@@ -55,12 +62,7 @@ export class RelayerContractClient {
     //     return;
     //   }
     // }
-    const contractOptions: {
-      gasLimit: undefined | bigint
-      gasPrice: undefined | bigint
-      maxPriorityFeePerGas: undefined | bigint
-      type: undefined | number
-    } = {};
+    const contractOptions: EthersRequestOptions = {};
     if (!options.enableGasCheck) {
       contractOptions.gasLimit = options.gasLimit;
     }
