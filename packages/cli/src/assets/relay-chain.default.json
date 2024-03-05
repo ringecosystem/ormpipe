@@ -121,7 +121,7 @@
   },
   "blast": {
     "name": "blast",
-    "endpoint": "https://blast.gasswap.org",
+    "endpoint": "https://rpc.blast.io",
     "indexer": {
       "ormp": "https://api.studio.thegraph.com/proxy/51152/ormpipe-blast/version/latest",
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
