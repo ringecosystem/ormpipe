@@ -55,18 +55,22 @@ export class RelayerContractClient {
     //     return;
     //   }
     // }
-    const contractOptions = options.enableGasCheck
-      ? {}
-      : {
-        gasLimit: options.gasLimit,
-      };
+    const contractOptions: {
+      gasLimit: undefined | bigint
+      gasPrice: undefined | bigint
+      maxPriorityFeePerGas: undefined | bigint
+      type: undefined | number
+    } = {};
+    if (!options.enableGasCheck) {
+      contractOptions.gasLimit = options.gasLimit;
+    }
     switch (options.chainId) {
       case 42161: // arbitrum
-        contractOptions['gasPrice'] = 200000000;
-        contractOptions['maxPriorityFeePerGas'] = 100000000;
+        contractOptions.gasPrice = BigInt(200000000);
+        contractOptions.maxPriorityFeePerGas = BigInt(100000000);
         break;
       case 81457: // blast
-        contractOptions['type'] = 0;
+        contractOptions.type = 0;
         break;
     }
     const tx = await this.contract['relay'](
