@@ -19,6 +19,7 @@ export interface RelayOptions {
   proof: string
   gasLimit: bigint
   enableGasCheck: boolean
+  chainId: number
 }
 
 export class RelayerContractClient {
@@ -59,6 +60,15 @@ export class RelayerContractClient {
       : {
         gasLimit: options.gasLimit,
       };
+    switch (options.chainId) {
+      case 42161: // arbitrum
+        contractOptions['gasPrice'] = 200000000;
+        contractOptions['maxPriorityFeePerGas'] = 100000000;
+        break;
+      case 81457: // blast
+        contractOptions['type'] = 0;
+        break;
+    }
     const tx = await this.contract['relay'](
       options.message,
       options.proof,
