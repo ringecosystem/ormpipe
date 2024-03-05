@@ -208,6 +208,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         proof: encodedProof,
         gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
         enableGasCheck,
+        chainId: options.targetChainId,
       });
     } catch (e: any) {
       logger.error(
