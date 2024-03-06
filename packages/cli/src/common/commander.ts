@@ -182,6 +182,7 @@ export class CommandHelper {
       const work = {
         // dataPath: cliStartConfig.dataPath,
         ...cliStartConfig,
+        times: 0,
         symbol: symbol,
         sourceChain,
         sourceSigner,

@@ -8,6 +8,7 @@ import chalk = require('chalk');
 
 
 interface RelayerRelayOptions {
+  times: number
   sourceChainId: number
   targetChainId: number
 }
@@ -68,6 +69,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       const options: RelayerRelayOptions = {
         sourceChainId,
         targetChainId,
+        times: this.lifecycle.times,
       };
       await this.relay(options);
 
@@ -98,6 +100,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     const fullOptions = {
       ...options,
       lastImportedMessageRoot,
+      times: options.times,
     };
 
     const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted(fullOptions);
@@ -310,13 +313,23 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
 
       const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
-      if (await sim.isSkipped(+currentMessageIndex)) {
+      const skippedIndexOfCurrentMessage = await sim.indexOf(+currentMessageIndex);
+      if (skippedIndexOfCurrentMessage > -1) {
+        if (options.times % (skippedIndexOfCurrentMessage + 2) != 0) {
+          logger.info(
+            `the message %s (%s) skipped, will retry later`,
+            currentMessageIndex,
+            super.sourceName,
+            super.meta('ormpipe-relay', ['relayer:relay'])
+          );
+          continue;
+        }
         logger.info(
-          `the message %s skipped, will retry later`,
+          'retry relay skipped message %s (%s)',
           currentMessageIndex,
+          super.sourceName,
           super.meta('ormpipe-relay', ['relayer:relay'])
         );
-        continue;
       }
 
       const cachedLastDeliveriedIndex = await super.storage.get(RelayerRelay.CK_RELAYER_RELAIED);
@@ -378,6 +391,11 @@ class SkippedIndexManager {
     const skippedList = await this.load();
     const newSkippedList = [...skippedList, index];
     await this.write(newSkippedList);
+  }
+
+  public async indexOf(index: number): Promise<number> {
+    const skippedList = await this.load();
+    return skippedList.indexOf(index);
   }
 
   public async isSkipped(index: number): Promise<boolean> {
