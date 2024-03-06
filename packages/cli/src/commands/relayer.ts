@@ -109,7 +109,6 @@ export default class Relayer extends Command {
     });
     return {
       ...config,
-      times: 0,
       storage,
       sourceName: config.sourceChain.name,
       targetName: config.targetChain.name,
