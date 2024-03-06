@@ -313,7 +313,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
 
       const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
-      const skippedIndexOfCurrentMessage = await sim.isSkipped(+currentMessageIndex);
+      const skippedIndexOfCurrentMessage = await sim.indexOf(+currentMessageIndex);
       if (skippedIndexOfCurrentMessage > -1) {
         if (options.times % (skippedIndexOfCurrentMessage + 2) != 0) {
           logger.info(
