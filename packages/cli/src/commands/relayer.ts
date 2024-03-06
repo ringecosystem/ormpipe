@@ -35,13 +35,16 @@ export default class Relayer extends Command {
 
     const cliConfig = camelize(flags) as unknown as CliRelayerConfig;
     const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
+    let times = 0;
     while(true) {
+      times += 1;
       for (const rc of relayConfigs) {
         const sourceToTargetLifecycle = await this.buildLifecycle(rc);
+        sourceToTargetLifecycle.times = times;
 
         if (rc.symbol === '-' || rc.symbol === '>') {
           logger.info(
-            '--------- realyer %s>%s ---------',
+            '--------- relayer %s>%s ---------',
             sourceToTargetLifecycle.sourceChain.name,
             sourceToTargetLifecycle.targetChain.name,
           );
@@ -106,6 +109,7 @@ export default class Relayer extends Command {
     });
     return {
       ...config,
+      times: 0,
       storage,
       sourceName: config.sourceChain.name,
       targetName: config.targetChain.name,

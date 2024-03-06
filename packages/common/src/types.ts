@@ -9,6 +9,7 @@ export interface CliBaseConfig {
 }
 
 export interface RelayBaseConfig {
+  times: number
   symbol: string
   dataPath: string
   sourceChain: ChainInfoFlag

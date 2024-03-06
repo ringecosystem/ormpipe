@@ -34,9 +34,12 @@ export default class Oracle extends Command {
 
     const cliConfig = camelize(flags) as unknown as CliOracleConfig;
     const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
+    let times = 0;
     while (true) {
+      times += 1;
       for (const rc of relayConfigs) {
         const sourceToTargetLifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
+        sourceToTargetLifecycle.times = times;
 
         if (rc.symbol === '-' || rc.symbol === '>') {
           logger.info(
@@ -111,6 +114,7 @@ export default class Oracle extends Command {
     });
     return {
       ...config,
+      times: 0,
       storage,
       sourceName: config.sourceChain.name,
       targetName: config.targetChain.name,
