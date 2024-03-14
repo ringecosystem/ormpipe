@@ -198,10 +198,6 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     const sim = new SkippedIndexManager(super.storage, RelayerRelay.CK_RELAYER_SKIPPED);
 
     // console.log('------ relay');
-    const enableGasCheck = [
-      421614, // arbitrum sepolia
-      42161, // arbitrum one
-    ].indexOf(options.targetChainId) > -1;
     const baseGas = await this.sourceRelayerClient.configOf(options.targetChainId);
 
     let targetTxRelayMessage;
@@ -210,7 +206,6 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         message,
         proof: encodedProof,
         gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
-        enableGasCheck,
         chainId: options.targetChainId,
       });
     } catch (e: any) {

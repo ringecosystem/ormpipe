@@ -18,7 +18,6 @@ export interface RelayOptions {
   message: OrmpProtocolMessage
   proof: string
   gasLimit: bigint
-  enableGasCheck: boolean
   chainId: number
 }
 
@@ -64,7 +63,12 @@ export class RelayerContractClient {
     //   }
     // }
     const contractOptions: EthersRequestOptions = {};
-    if (!options.enableGasCheck) {
+
+    const enableGasCheck = [
+      // 421614, // arbitrum sepolia
+      42161, // arbitrum one
+    ].indexOf(options.chainId) > -1;
+    if (!enableGasCheck) {
       contractOptions.gasLimit = options.gasLimit;
     }
     switch (options.chainId) {
