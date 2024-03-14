@@ -65,10 +65,16 @@ export class RelayerContractClient {
     const contractOptions: EthersRequestOptions = {};
 
     const enableGasCheck = [
-      // 421614, // arbitrum sepolia
+      421614, // arbitrum sepolia
       42161, // arbitrum one
     ].indexOf(options.chainId) > -1;
-    if (!enableGasCheck) {
+    if (enableGasCheck) {
+      const estimatedGas = await this.contract['relay'].estimateGas(
+        options.message,
+        options.proof,
+      );
+      contractOptions.gasLimit = estimatedGas + estimatedGas / BigInt(2);
+    } else {
       contractOptions.gasLimit = options.gasLimit;
     }
     switch (options.chainId) {
