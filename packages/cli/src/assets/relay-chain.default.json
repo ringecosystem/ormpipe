@@ -53,9 +53,9 @@
     },
     "contract": {
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
-      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
-      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
-      "oracle": "0x0000000003ebeF32D8f0ED406a5CA8805c80AFba",
+      "relayer": "0xb773319D6Eb7f34b8EAB26Ea5F5ea694E7EF6362",
+      "ormp": "0x62271F7698a52E1e675E310cD239F5A46fcE2443",
+      "oracle": "0xDD8c7c84DaCBbB60F1CfC4f10046245da1E0f33D",
       "multisig": "0x000000000d60704384100A29efb6C9cf8cD72820"
     }
   },
@@ -68,9 +68,9 @@
     },
     "contract": {
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
-      "relayer": "0x0000000000808fE9bDCc1d180EfbF5C53552a6b1",
-      "ormp": "0x00000000001523057a05d6293C1e5171eE33eE0A",
-      "oracle": "0x0000000003ebeF32D8f0ED406a5CA8805c80AFba",
+      "relayer": "0xb773319D6Eb7f34b8EAB26Ea5F5ea694E7EF6362",
+      "ormp": "0x62271F7698a52E1e675E310cD239F5A46fcE2443",
+      "oracle": "0xDD8c7c84DaCBbB60F1CfC4f10046245da1E0f33D",
       "multisig": "0x000000000d60704384100A29efb6C9cf8cD72820"
     }
   },
