@@ -1,6 +1,6 @@
 import {RelayerRelayLifecycle} from "./types/config";
 import {CommonRelay, logger, RelayStorage} from "@darwinia/ormpipe-common";
-import {OracleImportedMessageRoot, OrmpMessageAccepted, ThegraphIndexOrmp} from "@darwinia/ormpipe-indexer";
+import {OracleImportedMessageRoot, OrmpMessageAccepted, PonderIndexOrmp} from "@darwinia/ormpipe-indexer";
 import {OrmpProtocolMessage, RelayerContractClient} from "./client/contract_relayer";
 import {IncrementalMerkleTree} from "./helper/imt";
 import {AbiCoder} from "ethers";
@@ -31,11 +31,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     super(lifecycle);
   }
 
-  public get sourceIndexerOrmp(): ThegraphIndexOrmp {
+  public get sourceIndexerOrmp(): PonderIndexOrmp {
     return super.lifecycle.sourceIndexerOrmp
   }
 
-  public get targetIndexerOrmp(): ThegraphIndexOrmp {
+  public get targetIndexerOrmp(): PonderIndexOrmp {
     return super.lifecycle.targetIndexerOrmp
   }
 
@@ -86,7 +86,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
-    const lastImportedMessageRoot = await super.lifecycle.targetIndexerOracle.lastImportedMessageRoot({
+    const lastImportedMessageRoot = await super.lifecycle.targetIndexerOrmp.lastImportedMessageRoot({
       chainId: options.sourceChainId
     });
     if (!lastImportedMessageRoot) {
@@ -120,20 +120,20 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
   private async _relay(options: RelayerRelayFullOptions, sourceNextMessageAccepted: OrmpMessageAccepted) {
     if (
-      options.sourceChainId.toString() != sourceNextMessageAccepted.message_fromChainId ||
-      options.targetChainId.toString() != sourceNextMessageAccepted.message_toChainId
+      options.sourceChainId.toString() != sourceNextMessageAccepted.messageFromChainId ||
+      options.targetChainId.toString() != sourceNextMessageAccepted.messageToChainId
     ) {
       logger.warn(
         `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
         options.sourceChainId.toString(),
         options.targetChainId.toString(),
         sourceNextMessageAccepted.msgHash,
-        sourceNextMessageAccepted.message_index,
-        sourceNextMessageAccepted.message_fromChainId,
-        sourceNextMessageAccepted.message_toChainId,
+        sourceNextMessageAccepted.messageIndex,
+        sourceNextMessageAccepted.messageFromChainId,
+        sourceNextMessageAccepted.messageToChainId,
         super.meta('ormpipe-relay-relayer', ['relayer']),
       );
-      await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
+      await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.messageIndex);
       return;
     }
     // polygon is 2 other is 1
@@ -145,27 +145,27 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         sourceNextMessageAccepted.relayerLogIndex ?? 0,
         super.meta('ormpipe-relay-relayer', ['relayer']),
       );
-      await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.message_index);
+      await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.messageIndex);
       return;
     }
 
     const message: OrmpProtocolMessage = {
-      channel: sourceNextMessageAccepted.message_channel,
-      index: +sourceNextMessageAccepted.message_index,
-      fromChainId: +sourceNextMessageAccepted.message_fromChainId,
-      from: sourceNextMessageAccepted.message_from,
-      toChainId: +sourceNextMessageAccepted.message_toChainId,
-      to: sourceNextMessageAccepted.message_to,
-      gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit),
-      encoded: sourceNextMessageAccepted.message_encoded,
+      channel: sourceNextMessageAccepted.messageChannel,
+      index: +sourceNextMessageAccepted.messageIndex,
+      fromChainId: +sourceNextMessageAccepted.messageFromChainId,
+      from: sourceNextMessageAccepted.messageFrom,
+      toChainId: +sourceNextMessageAccepted.messageToChainId,
+      to: sourceNextMessageAccepted.messageTo,
+      gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit),
+      encoded: sourceNextMessageAccepted.messageEncoded,
     };
 
     const lastImportedMessageRoot = options.lastImportedMessageRoot;
     const lastAggregatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
-      root: lastImportedMessageRoot.messageRoot,
+      root: lastImportedMessageRoot.hash,
     });
     const rawMsgHashes = await this.sourceIndexerOrmp.queryRelayerMessageHashes({
-      messageIndex: +lastAggregatedMessageAccepted!.message_index,
+      messageIndex: +lastAggregatedMessageAccepted!.messageIndex,
     });
     const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
     const imt = new IncrementalMerkleTree(msgHashes);
@@ -182,14 +182,14 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       ],
       [
         {
-          blockNumber: +lastImportedMessageRoot.blockHeight,
+          blockNumber: +lastImportedMessageRoot.srcBlockNumber,
           messageIndex: message.index,
           messageProof: messageProof,
         }
       ]
     );
 
-    // console.log('last imported message root', lastImportedMessageRoot.messageRoot);
+    // console.log('last imported message root', lastImportedMessageRoot.hash);
     // console.log('root', imt.root());
     // console.log('msg hashes', rawMsgHashes.length, rawMsgHashes);
     // console.log('message', message);
@@ -205,7 +205,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       targetTxRelayMessage = await this.targetRelayerClient.relay({
         message,
         proof: encodedProof,
-        gasLimit: BigInt(sourceNextMessageAccepted.message_gasLimit) + baseGas,
+        gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit) + baseGas,
         chainId: options.targetChainId,
       });
     } catch (e: any) {
@@ -247,13 +247,13 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
   private async _lastAssignedMessageAccepted(options: RelayerRelayFullOptions): Promise<OrmpMessageAccepted | undefined> {
     const lastImportedMessageRoot = options.lastImportedMessageRoot;
     const lastImportedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
-      root: lastImportedMessageRoot.messageRoot,
+      root: lastImportedMessageRoot.hash,
     });
 
     if (!lastImportedMessageAccepted) {
       logger.debug(
         'found new message root %s from %s but not found this message from accepted.',
-        lastImportedMessageRoot.messageRoot,
+        lastImportedMessageRoot.hash,
         super.targetName,
         super.meta('ormpipe-relay-relayer', ['relayer']),
       );
@@ -261,7 +261,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     }
 
     const pickedRelayerMessageAcceptedHashes = await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
-      messageIndex: +lastImportedMessageAccepted.message_index,
+      messageIndex: +lastImportedMessageAccepted.messageIndex,
       toChainId: options.targetChainId,
     });
     const pickedUnRelayedMessageHashes = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
@@ -296,12 +296,12 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         return;
       }
       const nextUnRelayMessageAccepted = unRelayMessageAcceptedList[unRelayedIndex];
-      const currentMessageIndex = nextUnRelayMessageAccepted.message_index;
+      const currentMessageIndex = nextUnRelayMessageAccepted.messageIndex;
 
       logger.info(
         'sync status [%s,%s] (%s)',
         currentMessageIndex,
-        sourceLastMessageAssignedAccepted?.message_index ?? -1,
+        sourceLastMessageAssignedAccepted?.messageIndex ?? -1,
         super.sourceName,
         super.meta('ormpipe-relay', ['relayer:relay']),
       );

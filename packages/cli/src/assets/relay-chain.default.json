@@ -48,13 +48,13 @@
     "name": "sepolia",
     "endpoint": "https://ethereum-sepolia.publicnode.com",
     "indexer": {
-      "ormp": "https://api.studio.thegraph.com/query/51152/ormpipe-sepolia/version/latest",
-      "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
+      "ormp": "https://ormponder.darwinia.network/",
+      "signcribe": "https://ormponder.darwinia.network/"
     },
     "contract": {
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
       "relayer": "0xb773319D6Eb7f34b8EAB26Ea5F5ea694E7EF6362",
-      "ormp": "0x62271F7698a52E1e675E310cD239F5A46fcE2443",
+      "ormp": "0x38540e6b6678d32A141fEC10Dd39744bc46DAcC8",
       "oracle": "0xDD8c7c84DaCBbB60F1CfC4f10046245da1E0f33D",
       "multisig": "0x000000000d60704384100A29efb6C9cf8cD72820"
     }
@@ -63,13 +63,13 @@
     "name": "arbitrumsepolia",
     "endpoint": "https://sepolia-rollup.arbitrum.io/rpc",
     "indexer": {
-      "ormp": "https://api.studio.thegraph.com/query/51152/ormpipe-arbitrum-sepolia/version/latest",
-      "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
+      "ormp": "https://ormponder.darwinia.network/",
+      "signcribe": "https://ormponder.darwinia.network/"
     },
     "contract": {
       "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
       "relayer": "0xb773319D6Eb7f34b8EAB26Ea5F5ea694E7EF6362",
-      "ormp": "0x62271F7698a52E1e675E310cD239F5A46fcE2443",
+      "ormp": "0x38540e6b6678d32A141fEC10Dd39744bc46DAcC8",
       "oracle": "0xDD8c7c84DaCBbB60F1CfC4f10046245da1E0f33D",
       "multisig": "0x000000000d60704384100A29efb6C9cf8cD72820"
     }

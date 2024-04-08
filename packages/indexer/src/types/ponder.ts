@@ -77,14 +77,14 @@ export interface _QueryWithBlockNumber {
   export interface OrmpMessageAccepted extends BaseGraphEntity {
     msgHash: string
     root: string
-    message_channel: string
-    message_index: string
-    message_fromChainId: string
-    message_from: string
-    message_toChainId: string
-    message_to: string
-    message_encoded: string
-    message_gasLimit: string
+    messageChannel: string
+    messageIndex: string
+    messageFromChainId: string
+    messageFrom: string
+    messageToChainId: string
+    messageTo: string
+    messageEncoded: string
+    messageGasLimit: string
     logIndex: string
   
     oracleAssigned?: string
@@ -109,8 +109,8 @@ export interface _QueryWithBlockNumber {
   }
   
   export interface OracleImportedMessageRoot extends BaseGraphEntity {
-    chainId: string
-    blockHeight: string
-    messageRoot: string
+    srcChainId: string
+    srcBlockNumber: string
+    hash: string
   }
   

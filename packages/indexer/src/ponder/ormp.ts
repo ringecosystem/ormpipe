@@ -29,50 +29,52 @@ export class PonderIndexOrmp extends GraphCommon {
       ${variables.root ? "$root: Bytes!" : ""}
       ${variables.messageIndex != undefined ? "$messageIndex: BigInt!" : ""}
     ) {
-      ormpProtocolMessageAccepteds(
-        first: 1
-        orderBy: message_index
-        orderDirection: asc
+      messageAcceptedV2s(
+        limit: 1
+        orderBy: "messageIndex"
+        orderDirection: "asc"
         where: {
           ${variables.msgHash ? "msgHash: $msgHash" : ""}
           ${variables.root ? "root: $root" : ""}
           ${
             variables.messageIndex != undefined
-              ? "message_index: $messageIndex"
+              ? "messageIndex: $messageIndex"
               : ""
           }
         }
       ) {
-        id
-        blockNumber
-        blockTimestamp
-        transactionHash
+        items {
+          id
+          blockNumber
+          blockTimestamp
+          transactionHash
 
-        msgHash
-        root
-        message_channel
-        message_index
-        message_fromChainId
-        message_from
-        message_toChainId
-        message_to
-        message_gasLimit
-        message_encoded
-        logIndex
+          msgHash
+          root
+          messageChannel
+          messageIndex
+          messageFromChainId
+          messageFrom
+          messageToChainId
+          messageTo
+          messageGasLimit
+          messageEncoded
+          logIndex
 
-        oracleAssigned
-        oracleAssignedFee
-        oracleLogIndex
-        relayerAssigned
-        relayerAssignedFee
-        relayerLogIndex
+          oracleAssigned
+          oracleAssignedFee
+          oracleLogIndex
+          relayerAssigned
+          relayerAssignedFee
+          relayerLogIndex
+        }
       }
     }
     `;
     return await super.single({
       query,
       variables,
-      schema: "ormpProtocolMessageAccepteds",
+      schema: "messageAcceptedV2s",
     });
   }
 
@@ -85,36 +87,38 @@ export class PonderIndexOrmp extends GraphCommon {
     );
     const query = `
     query QueryMessageAcceptedList($msgHashes: [String!]!) {
-      ormpProtocolMessageAccepteds(
-        orderBy: message_index
-        orderDirection: asc
+      messageAcceptedV2s(
+        orderBy: "messageIndex"
+        orderDirection: "asc"
         where: {
           msgHash_in: $msgHashes
         }
       ) {
-        id
-        blockNumber
-        blockTimestamp
-        transactionHash
+        items {
+          id
+          blockNumber
+          blockTimestamp
+          transactionHash
 
-        msgHash
-        root
-        message_channel
-        message_index
-        message_fromChainId
-        message_from
-        message_toChainId
-        message_to
-        message_gasLimit
-        message_encoded
-        logIndex
+          msgHash
+          root
+          messageChannel
+          messageIndex
+          messageFromChainId
+          messageFrom
+          messageToChainId
+          messageTo
+          messageGasLimit
+          messageEncoded
+          logIndex
 
-        oracleAssigned
-        oracleAssignedFee
-        oracleLogIndex
-        relayerAssigned
-        relayerAssignedFee
-        relayerLogIndex
+          oracleAssigned
+          oracleAssignedFee
+          oracleLogIndex
+          relayerAssigned
+          relayerAssignedFee
+          relayerLogIndex
+        }
       }
     }
     `;
@@ -124,7 +128,7 @@ export class PonderIndexOrmp extends GraphCommon {
       const pickedAssignedMessages: OrmpMessageAccepted[] = await super.list({
         query,
         variables: _variables,
-        schema: "ormpProtocolMessageAccepteds",
+        schema: "messageAcceptedV2s",
       });
       rets.push(...pickedAssignedMessages);
     }
@@ -136,29 +140,32 @@ export class PonderIndexOrmp extends GraphCommon {
   ): Promise<OracleImportedMessageRoot | undefined> {
     const query = `
     query QueryLastImportedMessageRoot($chainId: BigInt!) {
-      ormpOracleImportedMessageRoots(
-        first: 1
-        orderBy: blockNumber
-        orderDirection: desc
+      hashImportedV2s(
+        limit: 1
+        orderBy: "blockNumber"
+        orderDirection: "desc"
         where: {
-          chainId: $chainId
+          srcChainId: $chainId
         }
       ) {
-        id
-        blockNumber
-        blockTimestamp
-        transactionHash
-
-        chainId
-        blockHeight
-        messageRoot
+        items {
+          id
+          blockNumber
+          blockTimestamp
+          transactionHash
+  
+          srcChainId
+          lookupKey
+          srcBlockNumber
+          hash
+        }
       }
     }
     `;
     return await super.single({
       query,
       variables,
-      schema: "ormpOracleImportedMessageRoots",
+      schema: "hashImportedV2s",
     });
   }
 
@@ -167,16 +174,18 @@ export class PonderIndexOrmp extends GraphCommon {
   ): Promise<string[]> {
     const query = `
     query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!) {
-      ormpProtocolMessageAccepteds(
+      messageAcceptedV2s(
         skip: $skip
-        orderBy: message_index
-        orderDirection: asc
+        orderBy: "messageIndex"
+        orderDirection: "asc"
         where: {
-          message_index_lte: $messageIndex
+          messageIndex_lte: $messageIndex
         }
       ) {
-        message_index
-        msgHash
+        items {
+          messageIndex
+          msgHash
+        }
       }
     }
     `;
@@ -190,7 +199,7 @@ export class PonderIndexOrmp extends GraphCommon {
       const parts: OrmpMessageAccepted[] = await super.list({
         query,
         variables: _variables,
-        schema: "ormpProtocolMessageAccepteds",
+        schema: "messageAcceptedV2s",
       });
       const length = parts.length;
       if (length == 0) {
@@ -207,46 +216,48 @@ export class PonderIndexOrmp extends GraphCommon {
   ): Promise<OrmpMessageAccepted | undefined> {
     const query = `
     query QueryNextMessageAccepted($messageIndex: BigInt!, $toChainId: Int!) {
-      ormpProtocolMessageAccepteds(
-        first: 1
-        orderBy: message_index
-        orderDirection: asc
+      messageAcceptedV2s(
+        limit: 1
+        orderBy: "messageIndex"
+        orderDirection: "asc"
         where: {
           oracleAssigned: true
-          message_index_gt: $messageIndex
-          message_toChainId: $toChainId
+          messageIndex_gt: $messageIndex
+          messageToChainId: $toChainId
         }
       ) {
-        id
-        blockNumber
-        blockTimestamp
-        transactionHash
+        items {
+          id
+          blockNumber
+          blockTimestamp
+          transactionHash
 
-        msgHash
-        root
-        message_channel
-        message_index
-        message_fromChainId
-        message_from
-        message_toChainId
-        message_to
-        message_gasLimit
-        message_encoded
-        logIndex
+          msgHash
+          root
+          messageChannel
+          messageIndex
+          messageFromChainId
+          messageFrom
+          messageToChainId
+          messageTo
+          messageGasLimit
+          messageEncoded
+          logIndex
 
-        oracleAssigned
-        oracleAssignedFee
-        oracleLogIndex
-        relayerAssigned
-        relayerAssignedFee
-        relayerLogIndex
+          oracleAssigned
+          oracleAssignedFee
+          oracleLogIndex
+          relayerAssigned
+          relayerAssignedFee
+          relayerLogIndex
+        }
       }
     }
     `;
     return await super.single({
       query,
       variables,
-      schema: "ormpProtocolMessageAccepteds",
+      schema: "messageAcceptedV2s",
     });
   }
 
@@ -255,17 +266,19 @@ export class PonderIndexOrmp extends GraphCommon {
   ): Promise<string[]> {
     const query = `
     query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!, $toChainId: Int!) {
-      ormpProtocolMessageAccepteds(
+      messageAcceptedV2s(
         skip: $skip
-        orderBy: message_index
-        orderDirection: asc
+        orderBy: "messageIndex"
+        orderDirection: "asc"
         where: {
           relayerAssigned: true
-          message_index_lte: $messageIndex
-          message_toChainId: $toChainId
+          messageIndex_lte: $messageIndex
+          messageToChainId: $toChainId
         }
       ) {
-        msgHash
+        items {
+          msgHash
+        }
       }
     }
     `;
@@ -280,7 +293,7 @@ export class PonderIndexOrmp extends GraphCommon {
       const parts: OrmpMessageAccepted[] = await super.list({
         query,
         variables: _variable,
-        schema: "ormpProtocolMessageAccepteds",
+        schema: "messageAcceptedV2s",
       });
       const length = parts.length;
       if (length == 0) {
@@ -301,14 +314,16 @@ export class PonderIndexOrmp extends GraphCommon {
     const msgHashesParts: string[][] = CollectionKit.split(msgHashes, 100);
     const query = `
     query QueryLastMessageDispatched($msgHashes: [String!]!) {
-      ormpProtocolMessageDispatcheds(
-        orderBy: blockNumber
-        orderDirection: asc
+      messageDispatchedV2s(
+        orderBy: "blockNumber"
+        orderDirection: "asc"
         where: {
           msgHash_in: $msgHashes
         }
       ) {
-        msgHash
+        items {
+          msgHash
+        }
       }
     }
     `;
@@ -318,7 +333,7 @@ export class PonderIndexOrmp extends GraphCommon {
       const unRelayMessages: OrmpMessageDispatched[] = await super.list({
         query,
         variables,
-        schema: "ormpProtocolMessageDispatcheds",
+        schema: "messageDispatchedV2s",
       });
       const hashes = unRelayMessages.map((item) => item.msgHash);
       unRelayMessageHashes.push(...hashes);
@@ -333,17 +348,19 @@ export class PonderIndexOrmp extends GraphCommon {
   ): Promise<string[]> {
     const query = `
     query QueryAllOracleAssignedMessageAccepted($skip: Int!, $toChainId: BigInt!) {
-      ormpProtocolMessageAccepteds(
+      messageAcceptedV2s(
         skip: $skip
-        first: 10
-        orderBy: message_index
-        orderDirection: asc
+        limit: 10
+        orderBy: "messageIndex"
+        orderDirection: "asc"
         where: {
           oracleAssigned: true
-          message_toChainId: $toChainId
+          messageToChainId: $toChainId
         }
       ) {
-        msgHash
+        items {
+          msgHash
+        }
       }
     }
     `;
@@ -358,7 +375,7 @@ export class PonderIndexOrmp extends GraphCommon {
       const parts: OrmpMessageAccepted[] = await super.list({
         query,
         variables: _variables,
-        schema: "ormpProtocolMessageAccepteds",
+        schema: "messageAcceptedV2s",
       });
       const length = parts.length;
       if (length == 0) {
@@ -375,45 +392,47 @@ export class PonderIndexOrmp extends GraphCommon {
   ): Promise<OrmpMessageAccepted | undefined> {
     const query = `
     query QueryLastMessageAccepted($toChainId: Int!) {
-      ormpProtocolMessageAccepteds(
-        first: 1
-        orderBy: message_index
-        orderDirection: desc
+      messageAcceptedV2s(
+        limit: 1
+        orderBy: "messageIndex"
+        orderDirection: "desc"
         where: {
           oracleAssigned: true
-          message_toChainId: $toChainId
+          messageToChainId: $toChainId
         }
       ) {
-        id
-        blockNumber
-        blockTimestamp
-        transactionHash
+        items {
+          id
+          blockNumber
+          blockTimestamp
+          transactionHash
 
-        msgHash
-        root
-        message_channel
-        message_index
-        message_fromChainId
-        message_from
-        message_toChainId
-        message_to
-        message_gasLimit
-        message_encoded
-        logIndex
+          msgHash
+          root
+          messageChannel
+          messageIndex
+          messageFromChainId
+          messageFrom
+          messageToChainId
+          messageTo
+          messageGasLimit
+          messageEncoded
+          logIndex
 
-        oracleAssigned
-        oracleAssignedFee
-        oracleLogIndex
-        relayerAssigned
-        relayerAssignedFee
-        relayerLogIndex
+          oracleAssigned
+          oracleAssignedFee
+          oracleLogIndex
+          relayerAssigned
+          relayerAssignedFee
+          relayerLogIndex
+        }
       }
     }
     `;
     return await super.single({
       query,
       variables,
-      schema: "ormpProtocolMessageAccepteds",
+      schema: "messageAcceptedV2s",
     });
   }
 
@@ -422,45 +441,47 @@ export class PonderIndexOrmp extends GraphCommon {
   ): Promise<OrmpMessageAccepted | undefined> {
     const query = `
     query QueryLastMessageAccepted($toChainId: Int!) {
-      ormpProtocolMessageAccepteds(
-        first: 1
-        orderBy: message_index
-        orderDirection: desc
+      messageAcceptedV2s(
+        limit: 1
+        orderBy: "messageIndex"
+        orderDirection: "desc"
         where: {
           relayerAssigned: true
-          message_toChainId: $toChainId
+          messageToChainId: $toChainId
         }
       ) {
-        id
-        blockNumber
-        blockTimestamp
-        transactionHash
+        items {
+          id
+          blockNumber
+          blockTimestamp
+          transactionHash
 
-        msgHash
-        root
-        message_channel
-        message_index
-        message_fromChainId
-        message_from
-        message_toChainId
-        message_to
-        message_gasLimit
-        message_encoded
-        logIndex
+          msgHash
+          root
+          messageChannel
+          messageIndex
+          messageFromChainId
+          messageFrom
+          messageToChainId
+          messageTo
+          messageGasLimit
+          messageEncoded
+          logIndex
 
-        oracleAssigned
-        oracleAssignedFee
-        oracleLogIndex
-        relayerAssigned
-        relayerAssignedFee
-        relayerLogIndex
+          oracleAssigned
+          oracleAssignedFee
+          oracleLogIndex
+          relayerAssigned
+          relayerAssignedFee
+          relayerLogIndex
+        }
       }
     }
     `;
     return await super.single({
       query,
       variables,
-      schema: "ormpProtocolMessageAccepteds",
+      schema: "messageAcceptedV2s",
     });
   }
 }

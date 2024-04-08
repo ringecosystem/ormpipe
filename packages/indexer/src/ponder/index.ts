@@ -4,19 +4,19 @@ import { PonderIndexSigncribe } from "./signcribe";
 import { Gqlc } from "../gqlc";
 
 export class PonderIndexer {
-  private readonly graphOrmp: PonderIndexOrmp;
-  private readonly graphSigncribe: PonderIndexSigncribe;
+  private readonly ponderOrmp: PonderIndexOrmp;
+  private readonly ponderSigncribe: PonderIndexSigncribe;
 
   constructor(input: IndexerInput) {
     const { endpoint, ormpEndpoint, signcribeEndpoint } = input;
-    this.graphOrmp = new PonderIndexOrmp(
+    this.ponderOrmp = new PonderIndexOrmp(
       input,
       new Gqlc({
         timeout: input.timeout,
         endpoint: ormpEndpoint ?? endpoint,
       })
     );
-    this.graphSigncribe = new PonderIndexSigncribe(
+    this.ponderSigncribe = new PonderIndexSigncribe(
       input,
       new Gqlc({
         timeout: input.timeout,
@@ -26,10 +26,10 @@ export class PonderIndexer {
   }
 
   public ormp(): PonderIndexOrmp {
-    return this.graphOrmp;
+    return this.ponderOrmp;
   }
 
   public signcribe(): PonderIndexSigncribe {
-    return this.graphSigncribe;
+    return this.ponderSigncribe;
   }
 }
