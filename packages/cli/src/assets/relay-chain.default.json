@@ -52,11 +52,11 @@
       "signcribe": "https://ormponder.darwinia.network/"
     },
     "contract": {
-      "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
-      "relayer": "0xb773319D6Eb7f34b8EAB26Ea5F5ea694E7EF6362",
-      "ormp": "0x38540e6b6678d32A141fEC10Dd39744bc46DAcC8",
-      "oracle": "0xDD8c7c84DaCBbB60F1CfC4f10046245da1E0f33D",
-      "multisig": "0x000000000d60704384100A29efb6C9cf8cD72820"
+      "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
+      "relayer": "0x305cdd9C20adC44BdD722B6A37F49Cb439623E49",
+      "ormp": "0x42165Ce95b51D1B845C190C96fB30c4FeF6Abce4",
+      "oracle": "0xf64a5353Cf2Da7EE514F53Ee949c43E1BC4f494e",
+      "multisig": "0x1d3D009788BaDc05B8B81C7af51Dd7F7084435b0"
     }
   },
   "arbitrumsepolia": {
@@ -67,11 +67,11 @@
       "signcribe": "https://ormponder.darwinia.network/"
     },
     "contract": {
-      "signcribe": "0x57dd62e0986a61a269c769b107a5a7952d73b7ed",
-      "relayer": "0xb773319D6Eb7f34b8EAB26Ea5F5ea694E7EF6362",
-      "ormp": "0x38540e6b6678d32A141fEC10Dd39744bc46DAcC8",
-      "oracle": "0xDD8c7c84DaCBbB60F1CfC4f10046245da1E0f33D",
-      "multisig": "0x000000000d60704384100A29efb6C9cf8cD72820"
+      "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
+      "relayer": "0x305cdd9C20adC44BdD722B6A37F49Cb439623E49",
+      "ormp": "0x42165Ce95b51D1B845C190C96fB30c4FeF6Abce4",
+      "oracle": "0xf64a5353Cf2Da7EE514F53Ee949c43E1BC4f494e",
+      "multisig": "0x1d3D009788BaDc05B8B81C7af51Dd7F7084435b0"
     }
   },
   "arbitrum": {
