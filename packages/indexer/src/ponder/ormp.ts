@@ -10,7 +10,7 @@ import {
   OracleImportedMessageRoot,
   QueryLastImportedMessageRoot,
 } from "../types/ponder";
-import { GraphCommon } from "./_common";
+import { GraphCommon, PonderPage } from "./_common";
 import { CollectionKit } from "../toolkit/collection";
 
 export class PonderIndexOrmp extends GraphCommon {
@@ -25,8 +25,8 @@ export class PonderIndexOrmp extends GraphCommon {
       throw new Error("missing msghash or root or messageIndex");
     const query = `
     query QueryMessageAccepted(
-      ${variables.msgHash ? "$msgHash: Bytes!" : ""}
-      ${variables.root ? "$root: Bytes!" : ""}
+      ${variables.msgHash ? "$msgHash: String!" : ""}
+      ${variables.root ? "$root: String!" : ""}
       ${variables.messageIndex != undefined ? "$messageIndex: BigInt!" : ""}
     ) {
       messageAcceptedV2s(
@@ -173,9 +173,9 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryMessageHashes
   ): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($skip: Int!, $messageIndex: BigInt!) {
+    query QueryMessageAcceptedHashes($after: String, $messageIndex: BigInt!) {
       messageAcceptedV2s(
-        skip: $skip
+        after: $after
         orderBy: "messageIndex"
         orderDirection: "asc"
         where: {
@@ -186,28 +186,36 @@ export class PonderIndexOrmp extends GraphCommon {
           messageIndex
           msgHash
         }
+        pageInfo {
+          startCursor
+          endCursor
+          hasPreviousPage
+          hasNextPage
+        }
       }
     }
     `;
-    let skip = 0;
+    let after = null;
     const rets: string[] = [];
     while (true) {
       const _variables = {
         ...variables,
-        skip,
+        after,
       };
-      const parts: OrmpMessageAccepted[] = await super.list({
+      const page: PonderPage<OrmpMessageAccepted> = await super.page({
         query,
         variables: _variables,
         schema: "messageAcceptedV2s",
       });
-      const length = parts.length;
-      if (length == 0) {
-        return rets;
-      }
-      const hashes = parts.map((item) => item.msgHash);
+      const items = page.items;
+      const hashes = items.map((item) => item.msgHash);
       rets.push(...hashes);
-      skip += length;
+
+      if(!page.hasNext) {
+        return hashes;
+      }
+      
+      after = page.end;
     }
   }
 
@@ -215,7 +223,7 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryNextMessageAccepted
   ): Promise<OrmpMessageAccepted | undefined> {
     const query = `
-    query QueryNextMessageAccepted($messageIndex: BigInt!, $toChainId: Int!) {
+    query QueryNextMessageAccepted($messageIndex: BigInt!, $toChainId: BigInt!) {
       messageAcceptedV2s(
         limit: 1
         orderBy: "messageIndex"
@@ -265,9 +273,9 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryRelayerMessageAccepted
   ): Promise<string[]> {
     const query = `
-    query QueryNextMessageAccepted($skip: Int!, $messageIndex: BigInt!, $toChainId: Int!) {
+    query QueryNextMessageAccepted($after: String, $messageIndex: BigInt!, $toChainId: BigInt!) {
       messageAcceptedV2s(
-        skip: $skip
+        after: $after
         orderBy: "messageIndex"
         orderDirection: "asc"
         where: {
@@ -279,29 +287,37 @@ export class PonderIndexOrmp extends GraphCommon {
         items {
           msgHash
         }
+        pageInfo {
+          startCursor
+          endCursor
+          hasPreviousPage
+          hasNextPage
+        }
       }
     }
     `;
 
+    let after = null;
     const rets: string[] = [];
-    let skip = 0;
     while (true) {
-      const _variable = {
+      const _variables = {
         ...variables,
-        skip,
+        after,
       };
-      const parts: OrmpMessageAccepted[] = await super.list({
+      const page: PonderPage<OrmpMessageAccepted> = await super.page({
         query,
-        variables: _variable,
+        variables: _variables,
         schema: "messageAcceptedV2s",
       });
-      const length = parts.length;
-      if (length == 0) {
-        return rets;
-      }
-      const hashes = parts.map((item) => item.msgHash);
+      const items = page.items;
+      const hashes = items.map((item) => item.msgHash);
       rets.push(...hashes);
-      skip += length;
+
+      if(!page.hasNext) {
+        return hashes;
+      }
+      
+      after = page.end;
     }
   }
 
@@ -347,9 +363,9 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryBasicMessageAccepted
   ): Promise<string[]> {
     const query = `
-    query QueryAllOracleAssignedMessageAccepted($skip: Int!, $toChainId: BigInt!) {
+    query QueryAllOracleAssignedMessageAccepted($after: String, $toChainId: BigInt!) {
       messageAcceptedV2s(
-        skip: $skip
+        after: $after
         limit: 10
         orderBy: "messageIndex"
         orderDirection: "asc"
@@ -361,29 +377,37 @@ export class PonderIndexOrmp extends GraphCommon {
         items {
           msgHash
         }
+        pageInfo {
+          startCursor
+          endCursor
+          hasPreviousPage
+          hasNextPage
+        }
       }
     }
     `;
 
-    let skip = 0;
+    let after = null;
     const rets: string[] = [];
     while (true) {
       const _variables = {
         ...variables,
-        skip,
+        after,
       };
-      const parts: OrmpMessageAccepted[] = await super.list({
+      const page: PonderPage<OrmpMessageAccepted> = await super.page({
         query,
         variables: _variables,
         schema: "messageAcceptedV2s",
       });
-      const length = parts.length;
-      if (length == 0) {
-        return rets;
-      }
-      const hashes = parts.map((item) => item.msgHash);
+      const items = page.items;
+      const hashes = items.map((item) => item.msgHash);
       rets.push(...hashes);
-      skip += length;
+
+      if(!page.hasNext) {
+        return hashes;
+      }
+      
+      after = page.end;
     }
   }
 
@@ -391,7 +415,7 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryBasicMessageAccepted
   ): Promise<OrmpMessageAccepted | undefined> {
     const query = `
-    query QueryLastMessageAccepted($toChainId: Int!) {
+    query QueryLastMessageAccepted($toChainId: BigInt!) {
       messageAcceptedV2s(
         limit: 1
         orderBy: "messageIndex"
@@ -440,7 +464,7 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryBasicMessageAccepted
   ): Promise<OrmpMessageAccepted | undefined> {
     const query = `
-    query QueryLastMessageAccepted($toChainId: Int!) {
+    query QueryLastMessageAccepted($toChainId: BigInt!) {
       messageAcceptedV2s(
         limit: 1
         orderBy: "messageIndex"

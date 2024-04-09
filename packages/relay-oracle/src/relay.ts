@@ -112,10 +112,11 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   }
 
   private async _lastAssignedMessageAccepted(options: OracleSignOptions): Promise<OrmpMessageAccepted | undefined> {
+    logger.debug("=> _lastAssignedMessageAccepted")
     const lastImportedMessageRoot = await this.targetIndexerOrmp.lastImportedMessageRoot({
       chainId: options.sourceChainId,
     });
-
+    logger.debug(`=> _lastAssignedMessageAccepted ${lastImportedMessageRoot}`)
     let nextAssignedMessageAccepted;
     if (!lastImportedMessageRoot) {
       const msgHashes = await this.sourceIndexerOrmp.pickOracleAssignedMessageHashes({
