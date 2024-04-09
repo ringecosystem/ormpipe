@@ -136,19 +136,6 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.messageIndex);
       return;
     }
-    // polygon is 2 other is 1
-    const gapOfEventIndex = options.sourceChainId == 137 ? 2 : 1;
-    if ((+sourceNextMessageAccepted.logIndex + gapOfEventIndex) != (+(sourceNextMessageAccepted.relayerLogIndex ?? 0))) {
-      logger.warn(
-        `unexpected log index (%s, %s)`,
-        sourceNextMessageAccepted.logIndex,
-        sourceNextMessageAccepted.relayerLogIndex ?? 0,
-        super.meta('ormpipe-relay-relayer', ['relayer']),
-      );
-      await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, sourceNextMessageAccepted.messageIndex);
-      return;
-    }
-
     const message: OrmpProtocolMessage = {
       channel: sourceNextMessageAccepted.messageChannel,
       index: +sourceNextMessageAccepted.messageIndex,

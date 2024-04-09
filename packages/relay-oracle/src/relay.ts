@@ -193,18 +193,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.messageIndex);
       return;
     }
-    // polygon is 4 other is 2
-    const gapOfEventIndex = options.sourceChainId == 137 ? 4 : 2;
-    if ((+sourceNextMessageAccepted.logIndex + gapOfEventIndex) != (+(sourceNextMessageAccepted.oracleLogIndex ?? 0))) {
-      logger.warn(
-        `unexpected log index (%s, %s)`,
-        sourceNextMessageAccepted.logIndex,
-        sourceNextMessageAccepted.oracleLogIndex ?? 0,
-        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-      );
-      await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.messageIndex);
-      return;
-    }
     const cachedSignedMessageIndex: number | undefined = await super.storage.get(OracleRelay.CK_ORACLE_SIGNED);
     logger.debug(
       'compare cache signed message index %s/%s',
