@@ -21,14 +21,16 @@ export class PonderIndexSigncribe extends GraphCommon {
           signer_in: $signers
         }
       ) {
-        id
-        chainId
-        msgIndex
-        signer
-        signature
-        data
-        msgIndex
-        blockNumber
+        items {
+          id
+          chainId
+          msgIndex
+          signer
+          signature
+          data
+          msgIndex
+          blockNumber
+        }
       }
     }
     `;
