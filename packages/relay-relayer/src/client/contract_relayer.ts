@@ -1,7 +1,7 @@
 import {ethers} from "ethers";
 import {ContractConfig, logger, TransactionResponse} from "@darwinia/ormpipe-common";
 
-const abi = require("../abis/OrmpRelayer.json");
+const abi = require("../abis/v2/Relayer.json");
 
 export interface OrmpProtocolMessage {
   channel: string

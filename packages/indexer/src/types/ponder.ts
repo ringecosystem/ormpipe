@@ -103,6 +103,7 @@ export interface _QueryWithBlockNumber {
   export interface SignatureSubmittion extends BaseGraphEntity {
     chainId: string
     msgIndex: string
+    channel: string
     signer: string
     signature: string
     data: string

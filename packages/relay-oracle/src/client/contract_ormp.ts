@@ -1,7 +1,7 @@
 import {ContractConfig} from "@darwinia/ormpipe-common";
 import {ethers, EventLog, Log} from "ethers";
 
-const abi = require("../abis/Ormp.json");
+const abi = require("../abis/v2/Ormp.json");
 
 export interface OrmpRootOptions {
   blockNumber: number

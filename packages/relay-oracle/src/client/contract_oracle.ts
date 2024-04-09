@@ -2,7 +2,7 @@ import {ContractConfig} from "@darwinia/ormpipe-common";
 import {ethers} from "ethers";
 
 
-const abi = require("../abis/OrmpOracle.json");
+const abi = require("../abis/v2/Oracle.json");
 
 export interface BuildImportMessageRootOptions {
   sourceChainId: number

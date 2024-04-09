@@ -12,9 +12,9 @@ export class PonderIndexSigncribe extends GraphCommon {
     const query = `
     query QuerySignPub($msgIndex: BigInt!, $chainId: BigInt!, $signers: [String!]!) {
       signatureSubmittions(
-        orderBy: blockNumber
-        orderDirection: desc
-        first: 10
+        orderBy: "blockNumber"
+        orderDirection: "desc"
+        limit: 10
         where: {
           chainId: $chainId
           msgIndex: $msgIndex
@@ -24,6 +24,7 @@ export class PonderIndexSigncribe extends GraphCommon {
         items {
           id
           chainId
+          channel
           msgIndex
           signer
           signature

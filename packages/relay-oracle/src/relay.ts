@@ -294,6 +294,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     const signcribeSubmitOptions = {
       chainId: +sourceNextMessageAccepted.messageFromChainId,
+      channel: super.lifecycle.targetChain.contract.ormp,
       msgIndex: +sourceNextMessageAccepted.messageIndex,
       signature: signature,
       data: encodedData,

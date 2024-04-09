@@ -2,10 +2,10 @@ import {IntegrationTestConfig} from "./types/config";
 import {ethers} from "ethers";
 import axios, {AxiosResponse} from "axios";
 
-const abiOrmp = require('./abis/Ormp.json');
+const abiOrmp = require('./abis/v2/Ormp.json');
 const abiMsgline = require('./abis/Msgline.json');
-const abiOracle = require('./abis/OrmpOracle.json');
-const abiRelayer = require('./abis/OrmpRelayer.json');
+const abiOracle = require('./abis/v2/Oracle.json');
+const abiRelayer = require('./abis/v2/Relayer.json');
 
 interface Lifecycle {
   config: IntegrationTestConfig,
