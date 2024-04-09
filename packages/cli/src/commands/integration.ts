@@ -41,10 +41,10 @@ export default class Integration extends Command {
       env: 'ORMPIPE_ADDRESS_RELAYER',
       default: '0x0000000000808fE9bDCc1d180EfbF5C53552a6b1',
     }),
-    'address-msgline': Flags.string({
+    'address-msgport': Flags.string({
       required: true,
       description: 'message line contract address',
-      env: 'ORMPIPE_ADDRESS_MSGLINE',
+      env: 'ORMPIPE_ADDRESS_MSGPORT',
       default: '0x0000000005d961F950adA391C1511c92bbc64D9F',
     }),
     'target-chain-id': Flags.integer({
@@ -62,7 +62,7 @@ export default class Integration extends Command {
         'withdraw',
         'send-message',
         'send-message-ormp',
-        'send-message-msgline',
+        'send-message-msgport',
       ],
     }),
   };
@@ -83,8 +83,8 @@ export default class Integration extends Command {
       case 'send-message-ormp':
         await itp.sendOrmpMessage();
         break;
-      case 'send-message-msgline':
-        await itp.sendMsglineMessage();
+      case 'send-message-msgport':
+        await itp.sendMsgportMessage();
         break;
       default:
         logger.warn('not support this test name');

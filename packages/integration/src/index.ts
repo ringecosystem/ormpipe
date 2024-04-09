@@ -3,7 +3,7 @@ import {ethers} from "ethers";
 import axios, {AxiosResponse} from "axios";
 
 const abiOrmp = require('./abis/v2/Ormp.json');
-const abiMsgline = require('./abis/Msgline.json');
+const abiMsgport = require('./abis/v2/Msgport.json');
 const abiOracle = require('./abis/v2/Oracle.json');
 const abiRelayer = require('./abis/v2/Relayer.json');
 
@@ -12,7 +12,7 @@ interface Lifecycle {
   evm: ethers.JsonRpcProvider,
   wallet: ethers.Wallet,
   contractOrmp: ethers.Contract,
-  contractMsgline: ethers.Contract,
+  contractMsgport: ethers.Contract,
   contractOracle: ethers.Contract,
   contractRelayer: ethers.Contract,
 }
@@ -27,7 +27,7 @@ export class OrmpIntegrationTestProgram {
     const evm = new ethers.JsonRpcProvider(config.endpoint);
     const wallet = new ethers.Wallet(config.signer, evm);
     const contractOrmp = new ethers.Contract(config.addressOrmp, abiOrmp, wallet);
-    const contractMsgline = new ethers.Contract(config.addressMsgline, abiMsgline, wallet);
+    const contractMsgport = new ethers.Contract(config.addressMsgport, abiMsgport, wallet);
     const contractOracle = new ethers.Contract(config.addressOracle, abiOracle, wallet);
     const contractRelayer = new ethers.Contract(config.addressRelayer, abiRelayer, wallet);
     this.lifecycle = {
@@ -35,7 +35,7 @@ export class OrmpIntegrationTestProgram {
       evm,
       wallet,
       contractOrmp,
-      contractMsgline,
+      contractMsgport,
       contractOracle,
       contractRelayer,
     };
@@ -115,9 +115,9 @@ export class OrmpIntegrationTestProgram {
   }
 
 
-  public async sendMsglineMessage() {
+  public async sendMsgportMessage() {
     await this.withdraw();
-    const {wallet, evm, contractMsgline} = this.lifecycle;
+    const {wallet, evm, contractMsgport} = this.lifecycle;
 
     // const enableRandomMessage = (+Math.random().toString().replace('0.', '')) % 2;
     const enableRandomMessage = 1;
@@ -174,7 +174,7 @@ export class OrmpIntegrationTestProgram {
     }
     const {fee, params} = msgportFee;
 
-    const tx = await contractMsgline['send'](
+    const tx = await contractMsgport['send'](
       this.config.targetChainId,
       toAddress,
       message,
@@ -182,7 +182,7 @@ export class OrmpIntegrationTestProgram {
       {value: fee},
     );
     const resp = await tx.wait();
-    console.log(`send-msgline: ${resp.hash}`);
+    console.log(`send-msgport: ${resp.hash}`);
   }
 
 }
