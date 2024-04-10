@@ -59,8 +59,8 @@
       "multisig": "0x1d3D009788BaDc05B8B81C7af51Dd7F7084435b0"
     }
   },
-  "takiokatla": {
-    "name": "takiokatla",
+  "taikokatla": {
+    "name": "taikokatla",
     "endpoint": "https://rpc.katla.taiko.xyz",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",

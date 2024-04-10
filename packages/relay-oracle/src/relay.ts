@@ -112,14 +112,13 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   }
 
   private async _lastAssignedMessageAccepted(options: OracleSignOptions): Promise<OrmpMessageAccepted | undefined> {
-    logger.debug("=> _lastAssignedMessageAccepted")
     const lastImportedMessageRoot = await this.targetIndexerOrmp.lastImportedMessageRoot({
       chainId: options.sourceChainId,
     });
-    logger.debug(`=> _lastAssignedMessageAccepted ${lastImportedMessageRoot}`)
     let nextAssignedMessageAccepted;
     if (!lastImportedMessageRoot) {
       const msgHashes = await this.sourceIndexerOrmp.pickOracleAssignedMessageHashes({
+        fromChainId: options.sourceChainId,
         toChainId: options.targetChainId,
       });
 
@@ -139,6 +138,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       } else {
         nextAssignedMessageAccepted = await this.sourceIndexerOrmp.nextOracleMessageAccepted({
           messageIndex: -1,
+          fromChainId: options.sourceChainId,
           toChainId: options.targetChainId,
         });
       }
@@ -158,6 +158,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     }
     nextAssignedMessageAccepted = await this.sourceIndexerOrmp.nextOracleMessageAccepted({
       messageIndex: +currentMessageAccepted.messageIndex,
+      fromChainId: options.sourceChainId,
       toChainId: options.targetChainId,
     });
 
@@ -166,7 +167,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
 
   private async sign(options: OracleSignOptions) {
-    logger.debug('start oracle sign', super.meta('ormpipe-relay-oracle', ['oracle:sign']));
+    logger.debug(`${options.sourceChainId} -> ${options.targetChainId} start oracle sign`, super.meta('ormpipe-relay-oracle', ['oracle:sign']));
     // delivery start block
     const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted(options);
     if (!sourceNextMessageAccepted) {
@@ -183,8 +184,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     ) {
       logger.warn(
         `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
-        this.sourceChainId.toString(),
-        this.targetChainId.toString(),
+        options.sourceChainId.toString(),
+        options.targetChainId.toString(),
         sourceNextMessageAccepted.msgHash,
         sourceNextMessageAccepted.messageIndex,
         sourceNextMessageAccepted.messageFromChainId,

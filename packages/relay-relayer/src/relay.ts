@@ -249,6 +249,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
     const pickedRelayerMessageAcceptedHashes = await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
       messageIndex: +lastImportedMessageAccepted.messageIndex,
+      fromChainId: options.sourceChainId,
       toChainId: options.targetChainId,
     });
     const pickedUnRelayedMessageHashes = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
@@ -267,6 +268,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     }
 
     const sourceLastMessageAssignedAccepted = await this.sourceIndexerOrmp.lastRelayerAssigned({
+      fromChainId: options.sourceChainId,
       toChainId: options.targetChainId,
     });
 

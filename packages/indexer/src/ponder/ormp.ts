@@ -223,7 +223,7 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryNextMessageAccepted
   ): Promise<OrmpMessageAccepted | undefined> {
     const query = `
-    query QueryNextMessageAccepted($messageIndex: BigInt!, $toChainId: BigInt!) {
+    query QueryNextMessageAccepted($messageIndex: BigInt!, $fromChainId: BigInt!, $toChainId: BigInt!) {
       messageAcceptedV2s(
         limit: 1
         orderBy: "messageIndex"
@@ -231,6 +231,7 @@ export class PonderIndexOrmp extends GraphCommon {
         where: {
           oracleAssigned: true
           messageIndex_gt: $messageIndex
+          messageFromChainId: $fromChainId
           messageToChainId: $toChainId
         }
       ) {
@@ -363,7 +364,7 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryBasicMessageAccepted
   ): Promise<string[]> {
     const query = `
-    query QueryAllOracleAssignedMessageAccepted($after: String, $toChainId: BigInt!) {
+    query QueryAllOracleAssignedMessageAccepted($after: String, $fromChainId: BigInt!, $toChainId: BigInt!) {
       messageAcceptedV2s(
         after: $after
         limit: 10
@@ -371,6 +372,7 @@ export class PonderIndexOrmp extends GraphCommon {
         orderDirection: "asc"
         where: {
           oracleAssigned: true
+          messageFromChainId: $fromChainId
           messageToChainId: $toChainId
         }
       ) {

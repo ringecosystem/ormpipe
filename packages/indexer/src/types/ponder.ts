@@ -18,6 +18,7 @@ export interface _QueryWithBlockNumber {
   }
   
   export interface QueryBasicMessageAccepted {
+    fromChainId: number
     toChainId: number
   }
   
