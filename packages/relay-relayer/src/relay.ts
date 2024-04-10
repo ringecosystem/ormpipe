@@ -82,17 +82,18 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     logger.debug('start relayer relay', super.meta('ormpipe-relay-relayer', ['relayer']));
 
     logger.debug(
-      `query last message dispatched from ${super.targetName}`,
+      `query last message dispatched from ${super.sourceName}`,
       super.meta('ormpipe-relay', ['relayer:relay'])
     );
 
     const lastImportedMessageRoot = await super.lifecycle.targetIndexerOrmp.lastImportedMessageRoot({
-      chainId: options.sourceChainId
+      fromChainId: options.sourceChainId,
+      toChainId: options.targetChainId,
     });
     if (!lastImportedMessageRoot) {
       logger.info(
         'not have any imported message from %s',
-        super.targetName,
+        super.sourceName,
         super.meta('ormpipe-relay-relayer', ['relayer']),
       );
       return;
@@ -149,9 +150,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
     const lastImportedMessageRoot = options.lastImportedMessageRoot;
     const lastAggregatedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+      chainId: options.sourceChainId,
       root: lastImportedMessageRoot.hash,
     });
     const rawMsgHashes = await this.sourceIndexerOrmp.queryRelayerMessageHashes({
+      chainId: +options.sourceChainId,
       messageIndex: +lastAggregatedMessageAccepted!.messageIndex,
     });
     const msgHashes = rawMsgHashes.map(item => Buffer.from(item.replace('0x', ''), 'hex'));
@@ -234,6 +237,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
   private async _lastAssignedMessageAccepted(options: RelayerRelayFullOptions): Promise<OrmpMessageAccepted | undefined> {
     const lastImportedMessageRoot = options.lastImportedMessageRoot;
     const lastImportedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+      chainId: options.sourceChainId,
       root: lastImportedMessageRoot.hash,
     });
 
@@ -253,9 +257,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       toChainId: options.targetChainId,
     });
     const pickedUnRelayedMessageHashes = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
+      options.targetChainId,
       pickedRelayerMessageAcceptedHashes
     );
     const unRelayMessageAcceptedList = await this.sourceIndexerOrmp.queryMessageAcceptedListByHashes({
+      chainId: options.sourceChainId,
       msgHashes: pickedUnRelayedMessageHashes,
     });
     if (!unRelayMessageAcceptedList.length) {

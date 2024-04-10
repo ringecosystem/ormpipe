@@ -28,6 +28,7 @@ export class PonderIndexOrmp extends GraphCommon {
       ${variables.msgHash ? "$msgHash: String!" : ""}
       ${variables.root ? "$root: String!" : ""}
       ${variables.messageIndex != undefined ? "$messageIndex: BigInt!" : ""}
+      $chainId: BigInt!
     ) {
       messageAcceptedV2s(
         limit: 1
@@ -41,6 +42,7 @@ export class PonderIndexOrmp extends GraphCommon {
               ? "messageIndex: $messageIndex"
               : ""
           }
+          messageFromChainId: $chainId
         }
       ) {
         items {
@@ -86,12 +88,13 @@ export class PonderIndexOrmp extends GraphCommon {
       100
     );
     const query = `
-    query QueryMessageAcceptedList($msgHashes: [String!]!) {
+    query QueryMessageAcceptedList($msgHashes: [String!]!, $chainId: BigInt!) {
       messageAcceptedV2s(
         orderBy: "messageIndex"
         orderDirection: "asc"
         where: {
           msgHash_in: $msgHashes
+          messageFromChainId: $chainId
         }
       ) {
         items {
@@ -124,7 +127,7 @@ export class PonderIndexOrmp extends GraphCommon {
     `;
     const rets: OrmpMessageAccepted[] = [];
     for (const parts of msgHashesParts) {
-      const _variables = { msgHashes: parts };
+      const _variables = { chainId: variables.chainId, msgHashes: parts };
       const pickedAssignedMessages: OrmpMessageAccepted[] = await super.list({
         query,
         variables: _variables,
@@ -139,13 +142,14 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryLastImportedMessageRoot
   ): Promise<OracleImportedMessageRoot | undefined> {
     const query = `
-    query QueryLastImportedMessageRoot($chainId: BigInt!) {
+    query QueryLastImportedMessageRoot($fromChainId: BigInt!, $toChainId: BigInt!) {
       hashImportedV2s(
         limit: 1
         orderBy: "blockNumber"
         orderDirection: "desc"
         where: {
-          srcChainId: $chainId
+          srcChainId: $fromChainId
+          targetChainId: $toChainId
         }
       ) {
         items {
@@ -173,13 +177,14 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryMessageHashes
   ): Promise<string[]> {
     const query = `
-    query QueryMessageAcceptedHashes($after: String, $messageIndex: BigInt!) {
+    query QueryMessageAcceptedHashes($after: String, $messageIndex: BigInt!, $chainId: BigInt!) {
       messageAcceptedV2s(
         after: $after
         orderBy: "messageIndex"
         orderDirection: "asc"
         where: {
           messageIndex_lte: $messageIndex
+          messageFromChainId: $chainId
         }
       ) {
         items {
@@ -274,7 +279,7 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryRelayerMessageAccepted
   ): Promise<string[]> {
     const query = `
-    query QueryNextMessageAccepted($after: String, $messageIndex: BigInt!, $toChainId: BigInt!) {
+    query QueryNextMessageAccepted($after: String, $messageIndex: BigInt!, $fromChainId: BigInt!, $toChainId: BigInt!) {
       messageAcceptedV2s(
         after: $after
         orderBy: "messageIndex"
@@ -282,6 +287,7 @@ export class PonderIndexOrmp extends GraphCommon {
         where: {
           relayerAssigned: true
           messageIndex_lte: $messageIndex
+          messageFromChainId: $fromChainId
           messageToChainId: $toChainId
         }
       ) {
@@ -323,6 +329,7 @@ export class PonderIndexOrmp extends GraphCommon {
   }
 
   public async pickUnRelayedMessageHashes(
+    chainId: number,
     msgHashes: string[]
   ): Promise<string[]> {
     if (!msgHashes.length) {
@@ -330,12 +337,13 @@ export class PonderIndexOrmp extends GraphCommon {
     }
     const msgHashesParts: string[][] = CollectionKit.split(msgHashes, 100);
     const query = `
-    query QueryLastMessageDispatched($msgHashes: [String!]!) {
+    query QueryLastMessageDispatched($msgHashes: [String!]!, $chainId: BigInt!) {
       messageDispatchedV2s(
         orderBy: "blockNumber"
         orderDirection: "asc"
         where: {
           msgHash_in: $msgHashes
+          chainId: $chainId
         }
       ) {
         items {
@@ -346,7 +354,7 @@ export class PonderIndexOrmp extends GraphCommon {
     `;
     const unRelayMessageHashes: string[] = [];
     for (const parts of msgHashesParts) {
-      const variables = { msgHashes: parts };
+      const variables = { chainId: chainId, msgHashes: parts };
       const unRelayMessages: OrmpMessageDispatched[] = await super.list({
         query,
         variables,
@@ -466,13 +474,14 @@ export class PonderIndexOrmp extends GraphCommon {
     variables: QueryBasicMessageAccepted
   ): Promise<OrmpMessageAccepted | undefined> {
     const query = `
-    query QueryLastMessageAccepted($toChainId: BigInt!) {
+    query QueryLastMessageAccepted($fromChainId: BigInt!, $toChainId: BigInt!) {
       messageAcceptedV2s(
         limit: 1
         orderBy: "messageIndex"
         orderDirection: "desc"
         where: {
           relayerAssigned: true
+          messageFromChainId: $fromChainId
           messageToChainId: $toChainId
         }
       ) {

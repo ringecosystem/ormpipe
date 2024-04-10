@@ -10,8 +10,13 @@ export interface _QueryWithBlockNumber {
   export interface QueryWithChainId {
     chainId: number
   }
+
+  export interface QueryWithFromTo {
+    fromChainId: number
+    toChainId: number
+  }
   
-  export type QueryLastImportedMessageRoot = QueryWithChainId;
+  export type QueryLastImportedMessageRoot = QueryWithFromTo
   
   export interface QueryNextRelayerAssigned {
     msgHash: string
@@ -30,15 +35,15 @@ export interface _QueryWithBlockNumber {
     messageIndex: number
   }
   
-  export interface QueryMessageAcceptedListByHashes {
+  export interface QueryMessageAcceptedListByHashes extends QueryWithChainId {
     msgHashes: string[]
   }
   
-  export interface QueryMessageHashes {
+  export interface QueryMessageHashes extends QueryWithChainId {
     messageIndex: number
   }
   
-  export interface QueryOrmpProtocolMessageAccepted {
+  export interface QueryOrmpProtocolMessageAccepted extends QueryWithChainId {
     msgHash?: string
     root?: string
     messageIndex?: number

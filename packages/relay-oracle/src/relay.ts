@@ -113,7 +113,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
   private async _lastAssignedMessageAccepted(options: OracleSignOptions): Promise<OrmpMessageAccepted | undefined> {
     const lastImportedMessageRoot = await this.targetIndexerOrmp.lastImportedMessageRoot({
-      chainId: options.sourceChainId,
+      fromChainId: options.sourceChainId,
+      toChainId: options.targetChainId,
     });
     let nextAssignedMessageAccepted;
     if (!lastImportedMessageRoot) {
@@ -123,7 +124,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       });
 
       if (msgHashes.length) {
-        const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(msgHashes);
+        const unRelayedMessagesQueriedFromTarget = await this.targetIndexerOrmp.pickUnRelayedMessageHashes(options.targetChainId, msgHashes);
         if (!unRelayedMessagesQueriedFromTarget.length) {
           logger.debug(
             'not have any unrelayed messages from %s',
@@ -133,6 +134,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
           return undefined;
         }
         nextAssignedMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+          chainId: options.sourceChainId,
           msgHash: unRelayedMessagesQueriedFromTarget[0],
         });
       } else {
@@ -146,6 +148,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     }
 
     const currentMessageAccepted = await this.sourceIndexerOrmp.inspectMessageAccepted({
+      chainId: options.sourceChainId,
       root: lastImportedMessageRoot.hash,
     });
     if (!currentMessageAccepted) {
@@ -178,23 +181,23 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       return;
     }
     // check chain pair
-    if (
-      options.sourceChainId.toString() != sourceNextMessageAccepted.messageFromChainId ||
-      options.targetChainId.toString() != sourceNextMessageAccepted.messageToChainId
-    ) {
-      logger.warn(
-        `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
-        options.sourceChainId.toString(),
-        options.targetChainId.toString(),
-        sourceNextMessageAccepted.msgHash,
-        sourceNextMessageAccepted.messageIndex,
-        sourceNextMessageAccepted.messageFromChainId,
-        sourceNextMessageAccepted.messageToChainId,
-        super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-      );
-      await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.messageIndex);
-      return;
-    }
+    // if (
+    //   options.sourceChainId.toString() != sourceNextMessageAccepted.messageFromChainId ||
+    //   options.targetChainId.toString() != sourceNextMessageAccepted.messageToChainId
+    // ) {
+    //   logger.warn(
+    //     `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
+    //     options.sourceChainId.toString(),
+    //     options.targetChainId.toString(),
+    //     sourceNextMessageAccepted.msgHash,
+    //     sourceNextMessageAccepted.messageIndex,
+    //     sourceNextMessageAccepted.messageFromChainId,
+    //     sourceNextMessageAccepted.messageToChainId,
+    //     super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+    //   );
+    //   await super.storage.put(OracleRelay.CK_ORACLE_SIGNED, sourceNextMessageAccepted.messageIndex);
+    //   return;
+    // }
     const cachedSignedMessageIndex: number | undefined = await super.storage.get(OracleRelay.CK_ORACLE_SIGNED);
     logger.debug(
       'compare cache signed message index %s/%s',
