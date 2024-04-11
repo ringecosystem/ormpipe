@@ -290,7 +290,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       importRootCallData: importRootCallData,
     });
     const signature = await targetSigner.signMessage(ethers.getBytes(signedMessageHash));
-
+    
     const signcribeData = {
       importRootCallData: importRootCallData,
       expiration: expiration,
@@ -349,23 +349,31 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       super.meta('ormpipe-relay-oracle', ['oracle:sign']),
     );
 
-    const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
-    if (!resp) {
-      logger.error(
-        'failed to submit signed to signcribe contract',
+    const signatureExist = await this.indexerSigncribe.existSignature(signature);
+    if(!signatureExist||signatureExist.length==0) {
+      const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
+      if (!resp) {
+        logger.error(
+          'failed to submit signed to signcribe contract',
+          super.meta('ormpipe-relay-oracle', ['oracle:sign']),
+        );
+        return;
+      }
+  
+      logger.info(
+        'message %s(%s) is signed and submit to signcribe: %s',
+        sourceNextMessageAccepted.messageIndex,
+        super.sourceName,
+        resp?.hash,
         super.meta('ormpipe-relay-oracle', ['oracle:sign']),
       );
-      return;
+    } else {
+      logger.info(
+        'message %s(%s) has been signed and will not be submitted again: %s',
+        sourceNextMessageAccepted.messageIndex,
+        super.sourceName
+      );
     }
-
-    logger.info(
-      'message %s(%s) is signed and submit to signcribe: %s',
-      sourceNextMessageAccepted.messageIndex,
-      super.sourceName,
-      resp?.hash,
-      super.meta('ormpipe-relay-oracle', ['oracle:sign']),
-    );
-
   }
 
 

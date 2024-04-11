@@ -14,7 +14,6 @@ export class PonderIndexSigncribe extends GraphCommon {
       signatureSubmittions(
         orderBy: "blockNumber"
         orderDirection: "desc"
-        limit: 10
         where: {
           srcChainId: $chainId
           msgIndex: $msgIndex
@@ -35,6 +34,42 @@ export class PonderIndexSigncribe extends GraphCommon {
       }
     }
     `;
+    return await super.list({
+      query,
+      variables,
+      schema: 'signatureSubmittions',
+    });
+  }
+
+  public async existSignature(signature: string): Promise<SignatureSubmittion[]> {
+    // console.log('-----------------------------')
+    // console.log(JSON.stringify(variables, null, 2));
+    // console.log('-----------------------------')
+    const query = `
+    query QuerySignPub($signature: String!) {
+      signatureSubmittions(
+        limit: 1
+        where: {
+          signature: $signature
+        }
+      ) {
+        items {
+          id
+          srcChainId
+          channel
+          msgIndex
+          signer
+          signature
+          data
+          msgIndex
+          blockNumber
+        }
+      }
+    }
+    `;
+    const variables = {
+      signature: signature
+    }
     return await super.list({
       query,
       variables,
