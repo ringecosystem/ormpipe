@@ -343,7 +343,7 @@ export class PonderIndexOrmp extends GraphCommon {
         orderDirection: "asc"
         where: {
           msgHash_in: $msgHashes
-          chainId: $chainId
+          targetChainId: $chainId
         }
       ) {
         items {

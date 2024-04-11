@@ -16,14 +16,14 @@ export class PonderIndexSigncribe extends GraphCommon {
         orderDirection: "desc"
         limit: 10
         where: {
-          chainId: $chainId
+          srcChainId: $chainId
           msgIndex: $msgIndex
           signer_in: $signers
         }
       ) {
         items {
           id
-          chainId
+          srcChainId
           channel
           msgIndex
           signer
