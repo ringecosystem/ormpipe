@@ -1,11 +1,10 @@
-import {GraphCommon} from "./_common";
-import {QueryTopSigncribe, SignatureSubmittion} from "../types";
-
+import { GraphCommon } from "./_common";
+import { QueryTopSigncribe, SignatureSubmittion } from "../types";
 
 export class PonderIndexSigncribe extends GraphCommon {
-
-
-  public async topSignatures(variables: QueryTopSigncribe): Promise<SignatureSubmittion[]> {
+  public async topSignatures(
+    variables: QueryTopSigncribe
+  ): Promise<SignatureSubmittion[]> {
     // console.log('-----------------------------')
     // console.log(JSON.stringify(variables, null, 2));
     // console.log('-----------------------------')
@@ -37,11 +36,13 @@ export class PonderIndexSigncribe extends GraphCommon {
     return await super.list({
       query,
       variables,
-      schema: 'signatureSubmittions',
+      schema: "signatureSubmittions",
     });
   }
 
-  public async existSignature(signature: string): Promise<SignatureSubmittion[]> {
+  public async existSignature(
+    signature: string
+  ): Promise<SignatureSubmittion[]> {
     // console.log('-----------------------------')
     // console.log(JSON.stringify(variables, null, 2));
     // console.log('-----------------------------')
@@ -68,13 +69,12 @@ export class PonderIndexSigncribe extends GraphCommon {
     }
     `;
     const variables = {
-      signature: signature
-    }
+      signature: signature,
+    };
     return await super.list({
       query,
       variables,
-      schema: 'signatureSubmittions',
+      schema: "signatureSubmittions",
     });
   }
-
 }

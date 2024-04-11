@@ -216,10 +216,10 @@ export class PonderIndexOrmp extends GraphCommon {
       const hashes = items.map((item) => item.msgHash);
       rets.push(...hashes);
 
-      if(!page.hasNext) {
+      if (!page.hasNext) {
         return hashes;
       }
-      
+
       after = page.end;
     }
   }
@@ -320,10 +320,10 @@ export class PonderIndexOrmp extends GraphCommon {
       const hashes = items.map((item) => item.msgHash);
       rets.push(...hashes);
 
-      if(!page.hasNext) {
+      if (!page.hasNext) {
         return hashes;
       }
-      
+
       after = page.end;
     }
   }
@@ -413,10 +413,10 @@ export class PonderIndexOrmp extends GraphCommon {
       const hashes = items.map((item) => item.msgHash);
       rets.push(...hashes);
 
-      if(!page.hasNext) {
+      if (!page.hasNext) {
         return hashes;
       }
-      
+
       after = page.end;
     }
   }

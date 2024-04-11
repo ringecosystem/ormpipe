@@ -45,7 +45,7 @@ export class GraphCommon {
         "!!! Ponder Error: ",
         resp.errors[0].message,
         options,
-        JSON.stringify(resp.errors[0].locations),
+        JSON.stringify(resp.errors[0].locations)
       );
     }
 
