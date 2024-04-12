@@ -41,17 +41,21 @@ export class PonderIndexSigncribe extends GraphCommon {
   }
 
   public async existSignature(
+    variables: QueryTopSigncribe,
     signature: string
-  ): Promise<SignatureSubmittion[]> {
+  ): Promise<boolean> {
     // console.log('-----------------------------')
     // console.log(JSON.stringify(variables, null, 2));
     // console.log('-----------------------------')
     const query = `
-    query QuerySignPub($signature: String!) {
+    query QuerySignPub($msgIndex: BigInt!, $chainId: BigInt!, $signers: [String!]!) {
       signatureSubmittions(
-        limit: 1
+        orderBy: "blockNumber"
+        orderDirection: "desc"
         where: {
-          signature: $signature
+          srcChainId: $chainId
+          msgIndex: $msgIndex
+          signer_in: $signers
         }
       ) {
         items {
@@ -68,13 +72,16 @@ export class PonderIndexSigncribe extends GraphCommon {
       }
     }
     `;
-    const variables = {
-      signature: signature,
-    };
-    return await super.list({
+    const list: SignatureSubmittion[] = await super.list({
       query,
       variables,
       schema: "signatureSubmittions",
     });
+    for (const item of list) {
+      if (item.signature == signature) {
+        return true;
+      }
+    }
+    return false;
   }
 }

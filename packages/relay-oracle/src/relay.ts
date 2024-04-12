@@ -276,10 +276,13 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       super.meta("ormpipe-relay-oracle", ["oracle:sign"])
     );
 
+    const signatureOwners = await this.targetMultisigContract.getOwners();
+
     // check sign progress
     const lastSignature = await this._lastSignature(
       +sourceNextMessageAccepted.messageFromChainId,
-      +sourceNextMessageAccepted.messageIndex
+      +sourceNextMessageAccepted.messageIndex,
+      signatureOwners
     );
 
     // check root by chain rpc
@@ -380,9 +383,14 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
     const signatureExist = await this.indexerSigncribe.existSignature(
+      {
+        chainId: +sourceNextMessageAccepted.messageFromChainId,
+        msgIndex: +sourceNextMessageAccepted.messageIndex,
+        signers: signatureOwners,
+      },
       signature
     );
-    if (!signatureExist || signatureExist.length == 0) {
+    if (!signatureExist) {
       const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
       if (!resp) {
         logger.error(
@@ -401,7 +409,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       );
     } else {
       logger.info(
-        "message %s(%s) has been signed and will not be submitted again: %s",
+        "message %s(%s) has been signed and will not be submitted again",
         sourceNextMessageAccepted.messageIndex,
         super.sourceName
       );
@@ -455,10 +463,10 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
   private async _lastSignature(
     chainId: number,
-    msgIndex: number
+    msgIndex: number,
+    owners: string[]
   ): Promise<LastSignature> {
     // const owners = await this.targetSafeContract.owners();
-    const owners = await this.targetMultisigContract.getOwners();
     const topSignatures = await this.indexerSigncribe.topSignatures({
       chainId,
       msgIndex: msgIndex,
