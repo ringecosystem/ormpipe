@@ -100,9 +100,14 @@ export default class Oracle extends Command {
     //   endpoint: 'https://sepolia-rollup.arbitrum.io/rpc',
     //   signer: config.signcribeSigner,
     // });
+    // const signcribeClient = new RelayEVMClient({
+    //   chainName: 'darwinia',
+    //   endpoint: 'https://rpc.darwinia.network',
+    //   signer: config.signcribeSigner,
+    // });
     const signcribeClient = new RelayEVMClient({
-      chainName: 'darwinia',
-      endpoint: 'https://rpc.darwinia.network',
+      chainName: 'moonbeam',
+      endpoint: 'https://moonbeam-rpc.dwellir.com',
       signer: config.signcribeSigner,
     });
     const sourceIndex = new OrmpipeIndexer({
