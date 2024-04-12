@@ -95,9 +95,14 @@ export default class Oracle extends Command {
       signer: config.targetSigner,
     });
     // todo prod
+    // const signcribeClient = new RelayEVMClient({
+    //   chainName: 'arbitrum_sepolia',
+    //   endpoint: 'https://sepolia-rollup.arbitrum.io/rpc',
+    //   signer: config.signcribeSigner,
+    // });
     const signcribeClient = new RelayEVMClient({
-      chainName: 'arbitrum_sepolia',
-      endpoint: 'https://sepolia-rollup.arbitrum.io/rpc',
+      chainName: 'darwinia',
+      endpoint: 'https://rpc.darwinia.network',
       signer: config.signcribeSigner,
     });
     const sourceIndex = new OrmpipeIndexer({
