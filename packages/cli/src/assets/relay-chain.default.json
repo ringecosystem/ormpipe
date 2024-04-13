@@ -46,7 +46,7 @@
   },
   "sepolia": {
     "name": "sepolia",
-    "endpoint": "https://ethereum-sepolia.publicnode.com",
+    "endpoint": "https://ethereum-sepolia-rpc.publicnode.com",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
       "signcribe": "https://ormponder.darwinia.network/"
@@ -91,7 +91,7 @@
   },
   "arbitrum": {
     "name": "arbitrum",
-    "endpoint": "https://arbitrum-one.publicnode.com",
+    "endpoint": "https://arbitrum-one-rpc.publicnode.com",
     "indexer": {
       "ormp": "https://api.studio.thegraph.com/proxy/51152/ormpipe-arbitrum/version/latest",
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
@@ -106,7 +106,7 @@
   },
   "ethereum": {
     "name": "ethereum",
-    "endpoint": "https://ethereum.publicnode.com",
+    "endpoint": "https://ethereum-rpc.publicnode.com",
     "indexer": {
       "ormp": "https://api.studio.thegraph.com/proxy/51152/ormpipe-ethereum/version/latest",
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"

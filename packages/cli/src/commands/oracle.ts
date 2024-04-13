@@ -107,7 +107,7 @@ export default class Oracle extends Command {
     // });
     const signcribeClient = new RelayEVMClient({
       chainName: 'moonbeam',
-      endpoint: 'https://moonbeam-rpc.dwellir.com',
+      endpoint: 'https://moonbeam-rpc.publicnode.com',
       signer: config.signcribeSigner,
     });
     const sourceIndex = new OrmpipeIndexer({
