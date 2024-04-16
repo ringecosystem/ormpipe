@@ -1,7 +1,7 @@
 {
   "crab": {
     "name": "crab",
-    "endpoint": "https://crab-rpc.darwinia.network",
+    "endpoint": "http://c2.crab-rpc.itering.io:9944/",
     "indexer": {
       "ormp": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-crab",
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
@@ -16,7 +16,7 @@
   },
   "darwinia": {
     "name": "darwinia",
-    "endpoint": "https://rpc.darwinia.network",
+    "endpoint": "http://c2.darwinia-rpc.itering.io:9944/",
     "indexer": {
       "ormp": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/ormpipe-darwinia",
       "signcribe": "https://thegraph-g2.darwinia.network/ormpipe/subgraphs/name/signcribe-darwinia"
