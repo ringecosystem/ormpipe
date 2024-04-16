@@ -12,9 +12,9 @@ jobs:
     strategy:
       matrix:
         task:
-          - endpoint: https://rpc.darwinia.network
+          - endpoint: http://c2.darwinia-rpc.itering.io:9944/
             target-chain-id: 44
-          - endpoint: https://crab-rpc.darwinia.network
+          - endpoint: http://c2.crab-rpc.itering.io:9944/
             target-chain-id: 46
           # - endpoint: https://ethereum-sepolia-rpc.publicnode.com
           #   target-chain-id: 421614
