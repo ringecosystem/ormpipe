@@ -31,7 +31,7 @@
   },
   "pangolin": {
     "name": "pangolin",
-    "endpoint": "https://pangolin-rpc.darwinia.network",
+    "endpoint": "http://g2.testnets.darwinia.network:9940",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
       "signcribe": "https://ormponder.darwinia.network/"
