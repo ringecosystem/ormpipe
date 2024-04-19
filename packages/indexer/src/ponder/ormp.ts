@@ -7,8 +7,8 @@ import {
   QueryNextMessageAccepted,
   QueryOrmpProtocolMessageAccepted,
   QueryRelayerMessageAccepted,
-  OracleImportedMessageRoot,
-  QueryLastImportedMessageRoot,
+  OracleImportedMessageHash,
+  QueryLastImportedMessageHash,
 } from "../types/ponder";
 import { GraphCommon, PonderPage } from "./_common";
 import { CollectionKit } from "../toolkit/collection";
@@ -19,14 +19,12 @@ export class PonderIndexOrmp extends GraphCommon {
   ): Promise<OrmpMessageAccepted | undefined> {
     if (
       !variables.msgHash &&
-      !variables.root &&
       variables.messageIndex == undefined
     )
-      throw new Error("missing msghash or root or messageIndex");
+      throw new Error("missing msghash or messageIndex");
     const query = `
     query QueryMessageAccepted(
       ${variables.msgHash ? "$msgHash: String!" : ""}
-      ${variables.root ? "$root: String!" : ""}
       ${variables.messageIndex != undefined ? "$messageIndex: BigInt!" : ""}
       $chainId: BigInt!
     ) {
@@ -36,7 +34,6 @@ export class PonderIndexOrmp extends GraphCommon {
         orderDirection: "asc"
         where: {
           ${variables.msgHash ? "msgHash: $msgHash" : ""}
-          ${variables.root ? "root: $root" : ""}
           ${
             variables.messageIndex != undefined
               ? "messageIndex: $messageIndex"
@@ -52,7 +49,6 @@ export class PonderIndexOrmp extends GraphCommon {
           transactionHash
 
           msgHash
-          root
           messageChannel
           messageIndex
           messageFromChainId
@@ -104,7 +100,6 @@ export class PonderIndexOrmp extends GraphCommon {
           transactionHash
 
           msgHash
-          root
           messageChannel
           messageIndex
           messageFromChainId
@@ -138,14 +133,14 @@ export class PonderIndexOrmp extends GraphCommon {
     return rets;
   }
 
-  public async lastImportedMessageRoot(
-    variables: QueryLastImportedMessageRoot
-  ): Promise<OracleImportedMessageRoot | undefined> {
+  public async lastImportedMessageHash(
+    variables: QueryLastImportedMessageHash
+  ): Promise<OracleImportedMessageHash | undefined> {
     const query = `
-    query QueryLastImportedMessageRoot($fromChainId: BigInt!, $toChainId: BigInt!) {
+    query QueryLastImportedMessageHash($fromChainId: BigInt!, $toChainId: BigInt!) {
       hashImportedV2s(
         limit: 1
-        orderBy: "blockNumber"
+        orderBy: "msgIndex"
         orderDirection: "desc"
         where: {
           srcChainId: $fromChainId
@@ -154,13 +149,11 @@ export class PonderIndexOrmp extends GraphCommon {
       ) {
         items {
           id
-          blockNumber
+          msgIndex
           blockTimestamp
           transactionHash
   
           srcChainId
-          lookupKey
-          srcBlockNumber
           hash
         }
       }
@@ -247,7 +240,6 @@ export class PonderIndexOrmp extends GraphCommon {
           transactionHash
 
           msgHash
-          root
           messageChannel
           messageIndex
           messageFromChainId
@@ -442,7 +434,6 @@ export class PonderIndexOrmp extends GraphCommon {
           transactionHash
 
           msgHash
-          root
           messageChannel
           messageIndex
           messageFromChainId
@@ -492,7 +483,6 @@ export class PonderIndexOrmp extends GraphCommon {
           transactionHash
 
           msgHash
-          root
           messageChannel
           messageIndex
           messageFromChainId

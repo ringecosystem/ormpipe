@@ -16,7 +16,6 @@ export interface OrmpProtocolMessage {
 
 export interface RelayOptions {
   message: OrmpProtocolMessage
-  proof: string
   gasLimit: bigint
   chainId: number
 }
@@ -71,7 +70,6 @@ export class RelayerContractClient {
     if (enableGasCheck) {
       const estimatedGas = await this.contract['relay'].estimateGas(
         options.message,
-        options.proof,
       );
       contractOptions.gasLimit = estimatedGas + estimatedGas / BigInt(2);
     } else {
@@ -88,7 +86,6 @@ export class RelayerContractClient {
     }
     const tx = await this.contract['relay'](
       options.message,
-      options.proof,
       contractOptions,
     );
     return await tx.wait();

@@ -16,7 +16,7 @@ export interface _QueryWithBlockNumber {
     toChainId: number
   }
   
-  export type QueryLastImportedMessageRoot = QueryWithFromTo
+  export type QueryLastImportedMessageHash = QueryWithFromTo
   
   export interface QueryNextRelayerAssigned {
     msgHash: string
@@ -45,7 +45,6 @@ export interface _QueryWithBlockNumber {
   
   export interface QueryOrmpProtocolMessageAccepted extends QueryWithChainId {
     msgHash?: string
-    root?: string
     messageIndex?: number
   }
   
@@ -82,7 +81,6 @@ export interface _QueryWithBlockNumber {
   
   export interface OrmpMessageAccepted extends BaseGraphEntity {
     msgHash: string
-    root: string
     messageChannel: string
     messageIndex: string
     messageFromChainId: string
@@ -115,7 +113,7 @@ export interface _QueryWithBlockNumber {
     data: string
   }
   
-  export interface OracleImportedMessageRoot extends BaseGraphEntity {
+  export interface OracleImportedMessageHash extends BaseGraphEntity {
     srcChainId: string
     srcBlockNumber: string
     hash: string

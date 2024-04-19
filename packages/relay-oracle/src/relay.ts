@@ -117,13 +117,13 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
   private async _lastAssignedMessageAccepted(
     options: OracleSignOptions
   ): Promise<OrmpMessageAccepted | undefined> {
-    const lastImportedMessageRoot =
-      await this.targetIndexerOrmp.lastImportedMessageRoot({
+    const lastImportedMessageHash =
+      await this.targetIndexerOrmp.lastImportedMessageHash({
         fromChainId: options.sourceChainId,
         toChainId: options.targetChainId,
       });
     let nextAssignedMessageAccepted;
-    if (!lastImportedMessageRoot) {
+    if (!lastImportedMessageHash) {
       const msgHashes =
         await this.sourceIndexerOrmp.pickOracleAssignedMessageHashes({
           fromChainId: options.sourceChainId,
@@ -163,12 +163,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const currentMessageAccepted =
       await this.sourceIndexerOrmp.inspectMessageAccepted({
         chainId: options.sourceChainId,
-        root: lastImportedMessageRoot.hash,
+        msgHash: lastImportedMessageHash.hash,
       });
     if (!currentMessageAccepted) {
       logger.warn(
-        "can not query message accepted by root: %s",
-        lastImportedMessageRoot.hash,
+        "can not query message accepted by msgHash: %s",
+        lastImportedMessageHash.hash,
         super.meta("ormpipe-relay")
       );
       return;
@@ -285,32 +285,18 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signatureOwners
     );
 
-    // check root by chain rpc
-    const queriedRootFromContract = await this.sourceOrmpContract.root({
-      blockNumber: +sourceNextMessageAccepted.blockNumber,
-      msgIndex: +sourceNextMessageAccepted.messageIndex,
-    });
-    if (!queriedRootFromContract) {
-      logger.error(
-        "can not query message root by %s(%s) from ormp contract",
-        sourceNextMessageAccepted.messageIndex,
-        super.sourceName,
-        super.meta("ormpipe-relay-oracle", ["oracle:sign"])
-      );
-      return;
-    }
-
     const targetSigner = super.targetClient.wallet(
       super.lifecycle.targetSigner
     );
     const expiration =
       +sourceNextMessageAccepted.blockTimestamp + 60 * 60 * 24 * 10;
 
-    const importRootCallData = this.targetOracleContract.buildImportMessageRoot(
+    const importRootCallData = this.targetOracleContract.buildImportMessageHash(
       {
         sourceChainId: +sourceNextMessageAccepted.messageFromChainId,
-        blockNumber: +sourceNextMessageAccepted.blockNumber,
-        messageRoot: queriedRootFromContract,
+        channel: super.lifecycle.targetChain.contract.ormp,
+        msgIndex: +sourceNextMessageAccepted.messageIndex,
+        msgHash: sourceNextMessageAccepted.msgHash,
       }
     );
     const signedMessageHash = this.targetMultisigContract.buildSign({

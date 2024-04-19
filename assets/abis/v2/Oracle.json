@@ -126,10 +126,22 @@
   {
     "inputs": [
       { "internalType": "uint256", "name": "chainId", "type": "uint256" },
-      { "internalType": "uint256", "name": "blockNumber", "type": "uint256" },
-      { "internalType": "bytes32", "name": "messageRoot", "type": "bytes32" }
+      { "internalType": "address", "name": "channel", "type": "address" },
+      { "internalType": "uint256", "name": "msgIndex", "type": "uint256" }
     ],
-    "name": "importMessageRoot",
+    "name": "hashOf",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "chainId", "type": "uint256" },
+      { "internalType": "address", "name": "channel", "type": "address" },
+      { "internalType": "uint256", "name": "msgIndex", "type": "uint256" },
+      { "internalType": "bytes32", "name": "msgHash", "type": "bytes32" }
+    ],
+    "name": "importMessageHash",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -140,16 +152,6 @@
     ],
     "name": "isApproved",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "chainId", "type": "uint256" },
-      { "internalType": "uint256", "name": "blockNumber", "type": "uint256" }
-    ],
-    "name": "merkleRoot",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -182,9 +184,26 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "fromChainId", "type": "uint256" },
-      { "internalType": "bytes32", "name": "msgHash", "type": "bytes32" },
-      { "internalType": "bytes", "name": "proof", "type": "bytes" }
+      {
+        "components": [
+          { "internalType": "address", "name": "channel", "type": "address" },
+          { "internalType": "uint256", "name": "index", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "fromChainId",
+            "type": "uint256"
+          },
+          { "internalType": "address", "name": "from", "type": "address" },
+          { "internalType": "uint256", "name": "toChainId", "type": "uint256" },
+          { "internalType": "address", "name": "to", "type": "address" },
+          { "internalType": "uint256", "name": "gasLimit", "type": "uint256" },
+          { "internalType": "bytes", "name": "encoded", "type": "bytes" }
+        ],
+        "internalType": "struct Message",
+        "name": "message",
+        "type": "tuple"
+      },
+      { "internalType": "bytes", "name": "", "type": "bytes" }
     ],
     "name": "verifyMessageProof",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],

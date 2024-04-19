@@ -1,7 +1,7 @@
 import { RelayerRelayLifecycle } from "./types/config";
 import { CommonRelay, logger, RelayStorage } from "@darwinia/ormpipe-common";
 import {
-  OracleImportedMessageRoot,
+  OracleImportedMessageHash,
   OrmpMessageAccepted,
   PonderIndexOrmp,
 } from "@darwinia/ormpipe-indexer";
@@ -9,8 +9,6 @@ import {
   OrmpProtocolMessage,
   RelayerContractClient,
 } from "./client/contract_relayer";
-import { IncrementalMerkleTree } from "./helper/imt";
-import { AbiCoder } from "ethers";
 import chalk = require("chalk");
 
 interface RelayerRelayOptions {
@@ -20,7 +18,7 @@ interface RelayerRelayOptions {
 }
 
 interface RelayerRelayFullOptions extends RelayerRelayOptions {
-  lastImportedMessageRoot: OracleImportedMessageRoot;
+  lastImportedMessageHash: OracleImportedMessageHash;
 }
 
 export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
@@ -93,12 +91,12 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       super.meta("ormpipe-relay", ["relayer:relay"])
     );
 
-    const lastImportedMessageRoot =
-      await super.lifecycle.targetIndexerOrmp.lastImportedMessageRoot({
+    const lastImportedMessageHash =
+      await super.lifecycle.targetIndexerOrmp.lastImportedMessageHash({
         fromChainId: options.sourceChainId,
         toChainId: options.targetChainId,
       });
-    if (!lastImportedMessageRoot) {
+    if (!lastImportedMessageHash) {
       logger.info(
         "not have any imported message from %s",
         super.sourceName,
@@ -108,7 +106,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     }
     const fullOptions = {
       ...options,
-      lastImportedMessageRoot,
+      lastImportedMessageHash,
       times: options.times,
     };
 
@@ -162,46 +160,6 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       encoded: sourceNextMessageAccepted.messageEncoded,
     };
 
-    const lastImportedMessageRoot = options.lastImportedMessageRoot;
-    const lastAggregatedMessageAccepted =
-      await this.sourceIndexerOrmp.inspectMessageAccepted({
-        chainId: options.sourceChainId,
-        root: lastImportedMessageRoot.hash,
-      });
-    const rawMsgHashes = await this.sourceIndexerOrmp.queryRelayerMessageHashes(
-      {
-        chainId: +options.sourceChainId,
-        messageIndex: +lastAggregatedMessageAccepted!.messageIndex,
-      }
-    );
-    const msgHashes = rawMsgHashes.map((item) =>
-      Buffer.from(item.replace("0x", ""), "hex")
-    );
-    const imt = new IncrementalMerkleTree(msgHashes);
-    const messageProof = imt.getSingleHexProof(message.index);
-
-    const abiCoder = AbiCoder.defaultAbiCoder();
-    // const params = sourceNextRelayerAssigned.params;
-    // const decodedGasLimit = abiCoder.decode(['uint'], params);
-    // const gasLimit = decodedGasLimit[0];
-
-    const encodedProof = abiCoder.encode(
-      ["tuple(uint blockNumber, uint messageIndex, bytes32[32] messageProof)"],
-      [
-        {
-          blockNumber: +lastImportedMessageRoot.srcBlockNumber,
-          messageIndex: message.index,
-          messageProof: messageProof,
-        },
-      ]
-    );
-
-    // console.log('last imported message root', lastImportedMessageRoot.hash);
-    // console.log('root', imt.root());
-    // console.log('msg hashes', rawMsgHashes.length, rawMsgHashes);
-    // console.log('message', message);
-    // console.log('proof', messageProof);
-
     const sim = new SkippedIndexManager(
       super.storage,
       RelayerRelay.CK_RELAYER_SKIPPED
@@ -216,7 +174,6 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     try {
       targetTxRelayMessage = await this.targetRelayerClient.relay({
         message,
-        proof: encodedProof,
         gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit) + baseGas,
         chainId: options.targetChainId,
       });
@@ -258,17 +215,17 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
   private async _lastAssignedMessageAccepted(
     options: RelayerRelayFullOptions
   ): Promise<OrmpMessageAccepted | undefined> {
-    const lastImportedMessageRoot = options.lastImportedMessageRoot;
+    const lastImportedMessageHash = options.lastImportedMessageHash;
     const lastImportedMessageAccepted =
       await this.sourceIndexerOrmp.inspectMessageAccepted({
         chainId: options.sourceChainId,
-        root: lastImportedMessageRoot.hash,
+        msgHash: lastImportedMessageHash.hash,
       });
 
     if (!lastImportedMessageAccepted) {
       logger.debug(
         "found new message root %s from %s but not found this message from accepted.",
-        lastImportedMessageRoot.hash,
+        lastImportedMessageHash.hash,
         super.targetName,
         super.meta("ormpipe-relay-relayer", ["relayer"])
       );

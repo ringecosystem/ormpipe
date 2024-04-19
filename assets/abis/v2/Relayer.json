@@ -190,8 +190,7 @@
         "internalType": "struct Message",
         "name": "message",
         "type": "tuple"
-      },
-      { "internalType": "bytes", "name": "proof", "type": "bytes" }
+      }
     ],
     "name": "relay",
     "outputs": [],
