@@ -165,6 +165,7 @@ export class OrmpIntegrationTestProgram {
         );
         msgportFee = ofee.data.data;
       } else if(this.config.version == 2) {
+        console.log("Request v2 msgport api")
         const ofee = await axios.get(
           'http://g2.generic.darwinia.network:3378/fee',
           {
@@ -178,10 +179,12 @@ export class OrmpIntegrationTestProgram {
             }
           }
         );
+        console.log("V2 msgport api response", ofee);
         msgportFee = ofee.data.data;
       }
       
     } catch (e: any) {
+      console.error("msgport api error: ", e);
       const response: AxiosResponse = e.response;
       throw new Error(`[msgport-api] [${response.data.code}] ${response.data.error}`);
     }
