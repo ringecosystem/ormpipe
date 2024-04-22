@@ -167,7 +167,7 @@ export class OrmpIntegrationTestProgram {
       } else if(this.config.version == 2) {
         console.log("Request v2 msgport api")
         const ofee = await axios.get(
-          'http://g2.generic.darwinia.network:3378/fee',
+          'http://g2.generic.darwinia.network:3378/ormp/fee',
           {
             params: {
               from_chain_id: network.chainId,
@@ -175,11 +175,11 @@ export class OrmpIntegrationTestProgram {
               payload: message,
               from_address: accountAddress,
               to_address: accountAddress,
-              'ormp.refund_address': accountAddress,
+              refund_address: accountAddress,
             }
           }
         );
-        console.log("V2 msgport api response", ofee);
+        console.log("V2 msgport api response", ofee.data);
         msgportFee = ofee.data.data;
       }
       
