@@ -7,7 +7,7 @@ on:
 
 jobs:
   integrate-mainnet:
-    name: Run integrate test
+    name: Run integrate test v1
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -30,6 +30,7 @@ jobs:
         env:
           ORMPIPE_LOG_LEVEL: debug
           ORMPIPE_SIGNER: ${{ secrets.ORMPIPE_SIGNER }}
+          ORMP_VERSION: 1
         run: |
           scripts/ormpipe.sh integration \
             send-message-msgport \
@@ -42,7 +43,7 @@ jobs:
 
 
   integrate-testnet:
-    name: Run integrate test
+    name: Run integrate test v2
     runs-on: ubuntu-latest
     strategy:
       matrix:

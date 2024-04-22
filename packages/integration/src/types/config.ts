@@ -9,4 +9,5 @@ export interface IntegrationTestConfig {
   addressOracle: string
   addressRelayer: string
   targetChainId: number
+  version: number
 }

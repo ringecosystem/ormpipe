@@ -149,21 +149,38 @@ export class OrmpIntegrationTestProgram {
 
     let msgportFee;
     try {
-      const ofee = await axios.get(
-        'https://msgport-api.darwinia.network/ormp/fee',
-        // 'https://httpbin.org/get',
-        {
-          params: {
-            from_chain_id: network.chainId,
-            to_chain_id: this.config.targetChainId,
-            payload: message,
-            from_address: accountAddress,
-            to_address: accountAddress,
-            refund_address: accountAddress,
+      if(this.config.version == 1) {
+        const ofee = await axios.get(
+          'https://msgport-api.darwinia.network/ormp/fee',
+          {
+            params: {
+              from_chain_id: network.chainId,
+              to_chain_id: this.config.targetChainId,
+              payload: message,
+              from_address: accountAddress,
+              to_address: accountAddress,
+              refund_address: accountAddress,
+            }
           }
-        }
-      );
-      msgportFee = ofee.data.data;
+        );
+        msgportFee = ofee.data.data;
+      } else if(this.config.version == 2) {
+        const ofee = await axios.get(
+          'http://g2.generic.darwinia.network:3378/fee',
+          {
+            params: {
+              from_chain_id: network.chainId,
+              to_chain_id: this.config.targetChainId,
+              payload: message,
+              from_address: accountAddress,
+              to_address: accountAddress,
+              'ormp.refund_address': accountAddress,
+            }
+          }
+        );
+        msgportFee = ofee.data.data;
+      }
+      
     } catch (e: any) {
       const response: AxiosResponse = e.response;
       throw new Error(`[msgport-api] [${response.data.code}] ${response.data.error}`);

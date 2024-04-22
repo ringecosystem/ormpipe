@@ -52,6 +52,12 @@ export default class Integration extends Command {
       description: 'target chain id',
       env: 'ORMPIPE_TARGET_CHAIN_ID',
     }),
+    'version': Flags.integer({
+      required: true,
+      description: 'ormp version',
+      env: 'ORMP_VERSION',
+      default: 2
+    })
   }
 
   static args = {
