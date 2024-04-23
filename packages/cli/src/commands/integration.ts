@@ -45,7 +45,7 @@ export default class Integration extends Command {
       required: true,
       description: 'message port contract address',
       env: 'ORMPIPE_ADDRESS_MSGPORT',
-      default: '0xd7D1a5d67A6Ab825947Cf45664bF02f263FB73e9',
+      default: '0xD4E9cfa6fe3a68b3a6058B22d550Fe6253d708AB',
     }),
     'target-chain-id': Flags.integer({
       required: true,
