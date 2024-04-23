@@ -27,31 +27,37 @@ export default class Integration extends Command {
       required: true,
       description: 'ormp contract address',
       env: 'ORMPIPE_ADDRESS_ORMP',
-      default: '0x00000000001523057a05d6293C1e5171eE33eE0A',
+      default: '0xa30daF3c6071361960aF29e52C1eC860a037886f',
     }),
     'address-oracle': Flags.string({
       required: true,
       description: 'ormp oracle address',
       env: 'ORMPIPE_ADDRESS_ORACLE',
-      default: '0x0000000003ebeF32D8f0ED406a5CA8805c80AFba',
+      default: '0x0503c037719d7b39402a3ee9AA60b7ed604BB1f7',
     }),
     'address-relayer': Flags.string({
       required: true,
       description: 'ormp relayer address',
       env: 'ORMPIPE_ADDRESS_RELAYER',
-      default: '0x0000000000808fE9bDCc1d180EfbF5C53552a6b1',
+      default: '0xA3B91e8Eb30825632Ca001a0a7c5839386ab838D',
     }),
-    'address-msgline': Flags.string({
+    'address-msgport': Flags.string({
       required: true,
-      description: 'message line contract address',
-      env: 'ORMPIPE_ADDRESS_MSGLINE',
-      default: '0x0000000005d961F950adA391C1511c92bbc64D9F',
+      description: 'message port contract address',
+      env: 'ORMPIPE_ADDRESS_MSGPORT',
+      default: '0xd7D1a5d67A6Ab825947Cf45664bF02f263FB73e9',
     }),
     'target-chain-id': Flags.integer({
       required: true,
       description: 'target chain id',
       env: 'ORMPIPE_TARGET_CHAIN_ID',
     }),
+    'version': Flags.integer({
+      required: true,
+      description: 'ormp version',
+      env: 'ORMP_VERSION',
+      default: 2
+    })
   }
 
   static args = {
@@ -62,7 +68,7 @@ export default class Integration extends Command {
         'withdraw',
         'send-message',
         'send-message-ormp',
-        'send-message-msgline',
+        'send-message-msgport',
       ],
     }),
   };
@@ -83,8 +89,8 @@ export default class Integration extends Command {
       case 'send-message-ormp':
         await itp.sendOrmpMessage();
         break;
-      case 'send-message-msgline':
-        await itp.sendMsglineMessage();
+      case 'send-message-msgport':
+        await itp.sendMsgportMessage();
         break;
       default:
         logger.warn('not support this test name');

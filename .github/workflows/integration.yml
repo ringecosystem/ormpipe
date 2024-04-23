@@ -6,20 +6,52 @@ on:
   workflow_dispatch:
 
 jobs:
-  integrate-test:
-    name: Run integrate test
+  integrate-mainnet:
+    name: Run integrate test v1
     runs-on: ubuntu-latest
     strategy:
       matrix:
         task:
-          - endpoint: https://rpc.darwinia.network
+          - endpoint: http://c2.darwinia-rpc.itering.io:9944/
             target-chain-id: 44
-          - endpoint: https://crab-rpc.darwinia.network
+          - endpoint: http://c2.crab-rpc.itering.io:9944/
             target-chain-id: 46
-          # - endpoint: https://ethereum-sepolia-rpc.publicnode.com
-          #   target-chain-id: 421614
-          # - endpoint: https://sepolia-rollup.arbitrum.io/rpc
-          #   target-chain-id: 11155111
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+      - name: install dependencies
+        run: yarn install
+
+      - name: run task
+        env:
+          ORMPIPE_LOG_LEVEL: debug
+          ORMPIPE_SIGNER: ${{ secrets.ORMPIPE_SIGNER }}
+          ORMP_VERSION: 1
+        run: |
+          scripts/ormpipe.sh integration \
+            send-message-msgport \
+            --endpoint=${{ matrix.task.endpoint }} \
+            --target-chain-id=${{ matrix.task.target-chain-id }} \
+            --address-ormp='0x00000000001523057a05d6293C1e5171eE33eE0A' \
+            --address-oracle='0x0000000003ebeF32D8f0ED406a5CA8805c80AFba' \
+            --address-relayer='0x0000000000808fE9bDCc1d180EfbF5C53552a6b1' \
+            --address-msgport='0x0000000005d961F950adA391C1511c92bbc64D9F'
+
+
+  integrate-testnet:
+    name: Run integrate test v2
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        task:
+          - endpoint: https://ethereum-sepolia-rpc.publicnode.com
+            target-chain-id: 421614
+          - endpoint: https://sepolia-rollup.arbitrum.io/rpc
+            target-chain-id: 11155111
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -36,7 +68,6 @@ jobs:
           ORMPIPE_SIGNER: ${{ secrets.ORMPIPE_SIGNER }}
         run: |
           scripts/ormpipe.sh integration \
-            send-message-msgline \
+            send-message-msgport \
             --endpoint=${{ matrix.task.endpoint }} \
             --target-chain-id=${{ matrix.task.target-chain-id }}
-

@@ -65,6 +65,7 @@ export type QueryNextOracleAssigned = QueryNextRelayerAssigned
 
 export interface IGraphResponse<T> {
   data: T
+  errors: any[]
 }
 
 export interface BaseGraphEntity {

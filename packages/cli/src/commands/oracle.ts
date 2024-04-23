@@ -65,8 +65,6 @@ export default class Oracle extends Command {
             targetClient: sourceToTargetLifecycle.sourceClient,
             sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
             targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
-            sourceIndexOracle: sourceToTargetLifecycle.targetIndexOracle,
-            targetIndexOracle: sourceToTargetLifecycle.sourceIndexOracle,
           };
 
           logger.info(
@@ -98,17 +96,17 @@ export default class Oracle extends Command {
     });
     const signcribeClient = new RelayEVMClient({
       chainName: 'darwinia',
-      endpoint: 'https://rpc.darwinia.network',
+      endpoint: 'http://c2.darwinia-rpc.itering.io:9944/',
       signer: config.signcribeSigner,
     });
     const sourceIndex = new OrmpipeIndexer({
       endpoint: config.sourceChain.indexer.ormp,
       signcribeEndpoint: config.sourceChain.indexer.signcribe,
-    }).thegraph();
+    }).ponder();
     const targetIndex = new OrmpipeIndexer({
       endpoint: config.targetChain.indexer.ormp,
       signcribeEndpoint: config.targetChain.indexer.signcribe,
-    }).thegraph();
+    }).ponder();
     const storage = new RelayStorage(config.dataPath, {
       keyPrefix: `${config.sourceChain.name}-${config.sourceChain.name}`,
     });
@@ -122,8 +120,6 @@ export default class Oracle extends Command {
       signcribeClient,
       sourceIndexerOrmp: sourceIndex.ormp(),
       targetIndexerOrmp: targetIndex.ormp(),
-      sourceIndexOracle: sourceIndex.oracle(),
-      targetIndexOracle: targetIndex.oracle(),
       indexerSigncribe: sourceIndex.signcribe(),
     };
   }

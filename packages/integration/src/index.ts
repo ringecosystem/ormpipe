@@ -2,17 +2,17 @@ import {IntegrationTestConfig} from "./types/config";
 import {ethers} from "ethers";
 import axios, {AxiosResponse} from "axios";
 
-const abiOrmp = require('./abis/Ormp.json');
-const abiMsgline = require('./abis/Msgline.json');
-const abiOracle = require('./abis/OrmpOracle.json');
-const abiRelayer = require('./abis/OrmpRelayer.json');
+const abiOrmp = require('./abis/v2/Ormp.json');
+const abiMsgport = require('./abis/v2/Msgport.json');
+const abiOracle = require('./abis/v2/Oracle.json');
+const abiRelayer = require('./abis/v2/Relayer.json');
 
 interface Lifecycle {
   config: IntegrationTestConfig,
   evm: ethers.JsonRpcProvider,
   wallet: ethers.Wallet,
   contractOrmp: ethers.Contract,
-  contractMsgline: ethers.Contract,
+  contractMsgport: ethers.Contract,
   contractOracle: ethers.Contract,
   contractRelayer: ethers.Contract,
 }
@@ -27,7 +27,7 @@ export class OrmpIntegrationTestProgram {
     const evm = new ethers.JsonRpcProvider(config.endpoint);
     const wallet = new ethers.Wallet(config.signer, evm);
     const contractOrmp = new ethers.Contract(config.addressOrmp, abiOrmp, wallet);
-    const contractMsgline = new ethers.Contract(config.addressMsgline, abiMsgline, wallet);
+    const contractMsgport = new ethers.Contract(config.addressMsgport, abiMsgport, wallet);
     const contractOracle = new ethers.Contract(config.addressOracle, abiOracle, wallet);
     const contractRelayer = new ethers.Contract(config.addressRelayer, abiRelayer, wallet);
     this.lifecycle = {
@@ -35,7 +35,7 @@ export class OrmpIntegrationTestProgram {
       evm,
       wallet,
       contractOrmp,
-      contractMsgline,
+      contractMsgport,
       contractOracle,
       contractRelayer,
     };
@@ -115,9 +115,9 @@ export class OrmpIntegrationTestProgram {
   }
 
 
-  public async sendMsglineMessage() {
+  public async sendMsgportMessage() {
     await this.withdraw();
-    const {wallet, evm, contractMsgline} = this.lifecycle;
+    const {wallet, evm, contractMsgport} = this.lifecycle;
 
     // const enableRandomMessage = (+Math.random().toString().replace('0.', '')) % 2;
     const enableRandomMessage = 1;
@@ -149,22 +149,42 @@ export class OrmpIntegrationTestProgram {
 
     let msgportFee;
     try {
-      const ofee = await axios.get(
-        'https://msgport-api.darwinia.network/ormp/fee',
-        // 'https://httpbin.org/get',
-        {
-          params: {
-            from_chain_id: network.chainId,
-            to_chain_id: this.config.targetChainId,
-            payload: message,
-            from_address: accountAddress,
-            to_address: accountAddress,
-            refund_address: accountAddress,
+      if(this.config.version == 1) {
+        const ofee = await axios.get(
+          'https://msgport-api.darwinia.network/ormp/fee',
+          {
+            params: {
+              from_chain_id: network.chainId,
+              to_chain_id: this.config.targetChainId,
+              payload: message,
+              from_address: accountAddress,
+              to_address: accountAddress,
+              refund_address: accountAddress,
+            }
           }
-        }
-      );
-      msgportFee = ofee.data.data;
+        );
+        msgportFee = ofee.data.data;
+      } else if(this.config.version == 2) {
+        console.log("Request v2 msgport api")
+        const ofee = await axios.get(
+          'http://g2.generic.darwinia.network:3378/ormp/fee',
+          {
+            params: {
+              from_chain_id: network.chainId,
+              to_chain_id: this.config.targetChainId,
+              payload: message,
+              from_address: accountAddress,
+              to_address: accountAddress,
+              refund_address: accountAddress,
+            }
+          }
+        );
+        console.log("V2 msgport api response", ofee.data);
+        msgportFee = ofee.data.data;
+      }
+      
     } catch (e: any) {
+      console.error("msgport api error: ", e);
       const response: AxiosResponse = e.response;
       throw new Error(`[msgport-api] [${response.data.code}] ${response.data.error}`);
     }
@@ -174,7 +194,7 @@ export class OrmpIntegrationTestProgram {
     }
     const {fee, params} = msgportFee;
 
-    const tx = await contractMsgline['send'](
+    const tx = await contractMsgport['send'](
       this.config.targetChainId,
       toAddress,
       message,
@@ -182,7 +202,7 @@ export class OrmpIntegrationTestProgram {
       {value: fee},
     );
     const resp = await tx.wait();
-    console.log(`send-msgline: ${resp.hash}`);
+    console.log(`send-msgport: ${resp.hash}`);
   }
 
 }

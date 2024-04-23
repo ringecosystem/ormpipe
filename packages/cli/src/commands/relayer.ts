@@ -66,8 +66,6 @@ export default class Relayer extends Command {
             targetClient: sourceToTargetLifecycle.sourceClient,
             sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
             targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
-            sourceIndexerOracle: sourceToTargetLifecycle.targetIndexerOracle,
-            targetIndexerOracle: sourceToTargetLifecycle.sourceIndexerOracle,
           }
 
           logger.info(
@@ -99,11 +97,11 @@ export default class Relayer extends Command {
     const sourceIndex = new OrmpipeIndexer({
       endpoint: config.sourceChain.indexer.ormp,
       signcribeEndpoint: config.sourceChain.indexer.signcribe,
-    }).thegraph();
+    }).ponder();
     const targetIndex = new OrmpipeIndexer({
       endpoint: config.targetChain.indexer.ormp,
       signcribeEndpoint: config.targetChain.indexer.signcribe,
-    }).thegraph();
+    }).ponder();
     const storage = new RelayStorage(config.dataPath, {
       keyPrefix: `${config.sourceChain.name}-${config.sourceChain.name}`,
     });
@@ -116,8 +114,6 @@ export default class Relayer extends Command {
       targetClient,
       sourceIndexerOrmp: sourceIndex.ormp(),
       targetIndexerOrmp: targetIndex.ormp(),
-      sourceIndexerOracle: sourceIndex.oracle(),
-      targetIndexerOracle: targetIndex.oracle(),
     };
   }
 

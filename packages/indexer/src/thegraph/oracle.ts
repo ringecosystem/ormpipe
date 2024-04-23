@@ -1,5 +1,5 @@
 import {GraphCommon} from "./_common";
-import {OracleImportedMessageRoot, QueryLastImportedMessageRoot} from "../types";
+import {OracleImportedMessageRoot, QueryLastImportedMessageRoot} from "../types/graph";
 
 
 export class ThegraphIndexOracle extends GraphCommon {

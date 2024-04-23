@@ -2,12 +2,13 @@ import {ContractConfig} from "@darwinia/ormpipe-common";
 import {ethers} from "ethers";
 
 
-const abi = require("../abis/OrmpOracle.json");
+const abi = require("../abis/v2/Oracle.json");
 
-export interface BuildImportMessageRootOptions {
+export interface BuildImportMessageHashOptions {
   sourceChainId: number
-  blockNumber: number
-  messageRoot: string
+  channel: string
+  msgIndex: number,
+  msgHash: string
 }
 
 export class OracleContractClient {
@@ -22,11 +23,12 @@ export class OracleContractClient {
   }
 
 
-  public buildImportMessageRoot(options: BuildImportMessageRootOptions): string {
-    return this.contract.interface.encodeFunctionData('importMessageRoot', [
+  public buildImportMessageHash(options: BuildImportMessageHashOptions): string {
+    return this.contract.interface.encodeFunctionData('importMessageHash', [
       options.sourceChainId, // chainId
-      options.blockNumber, // messageIndex
-      options.messageRoot, // messageRoot
+      options.channel, // channel
+      options.msgIndex, // msgIndex
+      options.msgHash // msgHash
     ]);
   }
 
