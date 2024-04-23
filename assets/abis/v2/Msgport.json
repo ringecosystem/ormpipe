@@ -175,6 +175,7 @@
   {
     "inputs": [
       { "internalType": "uint256", "name": "toChainId", "type": "uint256" },
+      { "internalType": "address", "name": "fromDapp", "type": "address" },
       { "internalType": "address", "name": "toDapp", "type": "address" },
       { "internalType": "bytes", "name": "message", "type": "bytes" },
       { "internalType": "bytes", "name": "params", "type": "bytes" }

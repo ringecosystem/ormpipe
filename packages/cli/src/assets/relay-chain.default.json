@@ -38,10 +38,10 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0xA3B91e8Eb30825632Ca001a0a7c5839386ab838D",
-      "ormp": "0xa30daF3c6071361960aF29e52C1eC860a037886f",
-      "oracle": "0x0503c037719d7b39402a3ee9AA60b7ed604BB1f7",
-      "multisig": "0xbC9dA866bbdd56F5d4f5AA3C1ED7810aa5153b60"
+      "relayer": "0x8D203c1B5190b69048e1a03bB89C5B4E511DB246",
+      "ormp": "0x9BEc71b9C646653C6C73Af8D4B7E5f84a5420005",
+      "oracle": "0xE80Cb57F95f9279C9C3b365B940dE235883D1002",
+      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
     }
   },
   "sepolia": {
@@ -53,10 +53,10 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0xA3B91e8Eb30825632Ca001a0a7c5839386ab838D",
-      "ormp": "0xa30daF3c6071361960aF29e52C1eC860a037886f",
-      "oracle": "0x0503c037719d7b39402a3ee9AA60b7ed604BB1f7",
-      "multisig": "0xbC9dA866bbdd56F5d4f5AA3C1ED7810aa5153b60"
+      "relayer": "0x8D203c1B5190b69048e1a03bB89C5B4E511DB246",
+      "ormp": "0x9BEc71b9C646653C6C73Af8D4B7E5f84a5420005",
+      "oracle": "0xE80Cb57F95f9279C9C3b365B940dE235883D1002",
+      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
     }
   },
   "taikokatla": {
@@ -68,10 +68,10 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0xA3B91e8Eb30825632Ca001a0a7c5839386ab838D",
-      "ormp": "0xa30daF3c6071361960aF29e52C1eC860a037886f",
-      "oracle": "0x0503c037719d7b39402a3ee9AA60b7ed604BB1f7",
-      "multisig": "0xbC9dA866bbdd56F5d4f5AA3C1ED7810aa5153b60"
+      "relayer": "0x8D203c1B5190b69048e1a03bB89C5B4E511DB246",
+      "ormp": "0x9BEc71b9C646653C6C73Af8D4B7E5f84a5420005",
+      "oracle": "0xE80Cb57F95f9279C9C3b365B940dE235883D1002",
+      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
     }
   },
   "arbitrumsepolia": {
@@ -83,10 +83,10 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0xA3B91e8Eb30825632Ca001a0a7c5839386ab838D",
-      "ormp": "0xa30daF3c6071361960aF29e52C1eC860a037886f",
-      "oracle": "0x0503c037719d7b39402a3ee9AA60b7ed604BB1f7",
-      "multisig": "0xbC9dA866bbdd56F5d4f5AA3C1ED7810aa5153b60"
+      "relayer": "0x8D203c1B5190b69048e1a03bB89C5B4E511DB246",
+      "ormp": "0x9BEc71b9C646653C6C73Af8D4B7E5f84a5420005",
+      "oracle": "0xE80Cb57F95f9279C9C3b365B940dE235883D1002",
+      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
     }
   },
   "arbitrum": {

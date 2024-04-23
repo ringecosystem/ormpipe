@@ -27,19 +27,19 @@ export default class Integration extends Command {
       required: true,
       description: 'ormp contract address',
       env: 'ORMPIPE_ADDRESS_ORMP',
-      default: '0xa30daF3c6071361960aF29e52C1eC860a037886f',
+      default: '0x9BEc71b9C646653C6C73Af8D4B7E5f84a5420005',
     }),
     'address-oracle': Flags.string({
       required: true,
       description: 'ormp oracle address',
       env: 'ORMPIPE_ADDRESS_ORACLE',
-      default: '0x0503c037719d7b39402a3ee9AA60b7ed604BB1f7',
+      default: '0xE80Cb57F95f9279C9C3b365B940dE235883D1002',
     }),
     'address-relayer': Flags.string({
       required: true,
       description: 'ormp relayer address',
       env: 'ORMPIPE_ADDRESS_RELAYER',
-      default: '0xA3B91e8Eb30825632Ca001a0a7c5839386ab838D',
+      default: '0x8D203c1B5190b69048e1a03bB89C5B4E511DB246',
     }),
     'address-msgport': Flags.string({
       required: true,
