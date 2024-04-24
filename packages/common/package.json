@@ -18,10 +18,11 @@
   },
   "dependencies": {
     "@stdlib/string-pad": "^0",
-    "winston": "^3",
     "cacache": "^18",
+    "chalk": "^4",
     "ethers": "^6",
-    "chalk": "^4"
+    "tronweb": "^5.3.2",
+    "winston": "^3"
   },
   "devDependencies": {
     "@types/jest": "^29",
