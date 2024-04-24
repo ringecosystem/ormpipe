@@ -85,11 +85,13 @@ export default class Relayer extends Command {
 
   private async buildLifecycle(config: RelayerRelayConfig): Promise<RelayerRelayLifecycle> {
     const sourceClient = new RelayEVMClient({
+      chainId: config.sourceChain.chainId,
       chainName: config.sourceChain.name,
       endpoint: config.sourceChain.endpoint,
       signer: config.sourceSigner,
     });
     const targetClient = new RelayEVMClient({
+      chainId: config.targetChain.chainId,
       chainName: config.targetChain.name,
       endpoint: config.targetChain.endpoint,
       signer: config.targetSigner,

@@ -13,8 +13,10 @@ jobs:
       matrix:
         task:
           - endpoint: http://c2.darwinia-rpc.itering.io:9944/
+            source-chain-id: 46
             target-chain-id: 44
           - endpoint: http://c2.crab-rpc.itering.io:9944/
+            source-chain-id: 44
             target-chain-id: 46
     steps:
       - uses: actions/checkout@v4
@@ -49,8 +51,10 @@ jobs:
       matrix:
         task:
           - endpoint: https://ethereum-sepolia-rpc.publicnode.com
+            source-chain-id: 11155111
             target-chain-id: 421614
           - endpoint: https://sepolia-rollup.arbitrum.io/rpc
+            source-chain-id: 421614
             target-chain-id: 11155111
     steps:
       - uses: actions/checkout@v4

@@ -8,6 +8,7 @@ export interface IntegrationTestConfig {
   addressMsgport: string
   addressOracle: string
   addressRelayer: string
+  sourceChainId: number,
   targetChainId: number
   version: number
 }

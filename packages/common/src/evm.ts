@@ -4,6 +4,7 @@ import {logger} from "./logger/winston";
 
 export interface RelayClientConfig {
   chainName: string
+  chainId: number,
   endpoint: string
   signer: string
 }

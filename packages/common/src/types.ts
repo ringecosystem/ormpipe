@@ -28,6 +28,7 @@ export interface RelayBaseLifecycle extends RelayBaseConfig {
 }
 
 export interface ChainInfoFlag {
+  chainId: number,
   name: string
   endpoint: string
   indexer: ChainInfoIndexerFlag
