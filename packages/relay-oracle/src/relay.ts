@@ -60,7 +60,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.multisig,
       evm: super.targetClient.evm,
-      endpoint: super.lifecycle.targetClient.config.endpoint
+      endpoint: super.lifecycle.targetClient.config.endpoint,
     });
     return this._targetMultisigContractClient;
   }
@@ -73,7 +73,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.oracle,
       evm: super.targetClient.evm,
-      endpoint: super.lifecycle.targetClient.config.endpoint
+      endpoint: super.lifecycle.targetClient.config.endpoint,
     });
     return this._targetOracleContractClient;
   }
@@ -85,7 +85,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signer: super.lifecycle.signcribeSigner,
       address: super.lifecycle.sourceChain.contract.signcribe,
       evm: super.lifecycle.signcribeClient.evm,
-      endpoint: super.lifecycle.signcribeClient.config.endpoint
+      endpoint: super.lifecycle.signcribeClient.config.endpoint,
     });
     return this._signcribeContractClient;
   }
@@ -97,7 +97,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signer: super.lifecycle.sourceSigner,
       address: super.lifecycle.sourceChain.contract.ormp,
       evm: super.sourceClient.evm,
-      endpoint: super.lifecycle.sourceClient.config.endpoint
+      endpoint: super.lifecycle.sourceClient.config.endpoint,
     });
     return this._ormpContractClient;
   }
@@ -250,7 +250,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
     // check finalized
-    const sourceFinalizedBlockNumber = await this.sourceClient.getFinalizedBlockNumber();
+    const sourceFinalizedBlockNumber =
+      await this.sourceClient.getFinalizedBlockNumber();
     if (!sourceFinalizedBlockNumber) {
       logger.error(
         "can not get %s finalized block",
