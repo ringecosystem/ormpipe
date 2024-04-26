@@ -94,10 +94,16 @@ export class MultisigContractClient {
 
   public async getOwners(): Promise<string[]> {
     if (this._tronweb) {
-      if(!this._tronContract) {
-        this._tronContract = await this._tronweb.contract(abi, this.config.address.replace('0x', '41'));
+      if (!this._tronContract) {
+        this._tronContract = await this._tronweb.contract(
+          abi,
+          this.config.address.replace("0x", "41")
+        );
       }
-      const owners = await this._tronContract['getOwners']().call();
+      const owners = await this._tronContract["getOwners"]().call();
+      for (let i = 0; i < owners.length; i++) {
+        owners[i] = owners[i].replace("41", "0x");
+      }
       console.log("getOwners on Tron", owners);
       return owners;
     } else {
