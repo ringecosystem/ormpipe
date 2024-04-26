@@ -205,7 +205,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     logger.info(
       "message relayed to %s {tx: %s, block: %s}",
       super.targetName,
-      chalk.magenta(targetTxRelayMessage.hash),
+      chalk.magenta(targetTxRelayMessage.hash||targetTxRelayMessage),
       chalk.cyan(targetTxRelayMessage.blockNumber),
       super.meta("ormpipe-relay", ["relayer:relay"])
     );

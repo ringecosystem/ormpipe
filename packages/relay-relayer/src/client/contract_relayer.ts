@@ -119,7 +119,7 @@ export class RelayerContractClient {
           ])
           .send();
 
-        console.log("Relay on Tron", tronResult, options.message);
+        console.log("Relay on Tron", tronResult);
         return tronResult;
       } catch (e) {
         console.error(e);
@@ -131,7 +131,18 @@ export class RelayerContractClient {
   }
 
   public async configOf(chainId: number): Promise<bigint> {
-    const configOf = await this.contract["configOf"](chainId);
-    return configOf[0];
+    if (this._tronweb) {
+      if (!this._tronContract) {
+        this._tronContract = await this._tronweb.contract(
+          abi,
+          this.config.address.replace("0x", "41")
+        );
+      }
+      const configOf = await this._tronContract["configOf"](chainId).call();
+      return BigInt(configOf[0]._hex);
+    } else {
+      const configOf = await this.contract["configOf"](chainId);
+      return configOf[0];
+    }
   }
 }
