@@ -296,7 +296,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const importRootCallData = this.targetOracleContract.buildImportMessageHash(
       {
         sourceChainId: +sourceNextMessageAccepted.messageFromChainId,
-        channel: super.lifecycle.targetChain.contract.ormp,
+        channel: super.lifecycle.sourceChain.contract.ormp,
         msgIndex: +sourceNextMessageAccepted.messageIndex,
         msgHash: sourceNextMessageAccepted.msgHash,
       }

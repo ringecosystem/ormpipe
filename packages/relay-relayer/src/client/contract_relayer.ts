@@ -99,12 +99,31 @@ export class RelayerContractClient {
         break;
     }
     if (this._tronweb) {
-      if(!this._tronContract) {
-        this._tronContract = await this._tronweb.contract(abi, this.config.address.replace('0x', '41'));
+      if (!this._tronContract) {
+        this._tronContract = await this._tronweb.contract(
+          abi,
+          this.config.address.replace("0x", "41")
+        );
       }
-      const tronResult = await this._tronContract['relay'](options.message, contractOptions).call();
-      console.log("Relay on Tron", tronResult);
-      return tronResult;
+      try {
+        const tronResult = await this._tronContract
+          .relay([
+            options.message.channel,
+            options.message.index,
+            options.message.fromChainId,
+            options.message.from,
+            options.message.toChainId,
+            options.message.to,
+            options.message.gasLimit,
+            options.message.encoded,
+          ])
+          .send();
+
+        console.log("Relay on Tron", tronResult, options.message);
+        return tronResult;
+      } catch (e) {
+        console.error(e);
+      }
     } else {
       const tx = await this.contract["relay"](options.message, contractOptions);
       return await tx.wait();
