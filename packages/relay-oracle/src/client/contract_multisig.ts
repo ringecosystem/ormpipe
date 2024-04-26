@@ -55,8 +55,8 @@ export class MultisigContractClient {
     options: ImportMessageRootOptions
   ): Promise<TransactionResponse | undefined> {
     if (this._tronweb) {
-      const tronPubKey = this._tronweb.utils.address.toHex(
-        this._tronweb.utils.address.fromPrivateKey(this.config.signer)
+      const tronPubKey = this._tronweb.address.toHex(
+        this._tronweb.address.fromPrivateKey(this.config.signer)
       );
       console.log("importMessageRoot to Tron", tronPubKey);
       const unsignedTx =
