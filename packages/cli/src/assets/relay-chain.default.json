@@ -47,6 +47,22 @@
       "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
     }
   },
+  "pangoro": {
+    "name": "pangoro",
+    "chainId": 45,
+    "endpoint": "https://fraa-flashbox-2871-rpc.a.stagenet.tanssi.network",
+    "indexer": {
+      "ormp": "https://ormponder.darwinia.network/",
+      "signcribe": "https://ormponder.darwinia.network/"
+    },
+    "contract": {
+      "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
+      "relayer": "0x1cFe6d573391094d90cB9f90B754C889b770bfEa",
+      "ormp": "0xE46ed7594fFa6AD7c3b5232827EC2AF8f94beb38",
+      "oracle": "0x2E0c9AfF4320147E17d5D9A65a82010ce93Ba255",
+      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
+    }
+  },
   "sepolia": {
     "name": "sepolia",
     "chainId": 11155111,
