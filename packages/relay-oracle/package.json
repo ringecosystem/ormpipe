@@ -22,7 +22,8 @@
     "async": "^3",
     "cacache": "^18",
     "chalk": "^4",
-    "ethers": "^6"
+    "ethers": "^6",
+    "tronweb": "^5.3.2"
   },
   "devDependencies": {
     "@types/async": "^3",

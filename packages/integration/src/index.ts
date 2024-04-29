@@ -117,11 +117,10 @@ export class OrmpIntegrationTestProgram {
 
   public async sendMsgportMessage() {
     await this.withdraw();
-    const {wallet, evm, contractMsgport} = this.lifecycle;
+    const {wallet, contractMsgport} = this.lifecycle;
 
     // const enableRandomMessage = (+Math.random().toString().replace('0.', '')) % 2;
     const enableRandomMessage = 1;
-    const network = await evm.getNetwork();
     const accountAddress = await wallet.getAddress();
 
     let message;
@@ -130,15 +129,15 @@ export class OrmpIntegrationTestProgram {
       message = this._randomMessage();
     } else {
       message = '0xd8e68172000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000021234000000000000000000000000000000000000000000000000000000000000';
-      const chainId = network.chainId;
-      if (chainId === 44n) {
+      const chainId = this.config.sourceChainId;
+      if (chainId === 44) {
         switch (this.config.targetChainId) {
           case 421614: // crab -> arbsep
             toAddress = '0x1837ff30801f1793563451101350a5f5e14a0a1a';
             break;
         }
       }
-      if (chainId === 421614n) {
+      if (chainId === 421614) {
         switch (this.config.targetChainId) {
           case 44: // crab -> arbsep
             toAddress = '0x50d97aaf16afb178cb81bfa6910a33b18fa911e3';
@@ -154,7 +153,7 @@ export class OrmpIntegrationTestProgram {
           'https://msgport-api.darwinia.network/ormp/fee',
           {
             params: {
-              from_chain_id: network.chainId,
+              from_chain_id: this.config.sourceChainId,
               to_chain_id: this.config.targetChainId,
               payload: message,
               from_address: accountAddress,
@@ -170,7 +169,7 @@ export class OrmpIntegrationTestProgram {
           'http://g2.generic.darwinia.network:3378/ormp/fee',
           {
             params: {
-              from_chain_id: network.chainId,
+              from_chain_id: this.config.sourceChainId,
               to_chain_id: this.config.targetChainId,
               payload: message,
               from_address: accountAddress,

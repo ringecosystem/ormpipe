@@ -185,10 +185,10 @@ export class CommandHelper {
         times: 0,
         symbol: symbol,
         sourceChain,
-        sourceSigner,
+        sourceSigner: sourceSigner?.replace('0x', ''),
         targetChain,
-        targetSigner,
-        signcribeSigner,
+        targetSigner: targetSigner?.replace('0x', ''),
+        signcribeSigner: signcribeSigner?.replace('0x', ''),
       } as RelayBaseConfig;
       works.push(work);
     }

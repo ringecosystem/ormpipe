@@ -1,6 +1,7 @@
 {
   "crab": {
     "name": "crab",
+    "chainId": 44,
     "endpoint": "http://c2.crab-rpc.itering.io:9944/",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -16,6 +17,7 @@
   },
   "darwinia": {
     "name": "darwinia",
+    "chainId": 46,
     "endpoint": "http://c2.darwinia-rpc.itering.io:9944/",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -31,6 +33,7 @@
   },
   "pangolin": {
     "name": "pangolin",
+    "chainId": 43,
     "endpoint": "http://g2.testnets.darwinia.network:9940",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -46,6 +49,7 @@
   },
   "sepolia": {
     "name": "sepolia",
+    "chainId": 11155111,
     "endpoint": "https://ethereum-sepolia-rpc.publicnode.com",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -61,6 +65,7 @@
   },
   "taikokatla": {
     "name": "taikokatla",
+    "chainId": 167008,
     "endpoint": "https://rpc.katla.taiko.xyz",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -74,8 +79,25 @@
       "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
     }
   },
+  "tronshasta": {
+    "name": "tronshasta",
+    "chainId": 2494104990,
+    "endpoint": "https://api.shasta.trongrid.io",
+    "indexer": {
+      "ormp": "https://ormponder.darwinia.network/",
+      "signcribe": "https://ormponder.darwinia.network/"
+    },
+    "contract": {
+      "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
+      "relayer": "0x0EEf3478C2E34c36Bb13B8B235096D5c361873bF",
+      "ormp": "0x13c991C5BEf30c0E8600D95B8554B4DeDa4853b8",
+      "oracle": "0x58facC3a63CEF6d806E08d9189B37351dd4aE9C3",
+      "multisig": "0x3230E2da90220A80F9560aC5f609c7De25b14aD6"
+    }
+  },
   "arbitrumsepolia": {
     "name": "arbitrumsepolia",
+    "chainId": 421614,
     "endpoint": "https://sepolia-rollup.arbitrum.io/rpc",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -91,6 +113,7 @@
   },
   "arbitrum": {
     "name": "arbitrum",
+    "chainId": 42161,
     "endpoint": "https://arbitrum-one-rpc.publicnode.com",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -106,6 +129,7 @@
   },
   "ethereum": {
     "name": "ethereum",
+    "chainId": 1,
     "endpoint": "https://ethereum-rpc.publicnode.com",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -121,6 +145,7 @@
   },
   "polygon": {
     "name": "polygon",
+    "chainId": 137,
     "endpoint": "https://polygon-bor-rpc.publicnode.com",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
@@ -136,6 +161,7 @@
   },
   "blast": {
     "name": "blast",
+    "chainId": 238,
     "endpoint": "https://rpc.blast.io",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",

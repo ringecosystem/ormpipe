@@ -47,6 +47,11 @@ export default class Integration extends Command {
       env: 'ORMPIPE_ADDRESS_MSGPORT',
       default: '0xD4E9cfa6fe3a68b3a6058B22d550Fe6253d708AB',
     }),
+    'source-chain-id': Flags.integer({
+      required: true,
+      description: 'source chain id',
+      env: 'ORMPIPE_SOURCE_CHAIN_ID',
+    }),
     'target-chain-id': Flags.integer({
       required: true,
       description: 'target chain id',

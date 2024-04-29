@@ -48,6 +48,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       signer: super.lifecycle.sourceSigner,
       address: super.lifecycle.sourceChain.contract.relayer,
       evm: super.sourceClient.evm,
+      endpoint: super.sourceClient.config.endpoint
     });
     return this._sourceRelayerContractClient;
   }
@@ -60,6 +61,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.relayer,
       evm: super.targetClient.evm,
+      endpoint: super.targetClient.config.endpoint
     });
     return this._targetRelayerContractClient;
   }
@@ -203,7 +205,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     logger.info(
       "message relayed to %s {tx: %s, block: %s}",
       super.targetName,
-      chalk.magenta(targetTxRelayMessage.hash),
+      chalk.magenta(targetTxRelayMessage.hash||targetTxRelayMessage),
       chalk.cyan(targetTxRelayMessage.blockNumber),
       super.meta("ormpipe-relay", ["relayer:relay"])
     );

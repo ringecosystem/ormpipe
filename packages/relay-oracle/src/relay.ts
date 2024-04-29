@@ -60,6 +60,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.multisig,
       evm: super.targetClient.evm,
+      endpoint: super.lifecycle.targetClient.config.endpoint,
     });
     return this._targetMultisigContractClient;
   }
@@ -72,6 +73,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.oracle,
       evm: super.targetClient.evm,
+      endpoint: super.lifecycle.targetClient.config.endpoint,
     });
     return this._targetOracleContractClient;
   }
@@ -83,6 +85,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signer: super.lifecycle.signcribeSigner,
       address: super.lifecycle.sourceChain.contract.signcribe,
       evm: super.lifecycle.signcribeClient.evm,
+      endpoint: super.lifecycle.signcribeClient.config.endpoint,
     });
     return this._signcribeContractClient;
   }
@@ -94,6 +97,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signer: super.lifecycle.sourceSigner,
       address: super.lifecycle.sourceChain.contract.ormp,
       evm: super.sourceClient.evm,
+      endpoint: super.lifecycle.sourceClient.config.endpoint,
     });
     return this._ormpContractClient;
   }
@@ -246,11 +250,9 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
     // check finalized
-    const sourceFinalizedBLock = await this.sourceClient.evm.getBlock(
-      "finalized",
-      false
-    );
-    if (!sourceFinalizedBLock) {
+    const sourceFinalizedBlockNumber =
+      await this.sourceClient.getFinalizedBlockNumber();
+    if (!sourceFinalizedBlockNumber) {
       logger.error(
         "can not get %s finalized block",
         super.sourceName,
@@ -258,10 +260,10 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       );
       return;
     }
-    if (sourceFinalizedBLock.number < +sourceNextMessageAccepted.blockNumber) {
+    if (sourceFinalizedBlockNumber < +sourceNextMessageAccepted.blockNumber) {
       logger.warn(
         "message block not finalized %s/%s(%s)",
-        sourceFinalizedBLock.number,
+        sourceFinalizedBlockNumber,
         sourceNextMessageAccepted.blockNumber,
         super.sourceName,
         super.meta("ormpipe-relay-oracle", ["oracle:sign"])
@@ -270,7 +272,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     }
     logger.info(
       "message block finalized %s/%s(%s)",
-      sourceFinalizedBLock.number,
+      sourceFinalizedBlockNumber,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
       super.meta("ormpipe-relay-oracle", ["oracle:sign"])
@@ -285,8 +287,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signatureOwners
     );
 
-    const targetSigner = super.targetClient.wallet(
-      super.lifecycle.targetSigner
+    const targetSigner = super.lifecycle.signcribeClient.wallet(
+      super.lifecycle.signcribeSigner
     );
     const expiration =
       +sourceNextMessageAccepted.blockTimestamp + 60 * 60 * 24 * 10;
@@ -294,7 +296,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const importRootCallData = this.targetOracleContract.buildImportMessageHash(
       {
         sourceChainId: +sourceNextMessageAccepted.messageFromChainId,
-        channel: super.lifecycle.targetChain.contract.ormp,
+        channel: super.lifecycle.sourceChain.contract.ormp,
         msgIndex: +sourceNextMessageAccepted.messageIndex,
         msgHash: sourceNextMessageAccepted.msgHash,
       }

@@ -85,16 +85,19 @@ export default class Oracle extends Command {
 
   private async buildLifecycle(config: OracleRelayConfig): Promise<OracleRelayLifecycle> {
     const sourceClient = new RelayEVMClient({
+      chainId: config.sourceChain.chainId,
       chainName: config.sourceChain.name,
       endpoint: config.sourceChain.endpoint,
       signer: config.sourceSigner,
     });
     const targetClient = new RelayEVMClient({
+      chainId: config.targetChain.chainId,
       chainName: config.targetChain.name,
       endpoint: config.targetChain.endpoint,
       signer: config.targetSigner,
     });
     const signcribeClient = new RelayEVMClient({
+      chainId: 46,
       chainName: 'darwinia',
       endpoint: 'http://c2.darwinia-rpc.itering.io:9944/',
       signer: config.signcribeSigner,
