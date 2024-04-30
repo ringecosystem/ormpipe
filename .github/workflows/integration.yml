@@ -37,6 +37,7 @@ jobs:
           scripts/ormpipe.sh integration \
             send-message-msgport \
             --endpoint=${{ matrix.task.endpoint }} \
+            --source-chain-id=${{ matrix.task.source-chain-id }} \
             --target-chain-id=${{ matrix.task.target-chain-id }} \
             --address-ormp='0x00000000001523057a05d6293C1e5171eE33eE0A' \
             --address-oracle='0x0000000003ebeF32D8f0ED406a5CA8805c80AFba' \
@@ -53,9 +54,6 @@ jobs:
           - endpoint: https://ethereum-sepolia-rpc.publicnode.com
             source-chain-id: 11155111
             target-chain-id: 421614
-          - endpoint: https://sepolia-rollup.arbitrum.io/rpc
-            source-chain-id: 421614
-            target-chain-id: 11155111
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -74,4 +72,5 @@ jobs:
           scripts/ormpipe.sh integration \
             send-message-msgport \
             --endpoint=${{ matrix.task.endpoint }} \
+            --source-chain-id=${{ matrix.task.source-chain-id }} \
             --target-chain-id=${{ matrix.task.target-chain-id }}
