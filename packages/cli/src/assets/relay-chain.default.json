@@ -41,10 +41,10 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0x8D203c1B5190b69048e1a03bB89C5B4E511DB246",
+      "relayer": "0xf8bb976bC369eedfbD5D3CEEB7077dc86EbC321D",
       "ormp": "0x56F423Db036F2eDD05567b1211122E0B17C3bfF4",
-      "oracle": "0xE80Cb57F95f9279C9C3b365B940dE235883D1002",
-      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
+      "oracle": "0xeEa101d2c581C7426D719306B95D0c2B0578016B",
+      "multisig": "0x22117Db68370590c1031f52a6D1aDE3DCe0cCf9a"
     }
   },
   "pangoro": {
@@ -73,10 +73,10 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0x8D203c1B5190b69048e1a03bB89C5B4E511DB246",
+      "relayer": "0xf8bb976bC369eedfbD5D3CEEB7077dc86EbC321D",
       "ormp": "0x56F423Db036F2eDD05567b1211122E0B17C3bfF4",
-      "oracle": "0xE80Cb57F95f9279C9C3b365B940dE235883D1002",
-      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
+      "oracle": "0xeEa101d2c581C7426D719306B95D0c2B0578016B",
+      "multisig": "0x22117Db68370590c1031f52a6D1aDE3DCe0cCf9a"
     }
   },
   "taikohekla": {
@@ -89,10 +89,10 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0x8D203c1B5190b69048e1a03bB89C5B4E511DB246",
+      "relayer": "0xf8bb976bC369eedfbD5D3CEEB7077dc86EbC321D",
       "ormp": "0x56F423Db036F2eDD05567b1211122E0B17C3bfF4",
-      "oracle": "0xE80Cb57F95f9279C9C3b365B940dE235883D1002",
-      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
+      "oracle": "0xeEa101d2c581C7426D719306B95D0c2B0578016B",
+      "multisig": "0x22117Db68370590c1031f52a6D1aDE3DCe0cCf9a"
     }
   },
   "tronshasta": {
@@ -121,10 +121,10 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0x8D203c1B5190b69048e1a03bB89C5B4E511DB246",
+      "relayer": "0xf8bb976bC369eedfbD5D3CEEB7077dc86EbC321D",
       "ormp": "0x56F423Db036F2eDD05567b1211122E0B17C3bfF4",
-      "oracle": "0xE80Cb57F95f9279C9C3b365B940dE235883D1002",
-      "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
+      "oracle": "0xeEa101d2c581C7426D719306B95D0c2B0578016B",
+      "multisig": "0x22117Db68370590c1031f52a6D1aDE3DCe0cCf9a"
     }
   },
   "arbitrum": {
