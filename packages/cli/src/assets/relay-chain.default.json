@@ -81,7 +81,7 @@
   },
   "taikohekla": {
     "name": "taikohekla",
-    "chainId": 167008,
+    "chainId": 167009,
     "endpoint": "https://rpc.hekla.taiko.xyz",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
