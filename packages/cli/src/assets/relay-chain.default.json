@@ -79,10 +79,10 @@
       "multisig": "0xd630d598Bf0f6575940bE108BAD39A7eaFD72198"
     }
   },
-  "taikokatla": {
-    "name": "taikokatla",
+  "taikohekla": {
+    "name": "taikohekla",
     "chainId": 167008,
-    "endpoint": "https://rpc.katla.taiko.xyz",
+    "endpoint": "https://rpc.hekla.taiko.xyz",
     "indexer": {
       "ormp": "https://ormponder.darwinia.network/",
       "signcribe": "https://ormponder.darwinia.network/"
