@@ -9,4 +9,3 @@ FROM node:20-alpine
 COPY --from=builder /build /app
 
 ENTRYPOINT ["/app/packages/cli/bin/run"]
-
