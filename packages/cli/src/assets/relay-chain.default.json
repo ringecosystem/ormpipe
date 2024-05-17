@@ -41,9 +41,9 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0x58f89516F0b4fd654D51d9f5B56Eb9473FB3533B",
-      "ormp": "0x8FA742787a5ee193209Ba0765e2f6DFAAd23ed23",
-      "oracle": "0x413a126fA1AE75b30371C26615D31f50c3620CaD",
+      "relayer": "0x51AB5e383430042eE0bAfc23a7715E71F8e56a63",
+      "ormp": "0xdf7b91c92Ac62447Ccb92bd39f41727466534043",
+      "oracle": "0x833D98516A0194305afd882e06AF21fa386B91e9",
       "multisig": "0x22117Db68370590c1031f52a6D1aDE3DCe0cCf9a"
     }
   },
@@ -73,9 +73,9 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0x58f89516F0b4fd654D51d9f5B56Eb9473FB3533B",
-      "ormp": "0x8FA742787a5ee193209Ba0765e2f6DFAAd23ed23",
-      "oracle": "0x413a126fA1AE75b30371C26615D31f50c3620CaD",
+      "relayer": "0x51AB5e383430042eE0bAfc23a7715E71F8e56a63",
+      "ormp": "0xdf7b91c92Ac62447Ccb92bd39f41727466534043",
+      "oracle": "0x833D98516A0194305afd882e06AF21fa386B91e9",
       "multisig": "0x22117Db68370590c1031f52a6D1aDE3DCe0cCf9a"
     }
   },
@@ -89,9 +89,9 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0x58f89516F0b4fd654D51d9f5B56Eb9473FB3533B",
-      "ormp": "0x8FA742787a5ee193209Ba0765e2f6DFAAd23ed23",
-      "oracle": "0x413a126fA1AE75b30371C26615D31f50c3620CaD",
+      "relayer": "0x51AB5e383430042eE0bAfc23a7715E71F8e56a63",
+      "ormp": "0xdf7b91c92Ac62447Ccb92bd39f41727466534043",
+      "oracle": "0x833D98516A0194305afd882e06AF21fa386B91e9",
       "multisig": "0x22117Db68370590c1031f52a6D1aDE3DCe0cCf9a"
     }
   },
@@ -121,9 +121,9 @@
     },
     "contract": {
       "signcribe": "0xb2aa34fde97ffdb6197dd5a2be23c2121405cc12",
-      "relayer": "0x58f89516F0b4fd654D51d9f5B56Eb9473FB3533B",
-      "ormp": "0x8FA742787a5ee193209Ba0765e2f6DFAAd23ed23",
-      "oracle": "0x413a126fA1AE75b30371C26615D31f50c3620CaD",
+      "relayer": "0x51AB5e383430042eE0bAfc23a7715E71F8e56a63",
+      "ormp": "0xdf7b91c92Ac62447Ccb92bd39f41727466534043",
+      "oracle": "0x833D98516A0194305afd882e06AF21fa386B91e9",
       "multisig": "0x22117Db68370590c1031f52a6D1aDE3DCe0cCf9a"
     }
   },
