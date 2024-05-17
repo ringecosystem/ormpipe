@@ -21,13 +21,15 @@
   ],
   "dependencies": {
     "@darwinia/ormpipe-common": "^0.1.2",
+    "@darwinia/ormpipe-integration": "^0.1.2",
     "@darwinia/ormpipe-relay-oracle": "^0.1.2",
     "@darwinia/ormpipe-relay-relayer": "^0.1.2",
-    "@darwinia/ormpipe-integration": "^0.1.2",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
+    "axios": "^1",
     "camelize": "^1",
-    "enquirer": "^2"
+    "enquirer": "^2",
+    "yaml": "^2"
   },
   "devDependencies": {
     "@types/jest": "^29",
@@ -76,6 +78,7 @@
   },
   "bugs": "https://github.com/darwinia-network/ormpipe/issues",
   "keywords": [
-    "darwinia", "ormp"
+    "darwinia",
+    "ormp"
   ]
 }
