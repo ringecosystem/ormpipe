@@ -114,7 +114,7 @@ export class CommandHelper {
   }
 
   public static async buildRelayConfig(cliStartConfig: CliBaseConfig): Promise<RelayBaseConfig[]> {
-    const chainInfo = await this.generateRelayChainInfo(cliStartConfig);
+    const chainInfo = await this.generateRelayChainInfo();
     const pairs = cliStartConfig.enablePair;
     const works = [] as RelayBaseConfig[];
     const _SIGNER_BASE = process.env['ORMPIPE_SIGNER'];
