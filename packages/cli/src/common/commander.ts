@@ -4,8 +4,6 @@ import {Flags} from "@oclif/core";
 import axios, {AxiosResponse} from 'axios';
 import YAML from 'yaml'
 
-// const REALY_CONFIG_DEFAULT = require('../assets/relay-chain.default.json');
-
 const homedir = require('os').homedir();
 
 export class CommandHelper {
