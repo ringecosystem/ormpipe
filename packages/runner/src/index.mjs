@@ -32,9 +32,11 @@ async function _start(lifecycle) {
   for (const profileName of lifecycle.profiles) {
 
     const profiledSingerEnvName = `ORMPIPE_SIGNER_${profileName.toUpperCase()}`;
+    const profiledMainlyEnvName = `ORMPIPE_MAINLY_${profileName.toUpperCase()}`;
     const envs = {
       ..._definedEnvs,
       ORMPIPE_SIGNER: _definedEnvs[profiledSingerEnvName] || _definedEnvs['ORMPIPE_SIGNER'],
+      ORMPIPE_MAINLY: _definedEnvs[profiledMainlyEnvName] || _definedEnvs['ORMPIPE_MAINLY'],
     };
     delete envs[profiledSingerEnvName];
 
