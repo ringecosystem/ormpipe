@@ -89,7 +89,7 @@ async function main() {
     const {name, hash, payload} = await _profile();
     if (lifecycle.profileHash === hash) {
       console.log('profile hash not changed');
-      await setTimeout(10000);
+      await setTimeout(1000 * 60 * 2);
       continue
     }
     lifecycle.profileHash = hash;
