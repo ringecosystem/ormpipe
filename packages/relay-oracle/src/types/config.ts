@@ -10,7 +10,7 @@ import {PonderIndexOrmp, PonderIndexSigncribe} from "@darwinia/ormpipe-indexer";
 export type CliOracleConfig = CliBaseConfig
 
 export interface OracleRelayConfig extends RelayBaseConfig {
-  mainly: boolean | undefined,
+  mainly: boolean,
 }
 
 export interface OracleRelayLifecycle extends RelayBaseLifecycle {

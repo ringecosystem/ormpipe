@@ -25,6 +25,16 @@ function _extractEnvs() {
   return Object.fromEntries(Object.entries($.env).filter(([k, v]) => k.startsWith('ORMPIPE_')));
 }
 
+function _extractFeatures(profile) {
+  const envName = `ORMPIPE_FEATURES_${profile.toUpperCase()}`;
+  const rawFeatures = $.env[envName];
+  const features = rawFeatures.split(',').filter(item => item);
+  if (!features.length) {
+    console.log(chalk.yellow(`missing features for profile [${profile}], you can set it from env ${envName}`));
+  }
+  return features;
+}
+
 async function _start(lifecycle) {
   console.log('===== start');
   const _definedEnvs = _extractEnvs();
@@ -55,7 +65,8 @@ async function _start(lifecycle) {
     const ormpipePayloadInfo = profile.payload.ormpipe;
     const {pairs} = ormpipePayloadInfo;
 
-    for (const feature of lifecycle.features) {
+    const features = _extractFeatures(profileName);
+    for (const feature of features) {
       const containerName = `ormpipe-${feature}-${profileName}`;
 
       const runContainersOutput = await $`docker ps -a --format '{{.Names}}'`.quiet();
@@ -94,8 +105,8 @@ async function _clean(lifecycle) {
   const body = await resp.text();
   const payload = YAML.parse(body);
   const cleanProfiles = payload.ormpipe?.profiles;
-  const {features} = lifecycle;
   for (const profile of cleanProfiles) {
+    const features = _extractFeatures(profileName);
     for (const feature of features) {
       const containerName = `ormpipe-${feature}-${profile}`;
       const runContainersOutput = await $`docker ps -a --format '{{.Names}}'`.quiet();
@@ -111,12 +122,12 @@ async function _clean(lifecycle) {
 async function main() {
   const lifecycle = {
     profiles: arg.options('profile', 'p'),
-    features: arg.options('feature', 'f'),
+    // features: arg.options('feature', 'f'),
     profileHash: {},
   };
-  if (!lifecycle.features.length) {
-    console.log(chalk.yellow('[warn]: no features provided, please use --features or -f to set it'))
-  }
+  // if (!lifecycle.features.length) {
+  //   console.log(chalk.yellow('[warn]: no features provided, please use --features or -f to set it'))
+  // }
 
   while (true) {
     await _start(lifecycle);

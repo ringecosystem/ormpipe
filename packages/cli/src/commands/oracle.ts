@@ -38,10 +38,11 @@ export default class Oracle extends Command {
       times += 1;
       const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
       for (const rc of relayConfigs) {
-        const oracleRelayConfig = rc as OracleRelayConfig;
-        if (oracleRelayConfig.mainly === undefined) {
+        // @ts-ignore
+        if (rc.mainly == undefined) {
           const envMainly = process.env['ORMPIPE_MAINLY'];
-          oracleRelayConfig.mainly = envMainly === true || envMainly === 'true' || envMainly === '1';
+          // @ts-ignore
+          rc.mainly = envMainly === true || envMainly === 'true' || envMainly === '1';
         }
         const sourceToTargetLifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
         sourceToTargetLifecycle.times = times;
