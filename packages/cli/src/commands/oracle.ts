@@ -1,4 +1,4 @@
-import {Args, Command, Flags} from '@oclif/core'
+import {Command, Flags} from '@oclif/core'
 import {CommandHelper} from "../common/commander";
 import {CliOracleConfig, OracleRelay, OracleRelayConfig, OracleRelayLifecycle} from "@darwinia/ormpipe-relay-oracle";
 import {logger, RelayEVMClient, RelayStorage} from "@darwinia/ormpipe-common";
@@ -38,13 +38,13 @@ export default class Oracle extends Command {
       times += 1;
       const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
       for (const rc of relayConfigs) {
-        // @ts-ignore
-        if (rc.mainly == undefined) {
+        const orc = rc as OracleRelayConfig;
+        if (orc.mainly === undefined) {
           const envMainly = process.env['ORMPIPE_MAINLY'];
-          // @ts-ignore
-          rc.mainly = envMainly === true || envMainly === 'true' || envMainly === '1';
+          orc.mainly = envMainly === 'true' || envMainly === '1';
         }
-        const sourceToTargetLifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
+
+        const sourceToTargetLifecycle = await this.buildLifecycle(orc);
         sourceToTargetLifecycle.times = times;
 
         if (rc.symbol === '-' || rc.symbol === '>') {
@@ -121,6 +121,7 @@ export default class Oracle extends Command {
     });
     return {
       ...config,
+      mainly: !!config.mainly,
       storage,
       sourceName: config.sourceChain.name,
       targetName: config.targetChain.name,
