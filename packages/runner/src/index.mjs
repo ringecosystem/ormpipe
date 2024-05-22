@@ -10,7 +10,7 @@ async function _profile() {
   const profile = arg.option('profile');
   const resp = await fetch(`https://raw.githubusercontent.com/msgport/autoconf/main/ormpipe/runner-${profile}.yml`);
   if (resp.status !== 200) {
-    console.log(chalk.red(`can not read profile ${profile}`));
+    console.log(chalk.red(`can not read profile ${profile}, please add --profile and there is allow profiles https://github.com/msgport/autoconf/tree/main/ormpipe`));
     process.exit(1);
   }
   const body = await resp.text();
@@ -27,6 +27,7 @@ function _extractEnvs() {
 }
 
 async function _start(name, profile) {
+  console.log('===== start');
   const envs = _extractEnvs();
 
   const ormpipeImageInfo = profile.ormpipe;
@@ -56,7 +57,29 @@ async function _start(name, profile) {
     await $`docker run ${flags}`.quiet();
     console.log(`-> ormpipe ${chalk.green(containerName)} started with ${chalk.yellow(pairs)}`);
   }
+}
 
+async function _clean() {
+  console.log('===== clean');
+  const resp = await fetch(`https://raw.githubusercontent.com/msgport/autoconf/main/ormpipe/clean.yml`);
+  if (resp.status !== 200) {
+    return;
+  }
+  const body = await resp.text();
+  const payload = YAML.parse(body);
+  const cleanProfiles = payload.ormpipe?.profiles;
+  const features = ['relayer', 'oracle'];
+  for (const profile of cleanProfiles) {
+    for (const feature of features) {
+      const containerName = `ormpipe-${feature}-${profile}`;
+      const runContainersOutput = await $`docker ps -a --format '{{.Names}}'`.quiet();
+      const rcs = runContainersOutput.stdout.split('\n').filter(item => item);
+      if (rcs.filter(rc => rc === containerName).length) {
+        await $`docker stop ${containerName}`;
+        await $`docker rm ${containerName}`;
+      }
+    }
+  }
 }
 
 async function main() {
@@ -71,6 +94,7 @@ async function main() {
     lifecycle.profileHash = hash;
     console.log('profile changed restart ormpipe program');
     await _start(name, payload);
+    await _clean();
     await setTimeout(1000);
   }
 }

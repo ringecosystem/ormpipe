@@ -10,8 +10,8 @@ env:
   DOCKER_REGISTRY: ghcr.io
 
 jobs:
-  publish-npm:
-    name: Publish npm
+  release-ormpipe-npm:
+    name: Publish npm (ormpipe)
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
@@ -29,8 +29,8 @@ jobs:
       - name: Publish
         run: yarn publish:npm
 
-  publish-docker-image:
-    name: Publish docker image
+  release-ormpipe-docker-image:
+    name: Publish docker image (ormpipe)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
