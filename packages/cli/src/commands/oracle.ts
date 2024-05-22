@@ -40,7 +40,8 @@ export default class Oracle extends Command {
       for (const rc of relayConfigs) {
         const oracleRelayConfig = rc as OracleRelayConfig;
         if (oracleRelayConfig.mainly === undefined) {
-          oracleRelayConfig.mainly = !!process.env['ORMPIPE_MAINLY'];
+          const envMainly = process.env['ORMPIPE_MAINLY'];
+          oracleRelayConfig.mainly = envMainly === true || envMainly === 'true' || envMainly === '1';
         }
         const sourceToTargetLifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
         sourceToTargetLifecycle.times = times;
