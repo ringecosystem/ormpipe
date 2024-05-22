@@ -11,7 +11,7 @@ import {ThegraphIndexSigncribe} from "@darwinia/ormpipe-indexer/dist/thegraph/si
 export type CliOracleConfig = CliBaseConfig
 
 export interface OracleRelayConfig extends RelayBaseConfig {
-  mainly: boolean,
+  mainly: boolean | undefined,
 }
 
 export interface OracleRelayLifecycle extends RelayBaseLifecycle {

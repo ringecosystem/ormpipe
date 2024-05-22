@@ -19,7 +19,6 @@ export default class Oracle extends Command {
     'mainly': Flags.boolean({
       required: false,
       description: 'mainly node',
-      env: 'ORMPIPE_MAINLY',
     }),
   }
 
@@ -39,7 +38,13 @@ export default class Oracle extends Command {
     while (true) {
       times += 1;
       for (const rc of relayConfigs) {
-        const sourceToTargetLifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
+        const orc = rc as OracleRelayConfig;
+        if (orc.mainly === undefined) {
+          const envMainly = process.env['ORMPIPE_MAINLY'];
+          orc.mainly = envMainly === 'true' || envMainly === '1';
+        }
+
+        const sourceToTargetLifecycle = await this.buildLifecycle(orc);
         sourceToTargetLifecycle.times = times;
 
         if (rc.symbol === '-' || rc.symbol === '>') {
@@ -115,6 +120,7 @@ export default class Oracle extends Command {
     });
     return {
       ...config,
+      mainly: !!config.mainly,
       storage,
       sourceName: config.sourceChain.name,
       targetName: config.targetChain.name,
