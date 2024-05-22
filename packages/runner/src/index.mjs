@@ -32,15 +32,9 @@ async function _start(options = {name, profile}, lifecycle) {
   const envs = _extractEnvs();
 
   const ormpipeImageInfo = profile.ormpipe;
-  const {features, pairs} = ormpipeImageInfo;
+  const {pairs} = ormpipeImageInfo;
 
-  for (const feature of features) {
-    const allowedFeatures = lifecycle.features;
-    if (allowedFeatures.indexOf(feature) === -1) {
-      console.log(chalk.yellow(`just run with allowed features: ${allowedFeatures}, current feature is ${feature}`))
-      continue;
-    }
-
+  for (const feature of lifecycle.features) {
     const containerName = `ormpipe-${feature}-${name}`;
 
     const runContainersOutput = await $`docker ps -a --format '{{.Names}}'`.quiet();
