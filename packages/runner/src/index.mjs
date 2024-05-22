@@ -28,6 +28,7 @@ function _extractEnvs() {
 function _extractFeatures(profile) {
   const envName = `ORMPIPE_FEATURES_${profile.toUpperCase()}`;
   const rawFeatures = $.env[envName];
+  if (!rawFeatures) return [];
   const features = rawFeatures.split(',').filter(item => item);
   if (!features.length) {
     console.log(chalk.yellow(`missing features for profile [${profile}], you can set it from env ${envName}`));
