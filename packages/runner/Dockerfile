@@ -12,4 +12,4 @@ RUN apk update \
     && cd /app \
     && npm i
 
-ENTRYPOINT ["/app/scripts/jbox.sh"]
+ENTRYPOINT ["/app/scripts/runner.sh"]
