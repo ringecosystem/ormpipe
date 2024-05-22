@@ -47,6 +47,7 @@ async function _start(name, profile) {
 
     const flags = [
       '-dit',
+      '--restart=always',
       `--name=${containerName}`,
       ...Object.entries(envs).map(([k, v]) => `--env=${k}=${v}`),
       ormpipeImageInfo.image,
