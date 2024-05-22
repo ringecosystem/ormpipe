@@ -19,6 +19,7 @@ export default class Oracle extends Command {
     'mainly': Flags.boolean({
       required: false,
       description: 'mainly node',
+      env: 'ORMPIPE_MAINLY',
     }),
   }
 
