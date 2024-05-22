@@ -108,7 +108,7 @@ async function _clean(lifecycle) {
   const payload = YAML.parse(body);
   const cleanProfiles = payload.ormpipe?.profiles;
   for (const profile of cleanProfiles) {
-    const features = _extractFeatures(profileName);
+    const features = _extractFeatures(profile);
     for (const feature of features) {
       const containerName = `ormpipe-${feature}-${profile}`;
       const runContainersOutput = await $`docker ps -a --format '{{.Names}}'`.quiet();
