@@ -33,10 +33,10 @@ export default class Oracle extends Command {
     const {args, flags} = await this.parse(Oracle)
 
     const cliConfig = camelize(flags) as unknown as CliOracleConfig;
-    const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
     let times = 0;
     while (true) {
       times += 1;
+      const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
       for (const rc of relayConfigs) {
         const sourceToTargetLifecycle = await this.buildLifecycle(rc as OracleRelayConfig);
         sourceToTargetLifecycle.times = times;

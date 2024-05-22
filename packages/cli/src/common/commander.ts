@@ -1,9 +1,8 @@
 import * as enquirer from "enquirer";
-import {ChainInfoFlag, CliBaseConfig, logger, RelayBaseConfig} from "@darwinia/ormpipe-common";
+import {ChainInfoFlag, CliBaseConfig, Definition, logger, RelayBaseConfig} from "@darwinia/ormpipe-common";
 import {Flags} from "@oclif/core";
-import * as fs from 'fs';
-
-const REALY_CONFIG_DEFAULT = require('../assets/relay-chain.default.json');
+import axios, {AxiosResponse} from 'axios';
+import YAML from 'yaml'
 
 const homedir = require('os').homedir();
 
@@ -34,6 +33,13 @@ export class CommandHelper {
       description: 'enable delivery pair',
     }),
   };
+
+  public static async definition(): Promise<Definition> {
+    const link = 'https://raw.githubusercontent.com/msgport/autoconf/main/ormpipe/definition.yml';
+    const response: AxiosResponse = await axios.get(link);
+    const rawData = response.data;
+    return YAML.parse(rawData);
+  }
 
   public static async interactiveValue(options: {
     required: boolean,
@@ -71,17 +77,10 @@ export class CommandHelper {
     return value;
   }
 
-  public static async generateRelayChainInfo(cliStartConfig: CliBaseConfig): Promise<Record<string, ChainInfoFlag>> {
-    const configFile = cliStartConfig.config;
-    const _file = fs.existsSync(configFile) ? configFile : `${cliStartConfig.dataPath}/${configFile}`;
-    if (!fs.existsSync(_file)) {
-      return REALY_CONFIG_DEFAULT as unknown as Record<string, ChainInfoFlag>;
-    }
-    const content = fs.readFileSync(_file, {encoding: 'utf-8'});
-    const parsed = JSON.parse(content);
-    const chainMap = parsed as unknown as Record<string, ChainInfoFlag>;
+  public static async generateRelayChainInfo(): Promise<Record<string, ChainInfoFlag>> {
+    const {chain} = await this.definition();
 
-    const chainNames = Object.keys(chainMap);
+    const chainNames = Object.keys(chain);
     for (const chainName of chainNames) {
       const envChainName = chainName.toUpperCase();
       const xEndpoint = process.env[`ORMPIPE_ENDPOINT_${envChainName}`];
@@ -92,7 +91,7 @@ export class CommandHelper {
       const xContractMultisig = process.env[`ORMPIPE_CONTRACT_MULTISIG_${envChainName}`];
       const xIndexerOrmp = process.env[`ORMPIPE_INDEXER_ORMP_${envChainName}`];
       const xIndexerSigncribe = process.env[`ORMPIPE_INDEXER_SIGNCRIBE_${envChainName}`];
-      const currentChain = chainMap[chainName];
+      const currentChain = chain[chainName];
       const currentChainContract = currentChain.contract;
       const currentChainIndexer = currentChain.indexer;
       currentChain.endpoint = xEndpoint ?? currentChain.endpoint;
@@ -109,11 +108,11 @@ export class CommandHelper {
       }
 
     }
-    return chainMap;
+    return chain;
   }
 
   public static async buildRelayConfig(cliStartConfig: CliBaseConfig): Promise<RelayBaseConfig[]> {
-    const chainInfo = await this.generateRelayChainInfo(cliStartConfig);
+    const chainInfo = await this.generateRelayChainInfo();
     const pairs = cliStartConfig.enablePair;
     const works = [] as RelayBaseConfig[];
     const _SIGNER_BASE = process.env['ORMPIPE_SIGNER'];
@@ -132,15 +131,15 @@ export class CommandHelper {
     for (const pair of pairs) {
       let source, target, symbol;
       if (pair.indexOf('-') > -1) {
-       [source, target] = pair.split('-');
-       symbol = '-';
+        [source, target] = pair.split('-');
+        symbol = '-';
       }
       if (pair.indexOf('>') > -1) {
         [source, target] = pair.split('>');
         symbol = '>';
       }
       if (pair.indexOf('<') > -1) {
-        [source, target]= pair.split('<');
+        [source, target] = pair.split('<');
         symbol = '<';
       }
       // const [source, target] = pair.split('-');

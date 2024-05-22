@@ -1,0 +1,12 @@
+{
+  "name": "ormpipe-runner",
+  "version": "0.1.2",
+  "description": "jbox",
+  "main": "src/index.mjs",
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "js-sha1": "^0.7.0"
+  }
+}

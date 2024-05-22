@@ -2,6 +2,11 @@ import {RelayStorage} from "./storage";
 import {RelayEVMClient} from "./evm";
 
 
+export interface Definition {
+  pair: PairGroup
+  chain: Record<string, ChainInfoFlag>
+}
+
 export interface CliBaseConfig {
   dataPath: string
   config: string
@@ -25,6 +30,11 @@ export interface RelayBaseLifecycle extends RelayBaseConfig {
   targetName: string,
   sourceClient: RelayEVMClient,
   targetClient: RelayEVMClient,
+}
+
+export interface PairGroup {
+  mainnets: string[]
+  testnets: string[]
 }
 
 export interface ChainInfoFlag {
