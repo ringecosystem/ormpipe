@@ -43,12 +43,15 @@ async function _start(lifecycle) {
 
     const profiledSingerEnvName = `ORMPIPE_SIGNER_${profileName.toUpperCase()}`;
     const profiledMainlyEnvName = `ORMPIPE_MAINLY_${profileName.toUpperCase()}`;
+    const features = _extractFeatures(profileName);
+
     const envs = {
       ..._definedEnvs,
       ORMPIPE_SIGNER: _definedEnvs[profiledSingerEnvName] || _definedEnvs['ORMPIPE_SIGNER'],
       ORMPIPE_MAINLY: _definedEnvs[profiledMainlyEnvName] || _definedEnvs['ORMPIPE_MAINLY'],
     };
     delete envs[profiledSingerEnvName];
+    delete envs[`ORMPIPE_FEATURES_${profileName.toUpperCase()}`];
 
     const profile = await _profile(profileName);
     if (!profile) {
@@ -65,7 +68,6 @@ async function _start(lifecycle) {
     const ormpipePayloadInfo = profile.payload.ormpipe;
     const {pairs} = ormpipePayloadInfo;
 
-    const features = _extractFeatures(profileName);
     for (const feature of features) {
       const containerName = `ormpipe-${feature}-${profileName}`;
 
