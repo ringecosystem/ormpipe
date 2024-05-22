@@ -1,13 +1,13 @@
 import {setTimeout} from "timers/promises";
-import { sha1 } from 'js-sha1';
+import {sha1} from 'js-sha1';
 import * as arg from './ecosys/arg.js'
 
 if (arg.option('verbose')) {
   $.verbose = true;
 }
 
-async function _profile() {
-  const profile = arg.option('profile');
+async function _profile(lifecycle) {
+  const {profile} = lifecycle;
   const resp = await fetch(`https://raw.githubusercontent.com/msgport/autoconf/main/ormpipe/runner-${profile}.yml`);
   if (resp.status !== 200) {
     console.log(chalk.red(`can not read profile ${profile}, please add --profile and there is allow profiles https://github.com/msgport/autoconf/tree/main/ormpipe`));
@@ -26,7 +26,8 @@ function _extractEnvs() {
   return Object.fromEntries(Object.entries($.env).filter(([k, v]) => k.startsWith('ORMPIPE_')));
 }
 
-async function _start(name, profile) {
+async function _start(options = {name, profile}, lifecycle) {
+  const {name, profile} = options;
   console.log('===== start');
   const envs = _extractEnvs();
 
@@ -34,6 +35,12 @@ async function _start(name, profile) {
   const {features, pairs} = ormpipeImageInfo;
 
   for (const feature of features) {
+    const allowedFeatures = lifecycle.features;
+    if (allowedFeatures.indexOf(feature) === -1) {
+      console.log(chalk.yellow(`just run with allowed features: ${allowedFeatures}, current feature is ${feature}`))
+      continue;
+    }
+
     const containerName = `ormpipe-${feature}-${name}`;
 
     const runContainersOutput = await $`docker ps -a --format '{{.Names}}'`.quiet();
@@ -60,7 +67,7 @@ async function _start(name, profile) {
   }
 }
 
-async function _clean() {
+async function _clean(lifecycle) {
   console.log('===== clean');
   const resp = await fetch(`https://raw.githubusercontent.com/msgport/autoconf/main/ormpipe/clean.yml`);
   if (resp.status !== 200) {
@@ -69,7 +76,7 @@ async function _clean() {
   const body = await resp.text();
   const payload = YAML.parse(body);
   const cleanProfiles = payload.ormpipe?.profiles;
-  const features = ['relayer', 'oracle'];
+  const {features} = lifecycle;
   for (const profile of cleanProfiles) {
     for (const feature of features) {
       const containerName = `ormpipe-${feature}-${profile}`;
@@ -84,18 +91,25 @@ async function _clean() {
 }
 
 async function main() {
-  const lifecycle = {};
+  const lifecycle = {
+    profile: arg.option('profile', 'p'),
+    features: arg.options('features', 'f'),
+  };
+  if (!lifecycle.features.length) {
+    console.log(chalk.yellow('[warn]: no features provided, please use --features or -f to set it'))
+  }
+
   while (true) {
-    const {name, hash, payload} = await _profile();
+    const {name, hash, payload} = await _profile(lifecycle);
     if (lifecycle.profileHash === hash) {
       console.log('profile hash not changed');
       await setTimeout(1000 * 60 * 2);
       continue
     }
     lifecycle.profileHash = hash;
-    console.log('profile changed restart ormpipe program');
-    await _start(name, payload);
-    await _clean();
+    console.log(`profile changed restart ormpipe program: [${name}]`);
+    await _start({name, profile: payload}, lifecycle);
+    await _clean(lifecycle);
     await setTimeout(1000);
   }
 }
