@@ -76,13 +76,13 @@ export class RelayEVMClient {
     return this._tronweb;
   }
 
-  public async getFinalizedBlockNumber() {
+  public async getLatestBlockNumber() {
     if (this._isTron) {
       const block = await this._tronweb.trx.getCurrentBlock();
       console.log("tronweb getBlock", block);
       return block?.block_header?.raw_data.number;
     } else {
-      const block = await this.evm.getBlock("finalized", false);
+      const block = await this.evm.getBlock("latest", false);
       return block?.number;
     }
   }
