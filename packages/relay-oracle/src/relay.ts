@@ -244,7 +244,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     }
 
     logger.info(
-      `new message accepted %s wait block %s(%s) finalized`,
+      `new message accepted %s wait block %s(%s) confirmed`,
       sourceNextMessageAccepted.msgHash,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
