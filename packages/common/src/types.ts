@@ -43,6 +43,7 @@ export interface ChainInfoFlag {
   endpoint: string
   indexer: ChainInfoIndexerFlag
   contract: ChainInfoFlagContract
+  confirmations: number
 }
 
 export interface ChainInfoIndexerFlag {

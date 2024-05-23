@@ -19,6 +19,7 @@ import { OracleContractClient } from "./client/contract_oracle";
 interface OracleSignOptions {
   sourceChainId: number;
   targetChainId: number;
+  blockConfirmations: number;
   mainly: boolean;
 }
 
@@ -110,6 +111,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       const options: OracleSignOptions = {
         sourceChainId,
         targetChainId,
+        blockConfirmations: super.lifecycle.sourceChain.confirmations,
         mainly: super.lifecycle.mainly,
       };
       await this.sign(options);
@@ -249,21 +251,22 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       super.meta("ormpipe-relay-oracle", ["oracle:sign"])
     );
 
-    // check finalized
-    const sourceFinalizedBlockNumber =
-      await this.sourceClient.getFinalizedBlockNumber();
-    if (!sourceFinalizedBlockNumber) {
+    // check block confirmations
+    const sourceLatestBlockNumber =
+      await this.sourceClient.getLatestBlockNumber();
+    if (!sourceLatestBlockNumber) {
       logger.error(
-        "can not get %s finalized block",
+        "can not get %s latest block",
         super.sourceName,
         super.meta("ormpipe-relay-oracle", ["oracle:sign"])
       );
       return;
     }
-    if (sourceFinalizedBlockNumber < +sourceNextMessageAccepted.blockNumber) {
+    const confirmedBlock = sourceLatestBlockNumber - options.blockConfirmations;
+    if (confirmedBlock < +sourceNextMessageAccepted.blockNumber) {
       logger.warn(
-        "message block not finalized %s/%s(%s)",
-        sourceFinalizedBlockNumber,
+        "message block not confirmed %s/%s(%s)",
+        confirmedBlock,
         sourceNextMessageAccepted.blockNumber,
         super.sourceName,
         super.meta("ormpipe-relay-oracle", ["oracle:sign"])
@@ -271,8 +274,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       return;
     }
     logger.info(
-      "message block finalized %s/%s(%s)",
-      sourceFinalizedBlockNumber,
+      "message block confirmed %s/%s(%s)",
+      confirmedBlock,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
       super.meta("ormpipe-relay-oracle", ["oracle:sign"])
