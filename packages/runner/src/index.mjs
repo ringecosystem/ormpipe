@@ -86,7 +86,7 @@ async function _start(lifecycle) {
       const flags = [
         '-dit',
         '--restart=always',
-        containerNetwork ? `--network=${containerName}` : '',
+        containerNetwork ? `--network=${containerNetwork}` : '',
         `--name=${containerName}`,
         ...Object.entries(envs).map(([k, v]) => `--env=${k}=${v}`),
         ormpipePayloadInfo.image,
