@@ -85,7 +85,7 @@ export class RelayerContractClient {
       const estimatedGas = await this.contract["relay"].estimateGas(
         options.message
       );
-      contractOptions.gasLimit = estimatedGas + estimatedGas / BigInt(2);
+      contractOptions.gasLimit = estimatedGas + estimatedGas;
     } else {
       contractOptions.gasLimit = options.gasLimit;
     }

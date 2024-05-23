@@ -176,7 +176,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     try {
       targetTxRelayMessage = await this.targetRelayerClient.relay({
         message,
-        gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(63) / BigInt(64) + baseGas + BigInt(100000),
+        gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000),
         chainId: options.targetChainId,
       });
     } catch (e: any) {
