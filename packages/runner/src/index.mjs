@@ -82,9 +82,11 @@ async function _start(lifecycle) {
 
       await $`docker pull ${ormpipePayloadInfo.image}`;
 
+      const containerNetwork = arg.option('network');
       const flags = [
         '-dit',
         '--restart=always',
+        containerNetwork ? `--network=${containerName}` : '',
         `--name=${containerName}`,
         ...Object.entries(envs).map(([k, v]) => `--env=${k}=${v}`),
         ormpipePayloadInfo.image,
