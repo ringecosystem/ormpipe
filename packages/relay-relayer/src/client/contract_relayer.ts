@@ -75,21 +75,25 @@ export class RelayerContractClient {
     //   }
     // }
     const contractOptions: EthersRequestOptions = {};
-
+    // console.log("options", options);
     const enableGasCheck =
       [
         421614, // arbitrum sepolia
         42161, // arbitrum one
-      ].indexOf(options.chainId) > -1;
+      ].indexOf(Number(options.chainId)) > -1;
     if (enableGasCheck) {
       const estimatedGas = await this.contract["relay"].estimateGas(
         options.message
       );
-      contractOptions.gasLimit = estimatedGas + estimatedGas;
+      contractOptions.gasLimit =
+        ((options.gasLimit + estimatedGas) * BigInt(3)) / BigInt(2);
+      console.log(
+        `contractOptions.gasLimit: ${contractOptions.gasLimit}, options.gasLimit: ${options.gasLimit}, estimatedGas: ${estimatedGas}`
+      );
     } else {
       contractOptions.gasLimit = options.gasLimit;
     }
-    switch (options.chainId) {
+    switch (Number(options.chainId)) {
       case 42161: // arbitrum
         contractOptions.maxFeePerGas = BigInt(300000000);
         contractOptions.maxPriorityFeePerGas = BigInt(100000000);

@@ -174,6 +174,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
     let targetTxRelayMessage;
     try {
+      // console.log("\n\n###########")
+      // console.log("sourceNextMessageAccepted.messageGasLimit", sourceNextMessageAccepted.messageGasLimit)
+      // console.log("baseGas", baseGas)
+      // console.log("BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000)", BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000));
+      // console.log("###########\n\n")
       targetTxRelayMessage = await this.targetRelayerClient.relay({
         message,
         gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000),
