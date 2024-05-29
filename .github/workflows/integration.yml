@@ -51,9 +51,8 @@ jobs:
     strategy:
       matrix:
         task:
-          - endpoint: https://ethereum-sepolia-rpc.publicnode.com
-            source-chain-id: 11155111
-            target-chain-id: 421614
+          - from: sepolia
+            to: arbtrumsepolia
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -71,6 +70,5 @@ jobs:
         run: |
           scripts/ormpipe.sh integration \
             send-message-msgport \
-            --endpoint=${{ matrix.task.endpoint }} \
-            --source-chain-id=${{ matrix.task.source-chain-id }} \
-            --target-chain-id=${{ matrix.task.target-chain-id }}
+            --from=${{ matrix.task.from }} \
+            --to=${{ matrix.task.to }}
