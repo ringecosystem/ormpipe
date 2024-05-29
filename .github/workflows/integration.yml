@@ -44,7 +44,7 @@ jobs:
       matrix:
         task:
           - from: sepolia
-            to: arbtrumsepolia
+            to: arbitrumsepolia
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
