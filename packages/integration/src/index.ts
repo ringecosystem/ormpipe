@@ -215,7 +215,7 @@ export class OrmpIntegrationTestProgram {
       toAddress,
       message,
       params,
-      { value: fee }
+      { value: fee, gasLimit: 200000 }
     );
     const resp = await tx.wait();
     console.log(`send-msgport: ${resp.hash}`);
