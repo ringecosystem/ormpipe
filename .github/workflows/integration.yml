@@ -7,17 +7,15 @@ on:
 
 jobs:
   integrate-mainnet:
-    name: Run integrate test v1
+    name: Run integrate test v2 on mainnets
     runs-on: ubuntu-latest
     strategy:
       matrix:
         task:
-          - endpoint: http://c2.darwinia-rpc.itering.io:9944/
-            source-chain-id: 46
-            target-chain-id: 44
-          - endpoint: http://c2.crab-rpc.itering.io:9944/
-            source-chain-id: 44
-            target-chain-id: 46
+          - from: darwinia
+            to: crab
+          - from: crab
+            to: darwinia
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -32,17 +30,11 @@ jobs:
         env:
           ORMPIPE_LOG_LEVEL: debug
           ORMPIPE_SIGNER: ${{ secrets.ORMPIPE_SIGNER }}
-          ORMP_VERSION: 1
         run: |
           scripts/ormpipe.sh integration \
             send-message-msgport \
-            --endpoint=${{ matrix.task.endpoint }} \
-            --source-chain-id=${{ matrix.task.source-chain-id }} \
-            --target-chain-id=${{ matrix.task.target-chain-id }} \
-            --address-ormp='0x00000000001523057a05d6293C1e5171eE33eE0A' \
-            --address-oracle='0x0000000003ebeF32D8f0ED406a5CA8805c80AFba' \
-            --address-relayer='0x0000000000808fE9bDCc1d180EfbF5C53552a6b1' \
-            --address-msgport='0x0000000005d961F950adA391C1511c92bbc64D9F'
+            --from=${{ matrix.task.from }} \
+            --to=${{ matrix.task.to }} \
 
 
   integrate-testnet:
@@ -51,9 +43,8 @@ jobs:
     strategy:
       matrix:
         task:
-          - endpoint: https://ethereum-sepolia-rpc.publicnode.com
-            source-chain-id: 11155111
-            target-chain-id: 421614
+          - from: sepolia
+            to: arbtrumsepolia
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -71,6 +62,5 @@ jobs:
         run: |
           scripts/ormpipe.sh integration \
             send-message-msgport \
-            --endpoint=${{ matrix.task.endpoint }} \
-            --source-chain-id=${{ matrix.task.source-chain-id }} \
-            --target-chain-id=${{ matrix.task.target-chain-id }}
+            --from=${{ matrix.task.from }} \
+            --to=${{ matrix.task.to }}
