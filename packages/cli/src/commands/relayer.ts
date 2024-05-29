@@ -34,10 +34,10 @@ export default class Relayer extends Command {
     const {args, flags} = await this.parse(Relayer)
 
     const cliConfig = camelize(flags) as unknown as CliRelayerConfig;
-    const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
     let times = 0;
     while(true) {
       times += 1;
+      const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
       for (const rc of relayConfigs) {
         const sourceToTargetLifecycle = await this.buildLifecycle(rc);
         sourceToTargetLifecycle.times = times;
