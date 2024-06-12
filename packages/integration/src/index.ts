@@ -210,13 +210,28 @@ export class OrmpIntegrationTestProgram {
     }
     const { fee, params } = msgportFee;
 
-    const tx = await contractMsgport["send"](
-      this.config.targetChainId,
-      toAddress,
-      message,
-      params,
-      { value: fee, gasLimit: 200000 }
-    );
+    let tx;
+    if (
+      Number(this.config.sourceChainId) == 42161 ||
+      Number(this.config.sourceChainId) == 421614
+    ) {
+      // Arbitrum need more gas
+      tx = await contractMsgport["send"](
+        this.config.targetChainId,
+        toAddress,
+        message,
+        params,
+        { value: fee, gasLimit: 500000 }
+      );
+    } else {
+      tx = await contractMsgport["send"](
+        this.config.targetChainId,
+        toAddress,
+        message,
+        params,
+        { value: fee }
+      );
+    }
     const resp = await tx.wait();
     console.log(`send-msgport: ${resp.hash}`);
   }
