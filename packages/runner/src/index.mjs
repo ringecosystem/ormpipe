@@ -22,7 +22,7 @@ async function _profile(profile) {
 }
 
 function _extractEnvs() {
-  return Object.fromEntries(Object.entries($.env).filter(([k, v]) => k.startsWith('ORMPIPE_')));
+  return Object.fromEntries(Object.entries($.env));
 }
 
 function _extractFeatures(profile) {
