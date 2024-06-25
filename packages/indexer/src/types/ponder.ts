@@ -114,6 +114,7 @@ export interface _QueryWithBlockNumber {
   }
   
   export interface OracleImportedMessageHash extends BaseGraphEntity {
+    msgIndex: string
     srcChainId: string
     srcBlockNumber: string
     hash: string

@@ -116,7 +116,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       };
       await this.sign(options);
     } catch (e: any) {
-      logger.error(e, super.meta("ormpipe-relay"));
+      super.meta("ormpipe-relay-oracle", ["oracle:sign"]);
     }
   }
 
@@ -128,6 +128,14 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         fromChainId: options.sourceChainId,
         toChainId: options.targetChainId,
       });
+
+    if (lastImportedMessageHash) {
+      logger.info(
+        `lastImportedMessageHash ==> msgIndex: ${lastImportedMessageHash.msgIndex}, srcChainId: ${lastImportedMessageHash.srcChainId}, msgHash: ${lastImportedMessageHash.hash}, blockTime: ${lastImportedMessageHash.blockTimestamp}`,
+        super.meta("ormpipe-relay-oracle", ["oracle:sign"])
+      );
+    }
+
     let nextAssignedMessageAccepted;
     if (!lastImportedMessageHash) {
       const msgHashes =
@@ -146,7 +154,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
           logger.debug(
             "not have any unrelayed messages from %s",
             super.sourceName,
-            super.meta("ormpipe-relay", ["oracle"])
+            super.meta("ormpipe-relay-oracle", ["oracle"])
           );
           return undefined;
         }
@@ -163,6 +171,14 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
             toChainId: options.targetChainId,
           });
       }
+      if (nextAssignedMessageAccepted) {
+        logger.info(
+          `nextAssignedMessageAccepted => msgIndex: ${nextAssignedMessageAccepted.messageIndex}, srcChainId: ${nextAssignedMessageAccepted.messageFromChainId}, msgHash: ${nextAssignedMessageAccepted.msgHash}`,
+          super.meta("ormpipe-relay-oracle", [
+            "oracle:sign:!!!lastImportedMessageHash",
+          ])
+        );
+      }
       return nextAssignedMessageAccepted;
     }
 
@@ -175,7 +191,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       logger.warn(
         "can not query message accepted by msgHash: %s",
         lastImportedMessageHash.hash,
-        super.meta("ormpipe-relay")
+        super.meta("ormpipe-relay-oracle", ["oracle:sign"])
       );
       return;
     }
@@ -185,7 +201,14 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
         fromChainId: options.sourceChainId,
         toChainId: options.targetChainId,
       });
-
+    if (nextAssignedMessageAccepted) {
+      logger.info(
+        `nextAssignedMessageAccepted => msgIndex: ${nextAssignedMessageAccepted.messageIndex}, srcChainId: ${nextAssignedMessageAccepted.messageFromChainId}, msgHash: ${nextAssignedMessageAccepted.msgHash}`,
+        super.meta("ormpipe-relay-oracle", [
+          "oracle:sign:lastImportedMessageHash",
+        ])
+      );
+    }
     return nextAssignedMessageAccepted;
   }
 
@@ -245,6 +268,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     logger.info(
       `new message accepted %s wait block %s(%s) confirmed`,
+      sourceNextMessageAccepted.messageIndex,
       sourceNextMessageAccepted.msgHash,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
@@ -344,7 +368,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
           );
           return;
         } catch (e: any) {
-          logger.error(e, super.meta("ormpipe-relay"));
+          logger.error(e, super.meta("ormpipe-relay-oracle"));
           logger.info(
             "failed to execute multisign will sign message again, %s(%s)",
             sourceNextMessageAccepted.messageIndex,
