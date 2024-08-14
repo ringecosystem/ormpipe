@@ -109,6 +109,7 @@ export class RelayerContractClient {
           this.config.address.replace("0x", "41")
         );
       }
+      const feeLimit = await this.estimateFeeLimit(options);
       try {
         const tronResult = await this._tronContract
           .relay([
@@ -121,8 +122,9 @@ export class RelayerContractClient {
             options.message.gasLimit,
             options.message.encoded,
           ])
-          .send();
-
+          .send(
+            { "feeLimit": feeLimit }
+          );
         console.log("Relay on Tron", tronResult);
         return tronResult;
       } catch (e) {
@@ -131,6 +133,67 @@ export class RelayerContractClient {
     } else {
       const tx = await this.contract["relay"](options.message, contractOptions);
       return await tx.wait();
+    }
+  }
+
+  async estimateFeeLimit(options: RelayOptions) {
+    const tronPubKey = this._tronweb.address.toHex(
+      this._tronweb.address.fromPrivateKey(this.config.signer)
+    );
+
+    const rawParameter = this._tronweb.utils.abi.encodeParamsV2ByABI({
+      "inputs": [
+        {
+          "components": [
+            { "internalType": "address", "name": "channel", "type": "address" },
+            { "internalType": "uint256", "name": "index", "type": "uint256" },
+            {
+              "internalType": "uint256",
+              "name": "fromChainId",
+              "type": "uint256"
+            },
+            { "internalType": "address", "name": "from", "type": "address" },
+            { "internalType": "uint256", "name": "toChainId", "type": "uint256" },
+            { "internalType": "address", "name": "to", "type": "address" },
+            { "internalType": "uint256", "name": "gasLimit", "type": "uint256" },
+            { "internalType": "bytes", "name": "encoded", "type": "bytes" }
+          ],
+          "internalType": "struct Message",
+          "name": "message",
+          "type": "tuple"
+        }
+      ],
+      "name": "relay",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }, [[
+      options.message.channel,
+      options.message.index,
+      options.message.fromChainId,
+      options.message.from,
+      options.message.toChainId,
+      options.message.to,
+      options.message.gasLimit,
+      options.message.encoded,
+    ]])
+
+    try {
+      const _result = await this._tronweb.transactionBuilder.estimateEnergy(
+        this.config.address.replace("0x", "41"),
+        "relay((address,uint256,uint256,address,uint256,address,uint256,bytes))",
+        { shieldedParameter: rawParameter },
+        [], tronPubKey)
+      const energyRequired = _result.energy_required;
+      const energyPricesResult = await this._tronweb.trx.getEnergyPrices();
+      console.log(energyPricesResult);
+      const energyPrices = energyPricesResult.split(",");
+      const latestPrice = (energyPrices[energyPrices.length - 1].split(":"))[1];
+      const feeLimit = 1.2 * energyRequired * latestPrice;
+      console.log("estimate energy: ", energyRequired, latestPrice, feeLimit);
+      return feeLimit;
+    } catch (e) {
+      console.error("estimate energy error", e);
     }
   }
 
