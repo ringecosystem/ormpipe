@@ -189,7 +189,7 @@ export class RelayerContractClient {
       console.log(energyPricesResult);
       const energyPrices = energyPricesResult.split(",");
       const latestPrice = (energyPrices[energyPrices.length - 1].split(":"))[1];
-      const feeLimit = 1.2 * energyRequired * latestPrice;
+      const feeLimit = Math.ceil(1.1 * energyRequired * latestPrice);
       console.log("estimate energy: ", energyRequired, latestPrice, feeLimit);
       return feeLimit;
     } catch (e) {
