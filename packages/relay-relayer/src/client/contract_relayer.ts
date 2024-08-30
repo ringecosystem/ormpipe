@@ -123,12 +123,12 @@ export class RelayerContractClient {
             options.message.encoded,
           ])
           .send(
-            feeLimit ? { "feeLimit": feeLimit } : {}
+            feeLimit ? { "feeLimit": feeLimit } : { "feeLimit": 300_000000 }
           );
         console.log("Relay on Tron", tronResult);
         return tronResult;
       } catch (e) {
-        console.error(e);
+        console.error("Relay on Tron error: ", e);
       }
     } else {
       const tx = await this.contract["relay"](options.message, contractOptions);
