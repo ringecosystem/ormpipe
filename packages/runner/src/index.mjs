@@ -7,9 +7,9 @@ if (arg.option('verbose')) {
 }
 
 async function _profile(profile) {
-  const resp = await fetch(`https://raw.githubusercontent.com/msgport/autoconf/main/ormpipe/runner-${profile}.yml`);
+  const resp = await fetch(`https://raw.githubusercontent.com/ringecosystem/autoconf/main/ormpipe/runner-${profile}.yml`);
   if (resp.status !== 200) {
-    console.log(chalk.yellow(`can not read profile ${profile}, please add --profile and there is allow profiles https://github.com/msgport/autoconf/tree/main/ormpipe`));
+    console.log(chalk.yellow(`can not read profile ${profile}, please add --profile and there is allow profiles https://github.com/ringecosystem/autoconf/tree/main/ormpipe`));
     return null;
   }
   const body = await resp.text();
@@ -104,7 +104,7 @@ async function _start(lifecycle) {
 
 async function _clean(lifecycle) {
   console.log('===== clean');
-  const resp = await fetch(`https://raw.githubusercontent.com/msgport/autoconf/main/ormpipe/clean.yml`);
+  const resp = await fetch(`https://raw.githubusercontent.com/ringecosystem/autoconf/main/ormpipe/clean.yml`);
   if (resp.status !== 200) {
     return;
   }
