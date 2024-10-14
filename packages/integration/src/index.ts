@@ -169,7 +169,7 @@ export class OrmpIntegrationTestProgram {
     try {
       if (this.config.version == 1) {
         const ofee = await axios.get(
-          "https://msgport-api.darwinia.network/ormp/fee",
+          "https://api.msgport.xyz/ormp/fee",
           {
             params: {
               from_chain_id: this.config.sourceChainId,
