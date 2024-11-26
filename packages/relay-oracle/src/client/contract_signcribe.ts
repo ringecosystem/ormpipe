@@ -28,7 +28,9 @@ export class SigncribeContractClient {
     this.contract = new ethers.Contract(config.address, abi, wallet);
   }
 
-
+  public get contractConfig() {
+    return this.config;
+  }
 
   public async submit(options: SubmitSignscribeOptions): Promise<TransactionResponse | undefined> {
     const tx = await this.contract['submit'](

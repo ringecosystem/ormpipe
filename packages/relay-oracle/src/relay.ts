@@ -406,13 +406,23 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signature
     );
     if (!signatureExist) {
-      const resp = await this.signcribeContract.submit(signcribeSubmitOptions);
-      if (!resp) {
+      let resp = null;
+      try {
+        resp = await this.signcribeContract.submit(signcribeSubmitOptions);
+        if (!resp) {
+          logger.error(
+            "failed to submit signed to signcribe contract",
+            super.meta("ormpipe-relay-oracle", ["oracle:sign"])
+          );
+          return;
+        }
+      } catch (error) {
         logger.error(
-          "failed to submit signed to signcribe contract",
+          `signcribe submit error: %s, %s`,
+          this.signcribeContract.contractConfig.endpoint,
+          error,
           super.meta("ormpipe-relay-oracle", ["oracle:sign"])
-        );
-        return;
+        )
       }
 
       logger.info(
