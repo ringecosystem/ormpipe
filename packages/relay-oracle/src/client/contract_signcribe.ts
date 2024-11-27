@@ -1,5 +1,5 @@
-import {ContractConfig, TransactionResponse} from "@darwinia/ormpipe-common";
-import {ethers} from "ethers";
+import { ContractConfig, TransactionResponse } from "@darwinia/ormpipe-common";
+import { ethers } from "ethers";
 
 const abi = require("../abis/v2/SubAPISignaturePub.json");
 
@@ -33,14 +33,18 @@ export class SigncribeContractClient {
   }
 
   public async submit(options: SubmitSignscribeOptions): Promise<TransactionResponse | undefined> {
-    const tx = await this.contract['submit'](
-      options.chainId,
-      options.channel,
-      options.msgIndex,
-      options.signature,
-      options.data,
-    )
-    return await tx.wait();
+    try {
+      const tx = await this.contract['submit'](
+        options.chainId,
+        options.channel,
+        options.msgIndex,
+        options.signature,
+        options.data,
+      )
+      return await tx.wait();
+    } catch (error) {
+      console.error("submit error", error);
+    }
   }
 
 }
