@@ -14,8 +14,8 @@ jobs:
         task:
           - from: darwinia
             to: crab
-          - from: crab
-            to: darwinia
+          # - from: crab
+          #   to: darwinia
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
