@@ -26,12 +26,12 @@ jobs:
       - name: install dependencies
         run: yarn install
 
-      # - name: run task
-      #   env:
-      #     ORMPIPE_LOG_LEVEL: debug
-      #     ORMPIPE_SIGNER: ${{ secrets.ORMPIPE_SIGNER }}
-      #   run: |
-      #     scripts/ormpipe.sh integration \
-      #       send-message-msgport \
-      #       --from=${{ matrix.task.from }} \
-      #       --to=${{ matrix.task.to }} \
+      - name: run task
+        env:
+          ORMPIPE_LOG_LEVEL: debug
+          ORMPIPE_SIGNER: ${{ secrets.ORMPIPE_SIGNER }}
+        run: |
+          scripts/ormpipe.sh integration \
+            send-message-msgport \
+            --from=${{ matrix.task.from }} \
+            --to=${{ matrix.task.to }} \
