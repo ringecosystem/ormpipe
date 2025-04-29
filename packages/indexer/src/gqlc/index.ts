@@ -1,5 +1,5 @@
 import axios, {AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from "axios";
-import {QueryGraph} from "../types/graph";
+import {QueryGraph} from "../types/graphql";
 
 export interface GqlcConfig {
   endpoint: string

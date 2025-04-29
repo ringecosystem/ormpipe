@@ -3,7 +3,7 @@ import { CommonRelay, logger, RelayStorage } from "@darwinia/ormpipe-common";
 import {
   OracleImportedMessageHash,
   OrmpMessageAccepted,
-  PonderIndexOrmp,
+  SqdIndexOrmp,
 } from "@darwinia/ormpipe-indexer";
 import {
   OrmpProtocolMessage,
@@ -32,11 +32,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     super(lifecycle);
   }
 
-  public get sourceIndexerOrmp(): PonderIndexOrmp {
+  public get sourceIndexerOrmp(): SqdIndexOrmp {
     return super.lifecycle.sourceIndexerOrmp;
   }
 
-  public get targetIndexerOrmp(): PonderIndexOrmp {
+  public get targetIndexerOrmp(): SqdIndexOrmp {
     return super.lifecycle.targetIndexerOrmp;
   }
 
@@ -48,7 +48,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       signer: super.lifecycle.sourceSigner,
       address: super.lifecycle.sourceChain.contract.relayer,
       evm: super.sourceClient.evm,
-      endpoint: super.sourceClient.config.endpoint
+      endpoint: super.sourceClient.config.endpoint,
     });
     return this._sourceRelayerContractClient;
   }
@@ -61,7 +61,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.relayer,
       evm: super.targetClient.evm,
-      endpoint: super.targetClient.config.endpoint
+      endpoint: super.targetClient.config.endpoint,
     });
     return this._targetRelayerContractClient;
   }
@@ -131,35 +131,34 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
   ) {
     if (
       options.sourceChainId.toString() !=
-        sourceNextMessageAccepted.messageFromChainId ||
-      options.targetChainId.toString() !=
-        sourceNextMessageAccepted.messageToChainId
+        sourceNextMessageAccepted.fromChainId ||
+      options.targetChainId.toString() != sourceNextMessageAccepted.toChainId
     ) {
       logger.warn(
         `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
         options.sourceChainId.toString(),
         options.targetChainId.toString(),
         sourceNextMessageAccepted.msgHash,
-        sourceNextMessageAccepted.messageIndex,
-        sourceNextMessageAccepted.messageFromChainId,
-        sourceNextMessageAccepted.messageToChainId,
+        sourceNextMessageAccepted.index,
+        sourceNextMessageAccepted.fromChainId,
+        sourceNextMessageAccepted.toChainId,
         super.meta("ormpipe-relay-relayer", ["relayer"])
       );
       await super.storage.put(
         RelayerRelay.CK_RELAYER_RELAIED,
-        sourceNextMessageAccepted.messageIndex
+        sourceNextMessageAccepted.index
       );
       return;
     }
     const message: OrmpProtocolMessage = {
-      channel: sourceNextMessageAccepted.messageChannel,
-      index: +sourceNextMessageAccepted.messageIndex,
-      fromChainId: +sourceNextMessageAccepted.messageFromChainId,
-      from: sourceNextMessageAccepted.messageFrom,
-      toChainId: +sourceNextMessageAccepted.messageToChainId,
-      to: sourceNextMessageAccepted.messageTo,
-      gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit),
-      encoded: sourceNextMessageAccepted.messageEncoded,
+      channel: sourceNextMessageAccepted.channel,
+      index: +sourceNextMessageAccepted.index,
+      fromChainId: +sourceNextMessageAccepted.fromChainId,
+      from: sourceNextMessageAccepted.from,
+      toChainId: +sourceNextMessageAccepted.toChainId,
+      to: sourceNextMessageAccepted.to,
+      gasLimit: BigInt(sourceNextMessageAccepted.gasLimit),
+      encoded: sourceNextMessageAccepted.encoded,
     };
 
     const sim = new SkippedIndexManager(
@@ -175,13 +174,17 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     let targetTxRelayMessage;
     try {
       // console.log("\n\n###########")
-      // console.log("sourceNextMessageAccepted.messageGasLimit", sourceNextMessageAccepted.messageGasLimit)
+      // console.log("sourceNextMessageAccepted.gasLimit", sourceNextMessageAccepted.gasLimit)
       // console.log("baseGas", baseGas)
-      // console.log("BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000)", BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000));
+      // console.log("BigInt(sourceNextMessageAccepted.gasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000)", BigInt(sourceNextMessageAccepted.gasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000));
       // console.log("###########\n\n")
       targetTxRelayMessage = await this.targetRelayerClient.relay({
         message,
-        gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000),
+        gasLimit:
+          (BigInt(sourceNextMessageAccepted.gasLimit) * BigInt(64)) /
+            BigInt(63) +
+          baseGas +
+          BigInt(100000),
         chainId: options.targetChainId,
       });
     } catch (e: any) {
@@ -210,7 +213,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     logger.info(
       "message relayed to %s {tx: %s, block: %s}",
       super.targetName,
-      chalk.magenta(targetTxRelayMessage.hash||targetTxRelayMessage),
+      chalk.magenta(targetTxRelayMessage.hash || targetTxRelayMessage),
       chalk.cyan(targetTxRelayMessage.blockNumber),
       super.meta("ormpipe-relay", ["relayer:relay"])
     );
@@ -241,7 +244,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
     const pickedRelayerMessageAcceptedHashes =
       await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
-        messageIndex: +lastImportedMessageAccepted.messageIndex,
+        messageIndex: +lastImportedMessageAccepted.index,
         fromChainId: options.sourceChainId,
         toChainId: options.targetChainId,
       });
@@ -283,12 +286,12 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       }
       const nextUnRelayMessageAccepted =
         unRelayMessageAcceptedList[unRelayedIndex];
-      const currentMessageIndex = nextUnRelayMessageAccepted.messageIndex;
+      const currentMessageIndex = nextUnRelayMessageAccepted.index;
 
       logger.info(
         "sync status [%s,%s] (%s)",
         currentMessageIndex,
-        sourceLastMessageAssignedAccepted?.messageIndex ?? -1,
+        sourceLastMessageAssignedAccepted?.index ?? -1,
         super.sourceName,
         super.meta("ormpipe-relay", ["relayer:relay"])
       );

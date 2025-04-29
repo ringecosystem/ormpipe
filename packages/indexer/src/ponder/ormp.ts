@@ -1,15 +1,17 @@
 import {
   OrmpMessageAccepted,
   OrmpMessageDispatched,
+  OracleImportedMessageHash,
+} from "../types/ponder";
+import {
   QueryBasicMessageAccepted,
   QueryMessageAcceptedListByHashes,
   QueryMessageHashes,
   QueryNextMessageAccepted,
   QueryOrmpProtocolMessageAccepted,
   QueryRelayerMessageAccepted,
-  OracleImportedMessageHash,
   QueryLastImportedMessageHash,
-} from "../types/ponder";
+} from "../types/graphql"
 import { GraphCommon, PonderPage } from "./_common";
 import { CollectionKit } from "../toolkit/collection";
 
@@ -152,7 +154,7 @@ export class PonderIndexOrmp extends GraphCommon {
           msgIndex
           blockTimestamp
           transactionHash
-  
+
           srcChainId
           hash
         }

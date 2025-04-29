@@ -111,11 +111,11 @@ export default class Oracle extends Command {
     const sourceIndex = new OrmpipeIndexer({
       endpoint: config.sourceChain.indexer.ormp,
       signcribeEndpoint: config.sourceChain.indexer.signcribe,
-    }).ponder();
+    }).indexer();
     const targetIndex = new OrmpipeIndexer({
       endpoint: config.targetChain.indexer.ormp,
       signcribeEndpoint: config.targetChain.indexer.signcribe,
-    }).ponder();
+    }).indexer();
     const storage = new RelayStorage(config.dataPath, {
       keyPrefix: `${config.sourceChain.name}-${config.sourceChain.name}`,
     });
