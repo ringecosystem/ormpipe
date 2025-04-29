@@ -23,7 +23,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "lerna": "^7.1.4",
-    "nx": "^16.6.0"
+    "lerna": "^8.2.2",
+    "nx": "^20.8.1"
   }
 }
