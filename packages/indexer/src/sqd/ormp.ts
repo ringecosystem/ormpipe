@@ -339,7 +339,7 @@ export class SqdIndexOrmp extends GraphCommon {
         offset: $offset
         orderBy: index_ASC
         where: {
-          oracleAssigned: true
+          oracleAssigned_eq: true
           fromChainId_eq: $fromChainId
           toChainId_eq: $toChainId
         }
@@ -385,9 +385,9 @@ export class SqdIndexOrmp extends GraphCommon {
         limit: 1
         orderBy: index_DESC
         where: {
-          relayerAssigned: true
-          fromChainId: $fromChainId
-          toChainId: $toChainId
+          relayerAssigned_eq: true
+          fromChainId_eq: $fromChainId
+          toChainId_eq: $toChainId
         }
       ) {
         id

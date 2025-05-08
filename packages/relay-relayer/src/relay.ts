@@ -288,14 +288,6 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         unRelayMessageAcceptedList[unRelayedIndex];
       const currentMessageIndex = nextUnRelayMessageAccepted.index;
 
-      logger.info(
-        "sync status [%s,%s] (%s)",
-        currentMessageIndex,
-        sourceLastMessageAssignedAccepted?.index ?? -1,
-        super.sourceName,
-        super.meta("ormpipe-relay", ["relayer:relay"])
-      );
-
       const sim = new SkippedIndexManager(
         super.storage,
         RelayerRelay.CK_RELAYER_SKIPPED
@@ -320,6 +312,14 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
           super.meta("ormpipe-relay", ["relayer:relay"])
         );
       }
+
+      logger.info(
+        "sync status [%s,%s] (%s)",
+        currentMessageIndex,
+        sourceLastMessageAssignedAccepted?.index ?? -1,
+        super.sourceName,
+        super.meta("ormpipe-relay", ["relayer:relay"])
+      );
 
       const cachedLastDeliveriedIndex = await super.storage.get(
         RelayerRelay.CK_RELAYER_RELAIED
