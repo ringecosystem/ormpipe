@@ -28,7 +28,6 @@ export class SqdIndexSigncribe extends GraphCommon {
         signer
         signature
         data
-        msgIndex
         blockNumber
       }
     }
