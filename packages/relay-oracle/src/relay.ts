@@ -306,8 +306,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
     const signatureOwners = await this.targetMultisigContract.getOwners();
-    console.log("lifecycle contract: ", super.lifecycle.targetChain.contract);
-    console.log("signatureOwners: ", signatureOwners);
 
     // check sign progress
     const lastSignature = await this._lastSignature(
@@ -320,7 +318,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       super.lifecycle.signcribeSigner
     );
     const expiration =
-      +sourceNextMessageAccepted.blockTimestamp + 60 * 60 * 24 * 10;
+      +sourceNextMessageAccepted.blockTimestamp / 1000 + 60 * 60 * 24 * 10;
 
     const importRootCallData = this.targetOracleContract.buildImportMessageHash(
       {
@@ -361,8 +359,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     if (options.mainly) {
       if (isCollectedSignatures) {
         try {
-          // console.log(sourceNextMessageAccepted);
-          // console.log(signedMessageHash);
           await this.submit(
             lastSignature,
             signcribeData,
@@ -424,7 +420,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
           this.signcribeContract.contractConfig.endpoint,
           error,
           super.meta("ormpipe-relay-oracle", ["oracle:sign"])
-        )
+        );
       }
 
       logger.info(
@@ -466,7 +462,6 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signatures: `0x${_collectedSignatures}`,
     };
 
-    console.log("importMessageRootOptions===: ", importMessageRootOptions);
     const executeTxResponse =
       await this.targetMultisigContract.importMessageRoot(
         importMessageRootOptions
