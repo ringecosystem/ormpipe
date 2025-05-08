@@ -145,9 +145,11 @@ export class SqdIndexOrmp extends GraphCommon {
         blockNumber
         blockTimestamp
         transactionHash
+
         srcChainId
-        hash
         targetChainId
+        msgIndex
+        hash
       }
     }
     `;
