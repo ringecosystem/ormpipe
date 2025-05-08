@@ -19,6 +19,14 @@ interface RelayerRelayOptions {
 
 interface RelayerRelayFullOptions extends RelayerRelayOptions {
   lastImportedMessageHash: OracleImportedMessageHash;
+  previousResult?: LastAssignedMessageAccepted;
+}
+
+type RelayResult = "try-next" | "success";
+interface LastAssignedMessageAccepted {
+  unrelayMessageAcepted?: OrmpMessageAccepted;
+  unRelayMessageAcceptedList: OrmpMessageAccepted[];
+  sourceLastMessageAssignedAccepted?: OrmpMessageAccepted;
 }
 
 export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
@@ -106,29 +114,55 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       );
       return;
     }
-    const fullOptions = {
-      ...options,
-      lastImportedMessageHash,
-      times: options.times,
-    };
 
-    const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted(
-      fullOptions
-    );
-    if (!sourceNextMessageAccepted) {
-      logger.info(
-        `no new assigned message accepted`,
-        super.meta("ormpipe-relay", ["relayer"])
+    let lastAssignedMessageAcceptedResult:
+      | LastAssignedMessageAccepted
+      | undefined;
+    while (true) {
+      const fullOptions = {
+        ...options,
+        lastImportedMessageHash,
+        times: options.times,
+        previousResult: lastAssignedMessageAcceptedResult,
+      };
+      lastAssignedMessageAcceptedResult =
+        await this._lastAssignedMessageAccepted(fullOptions);
+      if (
+        !lastAssignedMessageAcceptedResult ||
+        !lastAssignedMessageAcceptedResult.unrelayMessageAcepted
+      ) {
+        logger.info(
+          `no new assigned message accepted`,
+          super.meta("ormpipe-relay", ["relayer"])
+        );
+        return;
+      }
+      const result = await this._relay(
+        fullOptions,
+        lastAssignedMessageAcceptedResult.unrelayMessageAcepted
       );
-      return;
+      if (result == "try-next") {
+        logger.info(
+          `try next message accepted`,
+          super.meta("ormpipe-relay", ["relayer"])
+        );
+        continue;
+      }
+      if (result == "success") {
+        logger.info(
+          `message relayed successfully %s`,
+          lastAssignedMessageAcceptedResult.unrelayMessageAcepted.index,
+          super.meta("ormpipe-relay", ["relayer"])
+        );
+        return;
+      }
     }
-    await this._relay(fullOptions, sourceNextMessageAccepted);
   }
 
   private async _relay(
     options: RelayerRelayFullOptions,
     sourceNextMessageAccepted: OrmpMessageAccepted
-  ) {
+  ): Promise<RelayResult> {
     if (
       options.sourceChainId.toString() !=
         sourceNextMessageAccepted.fromChainId ||
@@ -148,7 +182,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         RelayerRelay.CK_RELAYER_RELAIED,
         sourceNextMessageAccepted.index
       );
-      return;
+      return "success";
     }
     const message: OrmpProtocolMessage = {
       channel: sourceNextMessageAccepted.channel,
@@ -197,7 +231,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         super.meta("ormpipe-relay", ["relayer:relay"])
       );
       await sim.put(+message.index);
-      return;
+      return "try-next";
     }
 
     if (!targetTxRelayMessage) {
@@ -208,7 +242,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         super.meta("ormpipe-relay", ["relayer:relay"])
       );
       await sim.put(message.index);
-      return;
+      return "try-next";
     }
     logger.info(
       "message relayed to %s {tx: %s, block: %s}",
@@ -220,11 +254,12 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
 
     await sim.remove(message.index);
     await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, message.index);
+    return "success";
   }
 
   private async _lastAssignedMessageAccepted(
     options: RelayerRelayFullOptions
-  ): Promise<OrmpMessageAccepted | undefined> {
+  ): Promise<LastAssignedMessageAccepted | undefined> {
     const lastImportedMessageHash = options.lastImportedMessageHash;
     const lastImportedMessageAccepted =
       await this.sourceIndexerOrmp.inspectMessageAccepted({
@@ -242,22 +277,27 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       return undefined;
     }
 
-    const pickedRelayerMessageAcceptedHashes =
-      await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
-        messageIndex: +lastImportedMessageAccepted.index,
-        fromChainId: options.sourceChainId,
-        toChainId: options.targetChainId,
-      });
-    const pickedUnRelayedMessageHashes =
-      await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
-        options.targetChainId,
-        pickedRelayerMessageAcceptedHashes
-      );
-    const unRelayMessageAcceptedList =
-      await this.sourceIndexerOrmp.queryMessageAcceptedListByHashes({
-        chainId: options.sourceChainId,
-        msgHashes: pickedUnRelayedMessageHashes,
-      });
+    let unRelayMessageAcceptedList =
+      options.previousResult?.unRelayMessageAcceptedList;
+    if (!unRelayMessageAcceptedList) {
+      const pickedRelayerMessageAcceptedHashes =
+        await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
+          messageIndex: +lastImportedMessageAccepted.index,
+          fromChainId: options.sourceChainId,
+          toChainId: options.targetChainId,
+        });
+      const pickedUnRelayedMessageHashes =
+        await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
+          options.targetChainId,
+          pickedRelayerMessageAcceptedHashes
+        );
+      unRelayMessageAcceptedList =
+        await this.sourceIndexerOrmp.queryMessageAcceptedListByHashes({
+          chainId: options.sourceChainId,
+          msgHashes: pickedUnRelayedMessageHashes,
+        });
+    }
+
     if (!unRelayMessageAcceptedList.length) {
       logger.debug(
         "not found wait relay messages from %s",
@@ -267,11 +307,15 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       return undefined;
     }
 
-    const sourceLastMessageAssignedAccepted =
-      await this.sourceIndexerOrmp.lastRelayerAssigned({
-        fromChainId: options.sourceChainId,
-        toChainId: options.targetChainId,
-      });
+    let sourceLastMessageAssignedAccepted =
+      options.previousResult?.sourceLastMessageAssignedAccepted;
+    if (!sourceLastMessageAssignedAccepted) {
+      sourceLastMessageAssignedAccepted =
+        await this.sourceIndexerOrmp.lastRelayerAssigned({
+          fromChainId: options.sourceChainId,
+          toChainId: options.targetChainId,
+        });
+    }
 
     let unRelayedIndex = -1;
     while (true) {
@@ -296,7 +340,9 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         +currentMessageIndex
       );
       if (skippedIndexOfCurrentMessage > -1) {
-        if (options.times % (skippedIndexOfCurrentMessage + 2) != 0) {
+        const skippedIndexLength = await sim.length();
+        const skippedFactor = skippedIndexLength - skippedIndexOfCurrentMessage;
+        if (options.times % (skippedFactor + 2) != 0) {
           logger.info(
             `the message %s (%s) skipped, will retry later`,
             currentMessageIndex,
@@ -342,7 +388,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         super.meta("ormpipe-relay", ["relayer:relay"])
       );
 
-      return nextUnRelayMessageAccepted;
+      return {
+        unrelayMessageAcepted: nextUnRelayMessageAccepted,
+        unRelayMessageAcceptedList,
+        sourceLastMessageAssignedAccepted,
+      };
     }
   }
 }
@@ -377,6 +427,11 @@ class SkippedIndexManager {
   public async indexOf(index: number): Promise<number> {
     const skippedList = await this.load();
     return skippedList.indexOf(index);
+  }
+
+  public async length(): Promise<number> {
+    const skippedList = await this.load();
+    return skippedList.length;
   }
 
   public async isSkipped(index: number): Promise<boolean> {

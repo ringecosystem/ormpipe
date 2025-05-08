@@ -306,6 +306,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     );
 
     const signatureOwners = await this.targetMultisigContract.getOwners();
+    console.log("lifecycle contract: ", super.lifecycle.targetChain.contract);
+    console.log("signatureOwners: ", signatureOwners);
 
     // check sign progress
     const lastSignature = await this._lastSignature(
@@ -464,6 +466,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       signatures: `0x${_collectedSignatures}`,
     };
 
+    console.log("importMessageRootOptions===: ", importMessageRootOptions);
     const executeTxResponse =
       await this.targetMultisigContract.importMessageRoot(
         importMessageRootOptions
