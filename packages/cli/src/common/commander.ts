@@ -35,7 +35,7 @@ export class CommandHelper {
   };
 
   public static async definition(): Promise<Definition> {
-    const link = 'https://raw.githubusercontent.com/msgport/autoconf/main/ormpipe/definition.yml';
+    const link = process.env.AUTOCONF_DEFINITION_URL || 'https://raw.githubusercontent.com/ringecosystem/autoconf/main/ormpipe/definition.yml';
     const response: AxiosResponse = await axios.get(link);
     const rawData = response.data;
     return YAML.parse(rawData);
