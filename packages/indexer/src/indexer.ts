@@ -1,17 +1,17 @@
 import { IndexerInput } from "./types/indexer";
-import { PonderIndexer } from "./ponder";
+import { SqdIndexer } from "./sqd";
 
 export class OrmpipeIndexer {
   private readonly input: IndexerInput;
 
-  private readonly ponderIndexer: PonderIndexer;
+  private readonly _indexer: SqdIndexer;
 
   constructor(input: IndexerInput) {
     this.input = input;
-    this.ponderIndexer = new PonderIndexer(this.input);
+    this._indexer = new SqdIndexer(this.input);
   }
 
-  public ponder(): PonderIndexer {
-    return this.ponderIndexer;
+  public indexer(): SqdIndexer {
+    return this._indexer;
   }
 }

@@ -1,6 +1,6 @@
 import { IndexerInput } from "../types/indexer";
 import { Gqlc } from "../gqlc";
-import { IGraphResponse, QueryGraph } from "../types/graph";
+import { IGraphResponse, QueryGraph } from "../types/graphql";
 
 interface QueryGenericGraphql extends QueryGraph {
   schema: string;

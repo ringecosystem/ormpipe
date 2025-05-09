@@ -3,8 +3,8 @@ import { CommonRelay, logger } from "@darwinia/ormpipe-common";
 import {
   OrmpMessageAccepted,
   SignatureSubmittion,
-  PonderIndexOrmp,
-  PonderIndexSigncribe,
+  SqdIndexOrmp,
+  SqdIndexSigncribe,
 } from "@darwinia/ormpipe-indexer";
 import { MultisigContractClient } from "./client/contract_multisig";
 import {
@@ -41,15 +41,15 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     super(lifecycle);
   }
 
-  public get indexerSigncribe(): PonderIndexSigncribe {
+  public get indexerSigncribe(): SqdIndexSigncribe {
     return super.lifecycle.indexerSigncribe;
   }
 
-  public get sourceIndexerOrmp(): PonderIndexOrmp {
+  public get sourceIndexerOrmp(): SqdIndexOrmp {
     return super.lifecycle.sourceIndexerOrmp;
   }
 
-  public get targetIndexerOrmp(): PonderIndexOrmp {
+  public get targetIndexerOrmp(): SqdIndexOrmp {
     return super.lifecycle.targetIndexerOrmp;
   }
 
@@ -173,7 +173,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       }
       if (nextAssignedMessageAccepted) {
         logger.info(
-          `nextAssignedMessageAccepted => msgIndex: ${nextAssignedMessageAccepted.messageIndex}, srcChainId: ${nextAssignedMessageAccepted.messageFromChainId}, msgHash: ${nextAssignedMessageAccepted.msgHash}`,
+          `nextAssignedMessageAccepted => msgIndex: ${nextAssignedMessageAccepted.index}, srcChainId: ${nextAssignedMessageAccepted.fromChainId}, msgHash: ${nextAssignedMessageAccepted.msgHash}`,
           super.meta("ormpipe-relay-oracle", [
             "oracle:sign:!!!lastImportedMessageHash",
           ])
@@ -197,13 +197,13 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     }
     nextAssignedMessageAccepted =
       await this.sourceIndexerOrmp.nextOracleMessageAccepted({
-        messageIndex: +currentMessageAccepted.messageIndex,
+        messageIndex: +currentMessageAccepted.index,
         fromChainId: options.sourceChainId,
         toChainId: options.targetChainId,
       });
     if (nextAssignedMessageAccepted) {
       logger.info(
-        `nextAssignedMessageAccepted => msgIndex: ${nextAssignedMessageAccepted.messageIndex}, srcChainId: ${nextAssignedMessageAccepted.messageFromChainId}, msgHash: ${nextAssignedMessageAccepted.msgHash}`,
+        `nextAssignedMessageAccepted => msgIndex: ${nextAssignedMessageAccepted.index}, srcChainId: ${nextAssignedMessageAccepted.fromChainId}, msgHash: ${nextAssignedMessageAccepted.msgHash}`,
         super.meta("ormpipe-relay-oracle", [
           "oracle:sign:lastImportedMessageHash",
         ])
@@ -250,15 +250,15 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       await super.storage.get(OracleRelay.CK_ORACLE_SIGNED);
     logger.debug(
       "compare cache signed message index %s/%s",
-      sourceNextMessageAccepted.messageIndex,
+      sourceNextMessageAccepted.index,
       cachedSignedMessageIndex,
       super.meta("ormpipe-relay-oracle", ["oracle:sign"])
     );
     if (cachedSignedMessageIndex != undefined) {
-      if (+sourceNextMessageAccepted.messageIndex == cachedSignedMessageIndex) {
+      if (+sourceNextMessageAccepted.index == cachedSignedMessageIndex) {
         logger.warn(
           "this message index %s already signed and executed, queried by cache: %s",
-          sourceNextMessageAccepted.messageIndex,
+          sourceNextMessageAccepted.index,
           cachedSignedMessageIndex,
           super.meta("ormpipe-relay-oracle", ["oracle:sign"])
         );
@@ -268,7 +268,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     logger.info(
       `new message accepted %s wait block %s(%s) confirmed`,
-      sourceNextMessageAccepted.messageIndex,
+      sourceNextMessageAccepted.index,
       sourceNextMessageAccepted.msgHash,
       sourceNextMessageAccepted.blockNumber,
       super.sourceName,
@@ -309,8 +309,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     // check sign progress
     const lastSignature = await this._lastSignature(
-      +sourceNextMessageAccepted.messageFromChainId,
-      +sourceNextMessageAccepted.messageIndex,
+      +sourceNextMessageAccepted.fromChainId,
+      +sourceNextMessageAccepted.index,
       signatureOwners
     );
 
@@ -318,19 +318,19 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       super.lifecycle.signcribeSigner
     );
     const expiration =
-      +sourceNextMessageAccepted.blockTimestamp + 60 * 60 * 24 * 10;
+      +sourceNextMessageAccepted.blockTimestamp / 1000 + 60 * 60 * 24 * 10;
 
     const importRootCallData = this.targetOracleContract.buildImportMessageHash(
       {
-        sourceChainId: +sourceNextMessageAccepted.messageFromChainId,
+        sourceChainId: +sourceNextMessageAccepted.fromChainId,
         channel: super.lifecycle.sourceChain.contract.ormp,
-        msgIndex: +sourceNextMessageAccepted.messageIndex,
+        msgIndex: +sourceNextMessageAccepted.index,
         msgHash: sourceNextMessageAccepted.msgHash,
       }
     );
     const signedMessageHash = this.targetMultisigContract.buildSign({
       oracleContractAddress: super.lifecycle.targetChain.contract.oracle,
-      targetChainId: +sourceNextMessageAccepted.messageToChainId,
+      targetChainId: +sourceNextMessageAccepted.toChainId,
       expiration: expiration,
       importRootCallData: importRootCallData,
     });
@@ -345,9 +345,9 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     const encodedData = this._encodeSigncribeData(signcribeData);
 
     const signcribeSubmitOptions = {
-      chainId: +sourceNextMessageAccepted.messageFromChainId,
+      chainId: +sourceNextMessageAccepted.fromChainId,
       channel: super.lifecycle.targetChain.contract.ormp,
-      msgIndex: +sourceNextMessageAccepted.messageIndex,
+      msgIndex: +sourceNextMessageAccepted.index,
       signature: signature,
       data: encodedData,
     };
@@ -359,19 +359,17 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     if (options.mainly) {
       if (isCollectedSignatures) {
         try {
-          // console.log(sourceNextMessageAccepted);
-          // console.log(signedMessageHash);
           await this.submit(
             lastSignature,
             signcribeData,
-            +sourceNextMessageAccepted.messageIndex
+            +sourceNextMessageAccepted.index
           );
           return;
         } catch (e: any) {
           logger.error(e, super.meta("ormpipe-relay-oracle"));
           logger.info(
             "failed to execute multisign will sign message again, %s(%s)",
-            sourceNextMessageAccepted.messageIndex,
+            sourceNextMessageAccepted.index,
             super.sourceName,
             super.meta("ormpipe-relay-oracle", ["oracle:sign"])
           );
@@ -379,7 +377,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
       } else {
         logger.info(
           "skip execute transaction for message %s(%s), wait other nodes sign this message, current sign count is %s. %s",
-          sourceNextMessageAccepted.messageIndex,
+          sourceNextMessageAccepted.index,
           super.sourceName,
           alreadySignedCount,
           lastSignature.signatures.map((item) => item.signer),
@@ -390,7 +388,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     logger.info(
       "prepare to submit signature for message %s(%s) to %s and last signature state is %s",
-      sourceNextMessageAccepted.messageIndex,
+      sourceNextMessageAccepted.index,
       super.sourceName,
       super.targetName,
       lastSignature.completed,
@@ -399,8 +397,8 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
 
     const signatureExist = await this.indexerSigncribe.existSignature(
       {
-        chainId: +sourceNextMessageAccepted.messageFromChainId,
-        msgIndex: +sourceNextMessageAccepted.messageIndex,
+        chainId: +sourceNextMessageAccepted.fromChainId,
+        msgIndex: +sourceNextMessageAccepted.index,
         signers: signatureOwners,
       },
       signature
@@ -422,12 +420,12 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
           this.signcribeContract.contractConfig.endpoint,
           error,
           super.meta("ormpipe-relay-oracle", ["oracle:sign"])
-        )
+        );
       }
 
       logger.info(
         "message %s(%s) is signed and submit to signcribe: %s",
-        sourceNextMessageAccepted.messageIndex,
+        sourceNextMessageAccepted.index,
         super.sourceName,
         resp?.hash,
         super.meta("ormpipe-relay-oracle", ["oracle:sign"])
@@ -435,7 +433,7 @@ export class OracleRelay extends CommonRelay<OracleRelayLifecycle> {
     } else {
       logger.info(
         "message %s(%s) has been signed and will not be submitted again",
-        sourceNextMessageAccepted.messageIndex,
+        sourceNextMessageAccepted.index,
         super.sourceName
       );
     }

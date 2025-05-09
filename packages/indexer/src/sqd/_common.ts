@@ -1,46 +1,48 @@
-import {IndexerInput} from "../types/indexer";
-import {Gqlc} from "../gqlc";
-import {IGraphResponse, QueryGraph} from "../types/graph";
+import { IndexerInput } from "../types/indexer";
+import { Gqlc } from "../gqlc";
+import { IGraphResponse, QueryGraph } from "../types/graphql";
 
 interface QueryGenericGraphql extends QueryGraph {
-  schema: string
+  schema: string;
 }
 
 export class GraphCommon {
   private readonly _input: IndexerInput;
   private readonly _gqlc: Gqlc;
 
-  constructor(
-    input: IndexerInput,
-    gqlc: Gqlc,
-  ) {
+  constructor(input: IndexerInput, gqlc: Gqlc) {
     this._input = input;
     this._gqlc = gqlc;
   }
 
   public get input(): IndexerInput {
-    return this._input
+    return this._input;
   }
 
   public get gqlc(): Gqlc {
-    return this._gqlc
+    return this._gqlc;
   }
 
   public get endpoint(): string {
-    return this.gqlc.endpoint
+    return this.gqlc.endpoint;
   }
 
   public async query(options: QueryGraph): Promise<GraphResponseData> {
     const resp: IGraphResponse<Record<string, any[]>> = await this.gqlc.query({
       query: options.query,
-      variables: options.variables
+      variables: options.variables,
     });
-    const {data} = resp;
-    // const rets = data[options.schema];
-    // if (rets && rets.length) {
-    //   return rets;
-    // }
-    // return [];
+
+    if (resp.errors) {
+      console.error(
+        "!!! Indexer Error: ",
+        resp.errors[0].message,
+        options,
+        JSON.stringify(resp.errors[0].locations)
+      );
+    }
+
+    const { data } = resp;
     return data ? new GraphResponseData(data) : GraphResponseData.def();
   }
 
@@ -56,8 +58,7 @@ export class GraphCommon {
 }
 
 export class GraphResponseData {
-  constructor(private readonly data: Record<string, any[]>) {
-  }
+  constructor(private readonly data: Record<string, any>) {}
 
   public static def(): GraphResponseData {
     return new GraphResponseData({});
