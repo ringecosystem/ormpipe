@@ -358,6 +358,20 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
           super.meta("ormpipe-relay", ["relayer:relay"])
         );
       }
+      const now = new Date();
+      if (
+        +now - +nextUnRelayMessageAccepted.blockTimestamp >
+        1000 * 60 * 60 * 24 * 7
+      ) {
+        logger.info(
+          "the message %s (%s) is too old, skip it",
+          currentMessageIndex,
+          super.sourceName,
+          super.meta("ormpipe-relay", ["relayer:relay"])
+        );
+        await sim.put(+currentMessageIndex);
+        continue;
+      }
 
       logger.info(
         "sync status [%s,%s] (%s)",
