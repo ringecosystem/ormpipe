@@ -3,7 +3,7 @@ import { CommonRelay, logger, RelayStorage } from "@darwinia/ormpipe-common";
 import {
   OracleImportedMessageHash,
   OrmpMessageAccepted,
-  PonderIndexOrmp,
+  SqdIndexOrmp,
 } from "@darwinia/ormpipe-indexer";
 import {
   OrmpProtocolMessage,
@@ -19,6 +19,14 @@ interface RelayerRelayOptions {
 
 interface RelayerRelayFullOptions extends RelayerRelayOptions {
   lastImportedMessageHash: OracleImportedMessageHash;
+  previousResult?: LastAssignedMessageAccepted;
+}
+
+type RelayResult = "try-next" | "success";
+interface LastAssignedMessageAccepted {
+  unrelayMessageAcepted?: OrmpMessageAccepted;
+  unRelayMessageAcceptedList: OrmpMessageAccepted[];
+  sourceLastMessageAssignedAccepted?: OrmpMessageAccepted;
 }
 
 export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
@@ -32,11 +40,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     super(lifecycle);
   }
 
-  public get sourceIndexerOrmp(): PonderIndexOrmp {
+  public get sourceIndexerOrmp(): SqdIndexOrmp {
     return super.lifecycle.sourceIndexerOrmp;
   }
 
-  public get targetIndexerOrmp(): PonderIndexOrmp {
+  public get targetIndexerOrmp(): SqdIndexOrmp {
     return super.lifecycle.targetIndexerOrmp;
   }
 
@@ -48,7 +56,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       signer: super.lifecycle.sourceSigner,
       address: super.lifecycle.sourceChain.contract.relayer,
       evm: super.sourceClient.evm,
-      endpoint: super.sourceClient.config.endpoint
+      endpoint: super.sourceClient.config.endpoint,
     });
     return this._sourceRelayerContractClient;
   }
@@ -61,7 +69,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       signer: super.lifecycle.targetSigner,
       address: super.lifecycle.targetChain.contract.relayer,
       evm: super.targetClient.evm,
-      endpoint: super.targetClient.config.endpoint
+      endpoint: super.targetClient.config.endpoint,
     });
     return this._targetRelayerContractClient;
   }
@@ -106,60 +114,85 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       );
       return;
     }
-    const fullOptions = {
-      ...options,
-      lastImportedMessageHash,
-      times: options.times,
-    };
 
-    const sourceNextMessageAccepted = await this._lastAssignedMessageAccepted(
-      fullOptions
-    );
-    if (!sourceNextMessageAccepted) {
-      logger.info(
-        `no new assigned message accepted`,
-        super.meta("ormpipe-relay", ["relayer"])
+    let lastAssignedMessageAcceptedResult:
+      | LastAssignedMessageAccepted
+      | undefined;
+    while (true) {
+      const fullOptions = {
+        ...options,
+        lastImportedMessageHash,
+        times: options.times,
+        previousResult: lastAssignedMessageAcceptedResult,
+      };
+      lastAssignedMessageAcceptedResult =
+        await this._lastAssignedMessageAccepted(fullOptions);
+      if (
+        !lastAssignedMessageAcceptedResult ||
+        !lastAssignedMessageAcceptedResult.unrelayMessageAcepted
+      ) {
+        logger.info(
+          `no new assigned message accepted`,
+          super.meta("ormpipe-relay", ["relayer"])
+        );
+        return;
+      }
+      const result = await this._relay(
+        fullOptions,
+        lastAssignedMessageAcceptedResult.unrelayMessageAcepted
       );
-      return;
+      if (result == "try-next") {
+        logger.info(
+          `try next message accepted`,
+          super.meta("ormpipe-relay", ["relayer"])
+        );
+        continue;
+      }
+      if (result == "success") {
+        logger.info(
+          `message relayed successfully %s`,
+          lastAssignedMessageAcceptedResult.unrelayMessageAcepted.index,
+          super.meta("ormpipe-relay", ["relayer"])
+        );
+        return;
+      }
     }
-    await this._relay(fullOptions, sourceNextMessageAccepted);
   }
 
   private async _relay(
     options: RelayerRelayFullOptions,
     sourceNextMessageAccepted: OrmpMessageAccepted
-  ) {
+  ): Promise<RelayResult> {
     if (
       options.sourceChainId.toString() !=
-        sourceNextMessageAccepted.messageFromChainId ||
-      options.targetChainId.toString() !=
-        sourceNextMessageAccepted.messageToChainId
+        sourceNextMessageAccepted.fromChainId ||
+      options.targetChainId.toString() != sourceNextMessageAccepted.toChainId
     ) {
       logger.warn(
         `expected chain id relation is [%s -> %s], but the message %s(%s) chain id relations is [%s -> %s] skip this message`,
         options.sourceChainId.toString(),
         options.targetChainId.toString(),
         sourceNextMessageAccepted.msgHash,
-        sourceNextMessageAccepted.messageIndex,
-        sourceNextMessageAccepted.messageFromChainId,
-        sourceNextMessageAccepted.messageToChainId,
+        sourceNextMessageAccepted.index,
+        sourceNextMessageAccepted.fromChainId,
+        sourceNextMessageAccepted.toChainId,
         super.meta("ormpipe-relay-relayer", ["relayer"])
       );
       await super.storage.put(
         RelayerRelay.CK_RELAYER_RELAIED,
-        sourceNextMessageAccepted.messageIndex
+        sourceNextMessageAccepted.index
       );
-      return;
+      return "success";
     }
     const message: OrmpProtocolMessage = {
-      channel: sourceNextMessageAccepted.messageChannel,
-      index: +sourceNextMessageAccepted.messageIndex,
-      fromChainId: +sourceNextMessageAccepted.messageFromChainId,
-      from: sourceNextMessageAccepted.messageFrom,
-      toChainId: +sourceNextMessageAccepted.messageToChainId,
-      to: sourceNextMessageAccepted.messageTo,
-      gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit),
-      encoded: sourceNextMessageAccepted.messageEncoded,
+      channel: sourceNextMessageAccepted.channel,
+      index: +sourceNextMessageAccepted.index,
+      fromChainId: +sourceNextMessageAccepted.fromChainId,
+      from: sourceNextMessageAccepted.from,
+      toChainId: +sourceNextMessageAccepted.toChainId,
+      to: sourceNextMessageAccepted.to,
+      gasLimit: BigInt(sourceNextMessageAccepted.gasLimit),
+      encoded: sourceNextMessageAccepted.encoded,
     };
 
     const sim = new SkippedIndexManager(
@@ -175,13 +208,17 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
     let targetTxRelayMessage;
     try {
       // console.log("\n\n###########")
-      // console.log("sourceNextMessageAccepted.messageGasLimit", sourceNextMessageAccepted.messageGasLimit)
+      // console.log("sourceNextMessageAccepted.gasLimit", sourceNextMessageAccepted.gasLimit)
       // console.log("baseGas", baseGas)
-      // console.log("BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000)", BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000));
+      // console.log("BigInt(sourceNextMessageAccepted.gasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000)", BigInt(sourceNextMessageAccepted.gasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000));
       // console.log("###########\n\n")
       targetTxRelayMessage = await this.targetRelayerClient.relay({
         message,
-        gasLimit: BigInt(sourceNextMessageAccepted.messageGasLimit) * BigInt(64) / BigInt(63) + baseGas + BigInt(100000),
+        gasLimit:
+          (BigInt(sourceNextMessageAccepted.gasLimit) * BigInt(64)) /
+            BigInt(63) +
+          baseGas +
+          BigInt(100000),
         chainId: options.targetChainId,
       });
     } catch (e: any) {
@@ -194,7 +231,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         super.meta("ormpipe-relay", ["relayer:relay"])
       );
       await sim.put(+message.index);
-      return;
+      return "try-next";
     }
 
     if (!targetTxRelayMessage) {
@@ -205,23 +242,24 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         super.meta("ormpipe-relay", ["relayer:relay"])
       );
       await sim.put(message.index);
-      return;
+      return "try-next";
     }
     logger.info(
       "message relayed to %s {tx: %s, block: %s}",
       super.targetName,
-      chalk.magenta(targetTxRelayMessage.hash||targetTxRelayMessage),
+      chalk.magenta(targetTxRelayMessage.hash || targetTxRelayMessage),
       chalk.cyan(targetTxRelayMessage.blockNumber),
       super.meta("ormpipe-relay", ["relayer:relay"])
     );
 
     await sim.remove(message.index);
     await super.storage.put(RelayerRelay.CK_RELAYER_RELAIED, message.index);
+    return "success";
   }
 
   private async _lastAssignedMessageAccepted(
     options: RelayerRelayFullOptions
-  ): Promise<OrmpMessageAccepted | undefined> {
+  ): Promise<LastAssignedMessageAccepted | undefined> {
     const lastImportedMessageHash = options.lastImportedMessageHash;
     const lastImportedMessageAccepted =
       await this.sourceIndexerOrmp.inspectMessageAccepted({
@@ -239,22 +277,27 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       return undefined;
     }
 
-    const pickedRelayerMessageAcceptedHashes =
-      await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
-        messageIndex: +lastImportedMessageAccepted.messageIndex,
-        fromChainId: options.sourceChainId,
-        toChainId: options.targetChainId,
-      });
-    const pickedUnRelayedMessageHashes =
-      await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
-        options.targetChainId,
-        pickedRelayerMessageAcceptedHashes
-      );
-    const unRelayMessageAcceptedList =
-      await this.sourceIndexerOrmp.queryMessageAcceptedListByHashes({
-        chainId: options.sourceChainId,
-        msgHashes: pickedUnRelayedMessageHashes,
-      });
+    let unRelayMessageAcceptedList =
+      options.previousResult?.unRelayMessageAcceptedList;
+    if (!unRelayMessageAcceptedList) {
+      const pickedRelayerMessageAcceptedHashes =
+        await this.sourceIndexerOrmp.pickRelayerMessageAcceptedHashes({
+          messageIndex: +lastImportedMessageAccepted.index,
+          fromChainId: options.sourceChainId,
+          toChainId: options.targetChainId,
+        });
+      const pickedUnRelayedMessageHashes =
+        await this.targetIndexerOrmp.pickUnRelayedMessageHashes(
+          options.targetChainId,
+          pickedRelayerMessageAcceptedHashes
+        );
+      unRelayMessageAcceptedList =
+        await this.sourceIndexerOrmp.queryMessageAcceptedListByHashes({
+          chainId: options.sourceChainId,
+          msgHashes: pickedUnRelayedMessageHashes,
+        });
+    }
+
     if (!unRelayMessageAcceptedList.length) {
       logger.debug(
         "not found wait relay messages from %s",
@@ -264,11 +307,15 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       return undefined;
     }
 
-    const sourceLastMessageAssignedAccepted =
-      await this.sourceIndexerOrmp.lastRelayerAssigned({
-        fromChainId: options.sourceChainId,
-        toChainId: options.targetChainId,
-      });
+    let sourceLastMessageAssignedAccepted =
+      options.previousResult?.sourceLastMessageAssignedAccepted;
+    if (!sourceLastMessageAssignedAccepted) {
+      sourceLastMessageAssignedAccepted =
+        await this.sourceIndexerOrmp.lastRelayerAssigned({
+          fromChainId: options.sourceChainId,
+          toChainId: options.targetChainId,
+        });
+    }
 
     let unRelayedIndex = -1;
     while (true) {
@@ -283,15 +330,7 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
       }
       const nextUnRelayMessageAccepted =
         unRelayMessageAcceptedList[unRelayedIndex];
-      const currentMessageIndex = nextUnRelayMessageAccepted.messageIndex;
-
-      logger.info(
-        "sync status [%s,%s] (%s)",
-        currentMessageIndex,
-        sourceLastMessageAssignedAccepted?.messageIndex ?? -1,
-        super.sourceName,
-        super.meta("ormpipe-relay", ["relayer:relay"])
-      );
+      const currentMessageIndex = nextUnRelayMessageAccepted.index;
 
       const sim = new SkippedIndexManager(
         super.storage,
@@ -301,7 +340,9 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         +currentMessageIndex
       );
       if (skippedIndexOfCurrentMessage > -1) {
-        if (options.times % (skippedIndexOfCurrentMessage + 2) != 0) {
+        const skippedIndexLength = await sim.length();
+        const skippedFactor = skippedIndexLength - skippedIndexOfCurrentMessage;
+        if (options.times % (skippedFactor + 2) != 0) {
           logger.info(
             `the message %s (%s) skipped, will retry later`,
             currentMessageIndex,
@@ -317,6 +358,28 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
           super.meta("ormpipe-relay", ["relayer:relay"])
         );
       }
+      const now = new Date();
+      if (
+        +now - +nextUnRelayMessageAccepted.blockTimestamp >
+        1000 * 60 * 60 * 24 * 7
+      ) {
+        logger.info(
+          "the message %s (%s) is too old, skip it",
+          currentMessageIndex,
+          super.sourceName,
+          super.meta("ormpipe-relay", ["relayer:relay"])
+        );
+        await sim.put(+currentMessageIndex);
+        continue;
+      }
+
+      logger.info(
+        "sync status [%s,%s] (%s)",
+        currentMessageIndex,
+        sourceLastMessageAssignedAccepted?.index ?? -1,
+        super.sourceName,
+        super.meta("ormpipe-relay", ["relayer:relay"])
+      );
 
       const cachedLastDeliveriedIndex = await super.storage.get(
         RelayerRelay.CK_RELAYER_RELAIED
@@ -339,7 +402,11 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
         super.meta("ormpipe-relay", ["relayer:relay"])
       );
 
-      return nextUnRelayMessageAccepted;
+      return {
+        unrelayMessageAcepted: nextUnRelayMessageAccepted,
+        unRelayMessageAcceptedList,
+        sourceLastMessageAssignedAccepted,
+      };
     }
   }
 }
@@ -374,6 +441,11 @@ class SkippedIndexManager {
   public async indexOf(index: number): Promise<number> {
     const skippedList = await this.load();
     return skippedList.indexOf(index);
+  }
+
+  public async length(): Promise<number> {
+    const skippedList = await this.load();
+    return skippedList.length;
   }
 
   public async isSkipped(index: number): Promise<boolean> {

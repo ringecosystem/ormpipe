@@ -1,6 +1,6 @@
 {
   "name": "ormpipe-runner",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "jbox",
   "main": "src/index.mjs",
   "author": "",

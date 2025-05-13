@@ -1,59 +1,56 @@
-import {Command} from '@oclif/core'
-import {CommandHelper} from "../common/commander";
+import { Command } from "@oclif/core";
+import { CommandHelper } from "../common/commander";
 import {
   CliRelayerConfig,
   RelayerRelay,
   RelayerRelayConfig,
-  RelayerRelayLifecycle
+  RelayerRelayLifecycle,
 } from "@darwinia/ormpipe-relay-relayer";
-import {logger, RelayEVMClient, RelayStorage} from "@darwinia/ormpipe-common";
-import {OrmpipeIndexer} from "@darwinia/ormpipe-indexer";
-import {setTimeout} from "timers/promises";
+import { logger, RelayEVMClient, RelayStorage } from "@darwinia/ormpipe-common";
+import { OrmpipeIndexer } from "@darwinia/ormpipe-indexer";
+import { setTimeout } from "timers/promises";
 
-const camelize = require('camelize')
+const camelize = require("camelize");
 
 export default class Relayer extends Command {
-  static description = 'ORMP relayer relay'
+  static description = "ORMP relayer relay";
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ]
+  static examples = ["<%= config.bin %> <%= command.id %>"];
 
   static flags = {
     ...CommandHelper.COMMON_FLAGS,
-  }
+  };
 
-  static args = {}
+  static args = {};
 
   public async run(): Promise<void> {
-
-    process.on('uncaughtException', (error) => {
+    process.on("uncaughtException", (error) => {
       logger.error(`detected uncaught exception: ${error.message}`);
-    })
+    });
 
-    const {args, flags} = await this.parse(Relayer)
+    const { args, flags } = await this.parse(Relayer);
 
     const cliConfig = camelize(flags) as unknown as CliRelayerConfig;
     let times = 0;
-    while(true) {
+    while (true) {
       times += 1;
       const relayConfigs = await CommandHelper.buildRelayConfig(cliConfig);
       for (const rc of relayConfigs) {
         const sourceToTargetLifecycle = await this.buildLifecycle(rc);
         sourceToTargetLifecycle.times = times;
 
-        if (rc.symbol === '-' || rc.symbol === '>') {
+        if (rc.symbol === "-" || rc.symbol === ">") {
           logger.info(
-            '--------- relayer %s>%s ---------',
+            "--------- relayer %s>%s ---------",
             sourceToTargetLifecycle.sourceChain.name,
-            sourceToTargetLifecycle.targetChain.name,
+            sourceToTargetLifecycle.targetChain.name
           );
           const sourceToTargetRelay = new RelayerRelay(sourceToTargetLifecycle);
           await sourceToTargetRelay.start();
           await setTimeout(1000);
         }
 
-        if (rc.symbol === '-' || rc.symbol === '<') {
+        if (rc.symbol === "-" || rc.symbol === "<") {
           const targetToSourceLifecycle = {
             ...sourceToTargetLifecycle,
             sourceChain: sourceToTargetLifecycle.targetChain,
@@ -66,12 +63,12 @@ export default class Relayer extends Command {
             targetClient: sourceToTargetLifecycle.sourceClient,
             sourceIndexerOrmp: sourceToTargetLifecycle.targetIndexerOrmp,
             targetIndexerOrmp: sourceToTargetLifecycle.sourceIndexerOrmp,
-          }
+          };
 
           logger.info(
-            '--------- relayer %s>%s ---------',
+            "--------- relayer %s>%s ---------",
             targetToSourceLifecycle.sourceChain.name,
-            targetToSourceLifecycle.targetChain.name,
+            targetToSourceLifecycle.targetChain.name
           );
           const targetToSourceRelay = new RelayerRelay(targetToSourceLifecycle);
           await targetToSourceRelay.start();
@@ -82,8 +79,9 @@ export default class Relayer extends Command {
     }
   }
 
-
-  private async buildLifecycle(config: RelayerRelayConfig): Promise<RelayerRelayLifecycle> {
+  private async buildLifecycle(
+    config: RelayerRelayConfig
+  ): Promise<RelayerRelayLifecycle> {
     const sourceClient = new RelayEVMClient({
       chainId: config.sourceChain.chainId,
       chainName: config.sourceChain.name,
@@ -99,11 +97,11 @@ export default class Relayer extends Command {
     const sourceIndex = new OrmpipeIndexer({
       endpoint: config.sourceChain.indexer.ormp,
       signcribeEndpoint: config.sourceChain.indexer.signcribe,
-    }).ponder();
+    }).indexer();
     const targetIndex = new OrmpipeIndexer({
       endpoint: config.targetChain.indexer.ormp,
       signcribeEndpoint: config.targetChain.indexer.signcribe,
-    }).ponder();
+    }).indexer();
     const storage = new RelayStorage(config.dataPath, {
       keyPrefix: `${config.sourceChain.name}-${config.sourceChain.name}`,
     });
@@ -118,5 +116,4 @@ export default class Relayer extends Command {
       targetIndexerOrmp: targetIndex.ormp(),
     };
   }
-
 }
