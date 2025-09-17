@@ -159,9 +159,9 @@ export class RelayerRelay extends CommonRelay<RelayerRelayLifecycle> {
           super.meta("ormpipe-relay", ["relayer"])
         );
         if (options.targetChainId == 1) {
-          await setTimeout(6000 * 3);
+          await setTimeout(1000 * 60);
         } else {
-          await setTimeout(3000 * 3);
+          await setTimeout(1000 * 40);
         }
         continue;
       }
