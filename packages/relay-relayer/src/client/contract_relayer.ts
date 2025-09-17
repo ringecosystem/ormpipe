@@ -122,15 +122,32 @@ export class RelayerContractClient {
             options.message.gasLimit,
             options.message.encoded,
           ])
-          .send(
-            feeLimit ? { "feeLimit": feeLimit } : { "feeLimit": 300_000000 }
-          );
+          .send(feeLimit ? { feeLimit: feeLimit } : { feeLimit: 300_000000 });
         console.log("Relay on Tron", tronResult);
         return tronResult;
       } catch (e) {
         console.error("Relay on Tron error: ", e);
       }
     } else {
+      try {
+        const result = await this.contract["relay"].staticCall(
+          options.message,
+          contractOptions
+        );
+        if (result) {
+          logger.info("relayer.relay static call success, result: %o", result, {
+            target: "ormpipe-relay",
+            breads: ["contract", this.config.chainName],
+          });
+        }
+      } catch (e) {
+        logger.error("relayer.relay static call failed, error: %o", e, {
+          target: "ormpipe-relay",
+          breads: ["contract", this.config.chainName],
+        });
+        throw new Error("relayer.relay static call failed: error: " + e);
+      }
+
       const tx = await this.contract["relay"](options.message, contractOptions);
       return await tx.wait();
     }
@@ -141,54 +158,61 @@ export class RelayerContractClient {
       this._tronweb.address.fromPrivateKey(this.config.signer)
     );
 
-    const rawParameter = this._tronweb.utils.abi.encodeParamsV2ByABI({
-      "inputs": [
-        {
-          "components": [
-            { "internalType": "address", "name": "channel", "type": "address" },
-            { "internalType": "uint256", "name": "index", "type": "uint256" },
-            {
-              "internalType": "uint256",
-              "name": "fromChainId",
-              "type": "uint256"
-            },
-            { "internalType": "address", "name": "from", "type": "address" },
-            { "internalType": "uint256", "name": "toChainId", "type": "uint256" },
-            { "internalType": "address", "name": "to", "type": "address" },
-            { "internalType": "uint256", "name": "gasLimit", "type": "uint256" },
-            { "internalType": "bytes", "name": "encoded", "type": "bytes" }
-          ],
-          "internalType": "struct Message",
-          "name": "message",
-          "type": "tuple"
-        }
-      ],
-      "name": "relay",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    }, [[
-      options.message.channel,
-      options.message.index,
-      options.message.fromChainId,
-      options.message.from,
-      options.message.toChainId,
-      options.message.to,
-      options.message.gasLimit,
-      options.message.encoded,
-    ]])
+    const rawParameter = this._tronweb.utils.abi.encodeParamsV2ByABI(
+      {
+        inputs: [
+          {
+            components: [
+              { internalType: "address", name: "channel", type: "address" },
+              { internalType: "uint256", name: "index", type: "uint256" },
+              {
+                internalType: "uint256",
+                name: "fromChainId",
+                type: "uint256",
+              },
+              { internalType: "address", name: "from", type: "address" },
+              { internalType: "uint256", name: "toChainId", type: "uint256" },
+              { internalType: "address", name: "to", type: "address" },
+              { internalType: "uint256", name: "gasLimit", type: "uint256" },
+              { internalType: "bytes", name: "encoded", type: "bytes" },
+            ],
+            internalType: "struct Message",
+            name: "message",
+            type: "tuple",
+          },
+        ],
+        name: "relay",
+        outputs: [],
+        stateMutability: "nonpayable",
+        type: "function",
+      },
+      [
+        [
+          options.message.channel,
+          options.message.index,
+          options.message.fromChainId,
+          options.message.from,
+          options.message.toChainId,
+          options.message.to,
+          options.message.gasLimit,
+          options.message.encoded,
+        ],
+      ]
+    );
 
     try {
       const _result = await this._tronweb.transactionBuilder.estimateEnergy(
         this.config.address.replace("0x", "41"),
         "relay((address,uint256,uint256,address,uint256,address,uint256,bytes))",
         { shieldedParameter: rawParameter },
-        [], tronPubKey)
+        [],
+        tronPubKey
+      );
       const energyRequired = _result.energy_required;
       const energyPricesResult = await this._tronweb.trx.getEnergyPrices();
       console.log(energyPricesResult);
       const energyPrices = energyPricesResult.split(",");
-      const latestPrice = (energyPrices[energyPrices.length - 1].split(":"))[1];
+      const latestPrice = energyPrices[energyPrices.length - 1].split(":")[1];
       const feeLimit = Math.ceil(1.1 * energyRequired * latestPrice);
       console.log("estimate energy: ", energyRequired, latestPrice, feeLimit);
       return feeLimit;
